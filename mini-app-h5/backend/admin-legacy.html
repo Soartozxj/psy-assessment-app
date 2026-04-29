@@ -7848,26 +7848,30 @@ async function testAiConnection() {
 
 // 从 localStorage 读取 AI 配置并调用（供外部页面复用）
 // DashScope 模式统一走服务端代理，不直连
-async function callAi(messages) {
+// options: { maxTokens, temperature, provider, model } — 可选，用于覆盖默认值
+async function callAi(messages, options) {
   const cfg = getAiConfig();
+  const maxTokens = (options && options.maxTokens) || 8000;
+  const temperature = (options && options.temperature !== undefined) ? options.temperature : 0.1;
+  const provider = (options && options.provider) || cfg.provider;
 
-  if (cfg.provider === 'dashscope') {
+  if (provider === 'dashscope') {
     // 走服务端代理
     if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
       console.log('[Admin AI] 使用云端 AI 代理调用');
-      return await window.CloudData.callAi(messages, { temperature: 0.1 });
+      return await window.CloudData.callAi(messages, { temperature: temperature, maxTokens: maxTokens });
     }
     if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
       console.log('[Admin AI] 使用 CloudAPI 服务端代理');
-      return await window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', temperature: 0.1, maxTokens: 4000 });
+      return await window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', temperature: temperature, maxTokens: maxTokens });
     }
     // fallback：直接调用 LNMP /api/ai-diagnose（admin-legacy.html 部署在同域）
     console.log('[Admin AI] 使用 LNMP /api/ai-diagnose 直接调用');
-    var model = cfg.dashscope.model || 'qwen-plus';
+    var model = (options && options.model) || cfg.dashscope.model || 'qwen-plus';
     var res = await fetch('/api/ai-diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider: 'dashscope', model: model, messages: messages, maxTokens: 4000, temperature: 0.1 })
+      body: JSON.stringify({ provider: 'dashscope', model: model, messages: messages, maxTokens: maxTokens, temperature: temperature })
     });
     if (!res.ok) throw new Error('AI 服务请求失败: HTTP ' + res.status);
     var data = await res.json();

@@ -708,7 +708,7 @@ async function callAi(messages) {
   if (cfg.provider === 'dashscope') {
     // 优先通过父窗口（admin-legacy.html）的服务端代理调用，不再前端直连
     if (parent && typeof parent.callAi === 'function') {
-      return await parent.callAi(messages);
+      return await parent.callAi(messages, { maxTokens: 8000, temperature: 0.1 });
     }
     // fallback：如果父窗口不可用，直接调用 LNMP /api/ai-diagnose
     try {
