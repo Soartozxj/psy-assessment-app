@@ -1625,6 +1625,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       background: #FAFBFD;
+      overflow-y: auto;
     }
     .ai-sidebar-section {
       padding: 14px 16px;
@@ -2193,6 +2194,19 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
                     </div>
                     <div id="ai-diag-test-result" style="display:none;background:var(--bg);padding:16px;border-radius:8px;font-size:13px;line-height:1.8;color:var(--text-sec);white-space:pre-wrap"></div>
                   </div>
+
+                  <!-- AI 生成规则（Meta Prompt）只读展示 -->
+                  <div class="table-card" style="margin-top:16px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleMetaPromptPanel()">
+                      <h4 style="font-size:15px">⚙️ AI 生成规则（Meta Prompt）</h4>
+                      <span id="meta-prompt-toggle-icon" style="font-size:12px;color:var(--text-muted);transition:transform .2s">▼ 展开</span>
+                    </div>
+                    <p style="font-size:12px;color:var(--text-muted);margin:6px 0 0">控制「🤖 AI 智能生成」按钮的行为：定义如何根据量表信息生成 System Prompt。<span style="color:#e6a23c">🔒 仅展示，不可修改。</span></p>
+                    <div id="meta-prompt-panel" style="display:none;margin-top:12px">
+                      <textarea id="ai-diag-meta-prompt" readonly rows="22"
+                        style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:13px;line-height:1.7;resize:none;font-family:'SF Mono','Fira Code',monospace;background:#f7f8fa;color:#555"></textarea>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2220,19 +2234,27 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
             <div style="background:var(--bg);padding:20px;border-radius:8px;border:1px solid var(--border);">
               <div style="font-size:14px;font-weight:600;margin-bottom:16px;">☁️ DashScope 配置</div>
               <div style="margin-bottom:16px;">
-                <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:6px;">API Key</label>
-                <div style="display:flex;gap:8px;">
-                  <input type="password" id="ds-api-key" placeholder="sk-xxxxxxxx" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
-                  <button onclick="toggleDsKeyVis()" style="padding:10px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;">👁</button>
-                </div>
-              </div>
-              <div style="margin-bottom:16px;">
                 <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:6px;">模型名称</label>
                 <select id="ds-model" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
                   <option value="qwen-max">qwen-max（最强推理）</option>
                   <option value="qwen-plus" selected>qwen-plus（均衡性价比）</option>
                   <option value="qwen-turbo">qwen-turbo（快速响应）</option>
                 </select>
+              </div>
+              <!-- 服务端 Key 状态（脱敏显示，不可编辑） -->
+              <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:6px;">🔑 API Key 状态</label>
+                <div id="ai-key-status-panel" style="padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-muted);min-height:40px;">
+                  点击"刷新状态"查询服务端 Key 配置
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                  <button class="btn btn-default" onclick="refreshAiKeyStatus('lnmp')" style="flex:1;font-size:12px;padding:8px">🌐 刷新 LNMP 状态</button>
+                  <button class="btn btn-default" onclick="refreshAiKeyStatus('cloud')" style="flex:1;font-size:12px;padding:8px">☁️ 刷新 CloudBase 状态</button>
+                </div>
+              </div>
+              <div style="padding:10px 14px;background:linear-gradient(135deg,#e8f4fd,#f0e6ff);border-radius:8px;font-size:12px;color:var(--text-sec);line-height:1.6;">
+                📌 API Key 已统一由服务端管理，前端不再持有密钥。<br>
+                如需配置/修改 Key，请前往「运维工具 → AI 密钥管理」操作。
               </div>
             </div>
           </div>
@@ -2563,17 +2585,17 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
                 <span class="ops-card-icon">🔑</span>
                 <div>
                   <div class="ops-card-title">AI 密钥管理</div>
-                  <div class="ops-card-sub">编辑构建配置文件 ai-config.json · 修改后需重新构建部署</div>
+                  <div class="ops-card-sub">配置 DashScope API Key（主 + 3 备用）· 保存到 LNMP + CloudBase 双端</div>
                 </div>
-                <button class="ops-btn" onclick="opsLoadAiKeyFile()">📂 读取配置文件</button>
-                <button class="ops-btn" onclick="opsCheckServerKeys()" style="font-size:11px;padding:4px 10px">🌐 服务端状态</button>
+                <button class="ops-btn" onclick="opsLoadAiKeysFromServer()">📂 从服务端加载</button>
+                <button class="ops-btn" onclick="opsCheckServerKeys()" style="font-size:11px;padding:4px 10px">🌐 双端状态</button>
               </div>
               <div id="ops-aikey-body">
                 <div class="ops-loading">
-                  点击「读取配置文件」从 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">ai-config.json</code> 加载当前配置
+                  点击「从服务端加载」读取当前服务端配置，或直接填写新 Key 后保存。
                   <div style="margin-top:8px;font-size:11px;color:var(--text-muted);line-height:1.6">
-                    💡 说明：此配置用于 <strong>build-deploy.py</strong> 构建时注入到前端 shared-data.js。<br>
-                    在后台「量表管理 → AI 接口配置」修改的是运行时配置（localStorage），仅影响当前浏览器。
+                    💡 说明：API Key 仅存储在服务端（LNMP .env + CloudBase DB），前端不持有密钥。<br>
+                    保存后立即生效，无需重新构建部署。
                   </div>
                 </div>
               </div>
@@ -3666,16 +3688,16 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
           <div class="ai-sidebar-label">📝 操作步骤</div>
           <div id="aiSteps">
             <div class="ai-step-item active" id="aiStep1">
-              <span class="ai-step-num">1</span><span>粘贴量表计分说明</span>
+              <span class="ai-step-num">1</span><span>上传文档或粘贴手册原文</span>
             </div>
             <div class="ai-step-item" id="aiStep2">
-              <span class="ai-step-num">2</span><span>点击「✨ 开始解析」</span>
+              <span class="ai-step-num">2</span><span>选择提示词版本，点「生成」</span>
             </div>
             <div class="ai-step-item" id="aiStep3">
-              <span class="ai-step-num">3</span><span>检查解析结果</span>
+              <span class="ai-step-num">3</span><span>检查生成结果，点「开始解析」</span>
             </div>
             <div class="ai-step-item" id="aiStep4">
-              <span class="ai-step-num">4</span><span>点击「导入到量表」</span>
+              <span class="ai-step-num">4</span><span>检查结果，点「导入到量表」</span>
             </div>
           </div>
         </div>
@@ -3684,11 +3706,11 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
         <div class="ai-sidebar-section" style="flex:1;">
           <div class="ai-sidebar-label">💡 右侧工具功能</div>
           <div style="font-size:11px;color:var(--text-muted);line-height:1.8;">
+            <div>• <strong style="color:var(--text-sec);">📎 文件上传</strong>（.docx/.txt/.md）</div>
+            <div>• <strong style="color:var(--text-sec);">AI 智能提取</strong>（从手册原文提取计分规则）</div>
             <div>• <strong style="color:var(--text-sec);">内置示例</strong>（SCL-90/PHQ-9 等）</div>
-            <div>• <strong style="color:var(--text-sec);">Prompt 模板</strong>（可展开预览）</div>
             <div>• <strong style="color:var(--text-sec);">标准化验证</strong>（公式/派生指标）</div>
             <div>• <strong style="color:var(--text-sec);">调试面板</strong>（完整 Prompt + 回复）</div>
-            <div>• <strong style="color:var(--text-sec);">JSON 预览</strong>（原始/标准化）</div>
           </div>
         </div>
 
@@ -4243,6 +4265,20 @@ function loadScales() {
       const parsed = JSON.parse(data);
       // 如果 localStorage 有数据但是空数组，或者 DEFAULT_SCALES 有更多量表，使用 DEFAULT_SCALES
       if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(DEFAULT_SCALES) && DEFAULT_SCALES.length >= parsed.length) {
+        // 合并 DEFAULT_SCALES 中的 aiDiag 配置（localStorage 旧数据可能缺失）
+        let needSave = false;
+        parsed.forEach(function(item) {
+          const def = DEFAULT_SCALES.find(function(d) { return d.id === item.id || d.code === item.code; });
+          if (def && def.aiDiag) {
+            if (!item.aiDiag || !item.aiDiag.prompt) {
+              item.aiDiag = JSON.parse(JSON.stringify(def.aiDiag));
+              needSave = true;
+            }
+          }
+        });
+        if (needSave) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        }
         return parsed;
       }
       // 数据不完整，使用 DEFAULT_SCALES 并保存
@@ -7658,6 +7694,53 @@ function switchAiProvider(provider) {
   }
 }
 
+/** 获取 LNMP 管理密钥 header（用于 /api/ai-config 等敏感接口） */
+function _getAdminSecretHeaders() {
+  var secret = localStorage.getItem('psy_admin_api_secret') || '';
+  if (!secret) return {};
+  return { 'X-Admin-Secret': secret };
+}
+
+/** 刷新服务端 Key 状态（单端），在"AI 接口配置"面板中使用 */
+function refreshAiKeyStatus(server) {
+  var panel = document.getElementById('ai-key-status-panel');
+  if (!panel) return;
+  panel.innerHTML = '⏳ 查询中...';
+
+  var url;
+  var fetchOpts = {};
+  if (server === 'cloud') {
+    var cloudBase = localStorage.getItem('psy_cloud_api_base') || '';
+    if (!cloudBase) { panel.innerHTML = '<span style="color:var(--warning)">未配置 Cloud API 地址</span>'; return; }
+    url = cloudBase + '/api/ai-config?_t=' + Date.now() + '&openid=' + encodeURIComponent(NPC_ADMIN_OPENID);
+  } else {
+    url = '/api/ai-config?_t=' + Date.now();
+    fetchOpts = { headers: _getAdminSecretHeaders() };
+  }
+
+  var label = server === 'cloud' ? '☁️ CloudBase' : '🌐 LNMP';
+  fetch(url, fetchOpts)
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      if (!data.data || data.data.count === 0) {
+        panel.innerHTML = '<span style="color:var(--danger)">' + label + ': 无 API Key，请在「运维工具 → AI 密钥管理」配置</span>';
+        return;
+      }
+      var html = '<div style="font-weight:600;margin-bottom:6px;color:var(--primary)">' + label + ' · ' + data.data.count + ' 个 Key</div>';
+      (data.data.keys || []).forEach(function(k) {
+        html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0;font-size:12px">'
+          + '<span>' + (k.active ? '🟢' : '⚪') + '</span>'
+          + '<span style="font-family:monospace">' + k.key + '</span>'
+          + (k.active ? '<span style="color:var(--success)">当前</span>' : '')
+          + '</div>';
+      });
+      panel.innerHTML = html;
+    })
+    .catch(function(err) {
+      panel.innerHTML = '<span style="color:var(--danger)">' + label + ': 查询失败 - ' + escHtml(err.message) + '</span>';
+    });
+}
+
 function toggleDsKeyVis() {
   const el = document.getElementById('ds-api-key');
   if (el) el.type = el.type === 'password' ? 'text' : 'password';
@@ -7665,11 +7748,9 @@ function toggleDsKeyVis() {
 
 function saveAiConfig() {
   const provider = document.querySelector('input[name="ai-provider"]:checked')?.value || 'dashscope';
-  const dsKey = document.getElementById('ds-api-key')?.value || '';
   const cfg = {
     provider,
     dashscope: {
-      apiKey: dsKey,
       model: document.getElementById('ds-model')?.value || 'qwen-plus'
     },
     ollama: {
@@ -7679,11 +7760,6 @@ function saveAiConfig() {
   };
   localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(cfg));
   showToast('success', 'AI 配置已保存');
-
-  // 同步主 Key 到服务端（让 WebView 也能用）
-  if (provider === 'dashscope' && dsKey && dsKey.length > 10) {
-    _syncKeysToServer([dsKey]);
-  }
 }
 
 /**
@@ -7726,17 +7802,18 @@ async function testAiConnection() {
   try {
     let responseText = '';
     if (provider === 'dashscope') {
-      const apiKey = document.getElementById('ds-api-key')?.value || cfg.dashscope.apiKey;
-      const model = document.getElementById('ds-model')?.value || cfg.dashscope.model;
-      if (!apiKey) throw new Error('请先填写 DashScope API Key');
-      const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      // DashScope: 走服务端代理（不再前端直连）
+      const model = document.getElementById('ds-model')?.value || cfg.dashscope?.model || 'qwen-plus';
+      const apiBase = localStorage.getItem('psy_cloud_api_base') || '';
+      if (!apiBase) throw new Error('请先配置 Cloud API 地址（在"数据同步"页）');
+      const res = await fetch(apiBase + '/api/ai-diagnose', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-        body: JSON.stringify({ model, messages: [{ role: 'user', content: '请回复"连接成功"四个字' }], max_tokens: 20 })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'dashscope', model, messages: [{ role: 'user', content: '请回复"连接成功"四个字' }], maxTokens: 20, temperature: 0 })
       });
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'HTTP ' + res.status); }
       const data = await res.json();
-      responseText = data.choices?.[0]?.message?.content || '（空响应）';
+      if (!res.ok || data.code !== 0) throw new Error(data.message || 'HTTP ' + res.status);
+      responseText = data.data || '（空响应）';
     } else {
       const baseUrl = document.getElementById('ol-base-url')?.value || cfg.ollama.baseUrl;
       const model = document.getElementById('ol-model')?.value || cfg.ollama.model;
@@ -7770,25 +7847,32 @@ async function testAiConnection() {
 }
 
 // 从 localStorage 读取 AI 配置并调用（供外部页面复用）
+// DashScope 模式统一走服务端代理，不直连
 async function callAi(messages) {
-  // 云端模式下，通过 CloudData.callAi 代理调用（API Key 安全存储在云端 config 集合）
-  if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
-    console.log('[Admin AI] 使用云端 AI 代理调用');
-    return await window.CloudData.callAi(messages, { temperature: 0.1 });
-  }
-
-  // 本地模式：直接调用 AI API
   const cfg = getAiConfig();
+
   if (cfg.provider === 'dashscope') {
-    if (!cfg.dashscope.apiKey) throw new Error('DashScope API Key 未配置，请在后台"AI 配置"页填写');
-    const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+    // 走服务端代理
+    if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
+      console.log('[Admin AI] 使用云端 AI 代理调用');
+      return await window.CloudData.callAi(messages, { temperature: 0.1 });
+    }
+    if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
+      console.log('[Admin AI] 使用 CloudAPI 服务端代理');
+      return await window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', temperature: 0.1, maxTokens: 4000 });
+    }
+    // fallback：直接调用 LNMP /api/ai-diagnose（admin-legacy.html 部署在同域）
+    console.log('[Admin AI] 使用 LNMP /api/ai-diagnose 直接调用');
+    var model = cfg.dashscope.model || 'qwen-plus';
+    var res = await fetch('/api/ai-diagnose', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.dashscope.apiKey },
-      body: JSON.stringify({ model: cfg.dashscope.model, messages, max_tokens: 4000, temperature: 0.1 })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'dashscope', model: model, messages: messages, maxTokens: 4000, temperature: 0.1 })
     });
-    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'DashScope API 错误: HTTP ' + res.status); }
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || '';
+    if (!res.ok) throw new Error('AI 服务请求失败: HTTP ' + res.status);
+    var data = await res.json();
+    if (data.code !== 0) throw new Error(data.message || 'AI 调用失败');
+    return data.data || '';
   } else {
     const baseUrl = cfg.ollama.baseUrl || 'http://localhost:11434';
     const res = await fetch(baseUrl + '/api/chat', {
@@ -7806,6 +7890,96 @@ async function callAi(messages) {
 // AI 诊断配置管理
 // ====================================================
 let currentAiDiagScaleId = null;
+
+// ========== AI 生成规则（Meta Prompt）—— 只读展示，不可修改 ==========
+
+var DEFAULT_META_PROMPT = '你是一个心理测评系统的 Prompt 工程师。请根据以下量表的完整信息，生成一段 AI 测评详情的 System Prompt。\n'
+  + '\n'
+  + '{scaleContext}\n'
+  + '\n'
+  + '【生成要求】\n'
+  + '1. 生成的 Prompt 必须包含可用变量：{scaleName} {score} {level} {dimensions} {answers}\n'
+  + '2. 角色设定为专业心理评估咨询师\n'
+  + '3. 输出结构要求：综合评估 → 维度分析 → 改善建议 → 注意事项\n'
+  + '4. 充分利用上述量表的维度含义和解释规则，使测评分析内容具有针对性\n'
+  + '5. 结合题文理解各维度测量的具体行为/心理特征\n'
+  + '6. 不给出明确医学诊断，强调"仅供参考，不构成医疗诊断"\n'
+  + '7. 语气专业但温暖，避免冷冰冰的术语堆砌\n'
+  + '8. 建议要有针对性，不要泛泛而谈\n'
+  + '9. 只输出 Prompt 本身，不要输出任何其他解释或前缀\n'
+  + '\n'
+  + '【变量格式说明（写入 Prompt 时必须保留）】\n'
+  + '生成的 System Prompt 中将使用以下 5 个变量，运行时会被实际数据替换。\n'
+  + '请确保 Prompt 模板中正确引用这些变量：\n'
+  + '\n'
+  + '• {scaleName} — 字符串，量表名称（如"家庭亲密度与适应性量表"）\n'
+  + '• {score} — 数字，测评总分（如 182）\n'
+  + '• {level} — 字符串，总分等级标签（如"良好"、"需关注"）\n'
+  + '• {dimensions} — JSON 数组，各维度得分详情，结构如下：\n'
+  + '  [{"name":"维度名","score":12,"pct":75.0,"max":16,"color":"#4CAF50","levelLabel":"良好","levelText":"该维度得分处于良好水平","hasInterp":true}, ...]\n'
+  + '  其中：name=维度名，score=维度分，pct=得分百分比(0-100)，max=满分，color=等级颜色(十六进制)，levelLabel=等级标签，levelText=等级解释，hasInterp=是否有解释规则\n'
+  + '• {answers} — JSON 对象，用户的作答详情，键为题目序号(从1开始)，值为选项索引(从0开始)，如：\n'
+  + '  {"1":0,"2":2,"3":1} 表示第1题选了第1个选项、第2题选了第3个选项、第3题选了第2个选项\n'
+  + '\n'
+  + '【⚠️ 输出格式约束（极其重要，必须写入 Prompt 中）】\n'
+  + '你生成的 Prompt 必须包含以下格式约束段落，确保 AI 诊断输出为纯 Markdown 格式：\n'
+  + '\n'
+  + '━━━━━━━━━━━━━━━━━━━━\n'
+  + '【输出格式要求】\n'
+  + '你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：\n'
+  + '\n'
+  + '✅ 允许使用的格式：\n'
+  + '- **粗体**：用 \\\\*\\\\*文字\\\\*\\\\* 包裹\n'
+  + '- *斜体*：用 \\\\*文字\\\\* 包裹\n'
+  + '- 标题：用 ## 或 ### 开头（不要用 # 一级标题）\n'
+  + '- 分隔线：独占一行的 ---\n'
+  + '- 列表：用 - 或数字 1. 2. 3. 开头\n'
+  + '- 引用：用 > 开头（如话术、引用语等）\n'
+  + '- 行内代码：用反引号 ` 包裹\n'
+  + '\n'
+  + '❌ 严禁使用的格式（会导致页面显示异常）：\n'
+  + '- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）\n'
+  + '- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）\n'
+  + '- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行\n'
+  + '- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代\n'
+  + '\n'
+  + '报告结构建议（纯 Markdown）：\n'
+  + '### 🌟 综合评估\n'
+  + '（总结性分析文字）\n'
+  + '---\n'
+  + '### 🔍 维度深度解析\n'
+  + '（每个维度一段分析，用粗体标注维度名）\n'
+  + '---\n'
+  + '### 🌱 改善建议\n'
+  + '（用编号列表 1. 2. 3. 组织建议）\n'
+  + '---\n'
+  + '### ❤️ 重要提醒\n'
+  + '（注意事项）\n'
+  + '━━━━━━━━━━━━━━━━━━━━\n'
+  + '\n'
+  + '请确保上述格式约束被完整写入你生成的 Prompt 中。';
+
+function getMetaPrompt() {
+  return DEFAULT_META_PROMPT;
+}
+
+function loadMetaPromptToEditor() {
+  var el = document.getElementById('ai-diag-meta-prompt');
+  if (el) el.value = DEFAULT_META_PROMPT;
+}
+
+function toggleMetaPromptPanel() {
+  var panel = document.getElementById('meta-prompt-panel');
+  var icon = document.getElementById('meta-prompt-toggle-icon');
+  if (panel.style.display === 'none') {
+    panel.style.display = '';
+    icon.textContent = '▲ 收起';
+    loadMetaPromptToEditor();
+  } else {
+    panel.style.display = 'none';
+    icon.textContent = '▼ 展开';
+  }
+}
 
 /**
  * 根据量表详细信息（题文、选项、计分规则），调用 AI 自动生成诊断提示词
@@ -7827,9 +8001,16 @@ async function generateAiDiagPrompt() {
   // 检查 AI 配置
   const cfg = getAiConfig();
   const isDashScope = cfg.provider === 'dashscope';
-  if (isDashScope && !cfg.dashscope.apiKey) {
-    showToast('warning', '请先在「⚙️ AI 接口配置」填写 DashScope API Key');
-    return;
+  if (isDashScope) {
+    // DashScope 模式需要服务端代理可用
+    var hasCloudProxy = window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi;
+    var hasLnmpProxy = window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function';
+    // admin-legacy.html 部署在 LNMP 同域，可直接 fetch /api/ai-diagnose
+    var hasDirectFetch = typeof fetch === 'function';
+    if (!hasCloudProxy && !hasLnmpProxy && !hasDirectFetch) {
+      showToast('warning', 'DashScope 模式需要服务端代理，请确认 API 地址已配置');
+      return;
+    }
   }
 
   // 禁用按钮
@@ -7841,65 +8022,9 @@ async function generateAiDiagPrompt() {
     // 1. 组装量表上下文
     const ctx = buildScaleContext(scale);
 
-    // 2. 构造 meta-prompt
-    const metaPrompt = `你是一个心理测评系统的 Prompt 工程师。请根据以下量表的完整信息，生成一段 AI 测评详情的 System Prompt。
-
-${ctx}
-
-【生成要求】
-1. 生成的 Prompt 必须包含可用变量：{scaleName} {score} {level} {dimensions} {answers}
-2. 角色设定为专业心理评估咨询师
-3. 输出结构要求：综合评估 → 维度分析 → 改善建议 → 注意事项
-4. 充分利用上述量表的维度含义和解释规则，使测评分析内容具有针对性
-5. 结合题文理解各维度测量的具体行为/心理特征
-6. 不给出明确医学诊断，强调"仅供参考，不构成医疗诊断"
-7. 语气专业但温暖，避免冷冰冰的术语堆砌
-8. 建议要有针对性，不要泛泛而谈
-9. 只输出 Prompt 本身，不要输出任何其他解释或前缀
-
-【⚠️ 输出格式约束（极其重要，必须写入 Prompt 中）】
-你生成的 Prompt 必须包含以下格式约束段落，确保 AI 诊断输出为纯 Markdown 格式：
-
-━━━━━━━━━━━━━━━━━━━━
-【输出格式要求】
-你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：
-
-✅ 允许使用的格式：
-- **粗体**：用 \\*\\*文字\\*\\* 包裹
-- *斜体*：用 \\*文字\\* 包裹
-- 标题：用 ## 或 ### 开头（不要用 # 一级标题）
-- 分隔线：独占一行的 ---
-- 列表：用 - 或数字 1. 2. 3. 开头
-- 引用：用 > 开头（如话术、引用语等）
-- 行内代码：用反引号 \` 包裹
-
-❌ 严禁使用的格式（会导致页面显示异常）：
-- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）
-- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）
-- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行
-- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代
-
-报告结构建议（纯 Markdown）：
-### 🌟 综合评估
-（总结性分析文字）
-
----
-
-### 🔍 维度深度解析
-（每个维度一段分析，用粗体标注维度名）
-
----
-
-### 🌱 改善建议
-（用编号列表 1. 2. 3. 组织建议）
-
----
-
-### ❤️ 重要提醒
-（注意事项）
-━━━━━━━━━━━━━━━━━━━━
-
-请确保上述格式约束被完整写入你生成的 Prompt 中。`;
+    // 2. 从配置读取 meta-prompt 模板，替换 {scaleContext} 占位符
+    const metaTemplate = getMetaPrompt();
+    const metaPrompt = metaTemplate.replace(/\{scaleContext\}/g, ctx);
 
     // 3. 调用 AI
     const result = await callAi([{ role: 'user', content: metaPrompt }]);
@@ -7946,6 +8071,7 @@ function buildScaleContext(scale) {
   ctx += `分类：${category}\n`;
   ctx += `描述：${desc}\n`;
   ctx += `题目数量：${questions.length}\n`;
+  if (scale.applicablePeople) ctx += `适用人群：${scale.applicablePeople}\n`;
 
   // --- 计分规则 ---
   ctx += `\n【计分规则】\n`;
@@ -8056,15 +8182,23 @@ function renderAiDiagScaleList() {
   const scales = SharedData.getAllScales().filter(s => s.status !== 0);
   container.innerHTML = scales.map(s => {
     const hasDiag = s.aiDiag && s.aiDiag.enabled;
-    return '<div class="ai-diag-scale-item" data-id="' + s.id + '" onclick="selectAiDiagScale(\'' + s.id + '\')" style="padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;transition:background .2s;'
+    const promptText = s.aiDiag && s.aiDiag.prompt ? s.aiDiag.prompt : '';
+    const promptPreview = promptText.length > 60 ? promptText.substring(0, 60) + '…' : promptText;
+    const hasDefaultPrompt = !promptText && DEFAULT_SCALES.find(function(d) { return d.id === s.id; });
+    return '<div class="ai-diag-scale-item" data-id="' + s.id + '" onclick="selectAiDiagScale(\'' + s.id + '\')" style="padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .2s;'
       + (currentAiDiagScaleId === s.id ? 'background:var(--primary-light);' : '')
       + '" onmouseover="this.style.background=this.style.background||\'var(--bg)\'" onmouseout="this.style.background=\'' + (currentAiDiagScaleId === s.id ? 'var(--primary-light)' : '') + '\'">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
       + '<div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:' + (s.color || 'var(--primary)') + '18">' + (s.icon || '📋') + '</div>'
       + '<div style="flex:1;min-width:0">'
-      + '<div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.name || s.scaleName || '') + '</div>'
-      + '<div style="font-size:11px;color:var(--text-muted)">' + (s.code || '') + '</div>'
+      + '<div style="display:flex;align-items:center;gap:6px">'
+      + '<span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.name || s.scaleName || '') + '</span>'
+      + (hasDiag ? '<span style="color:var(--success);font-size:11px;flex-shrink:0">✓ 已配置</span>' : (hasDefaultPrompt ? '<span style="color:var(--warning,#e6a700);font-size:11px;flex-shrink:0">◉ 默认</span>' : '<span style="color:var(--text-muted);font-size:11px;flex-shrink:0">○ 未配置</span>'))
       + '</div>'
-      + (hasDiag ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0" title="已配置"></span>' : '<span style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0" title="未配置"></span>')
+      + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' + (s.code || '') + '</div>'
+      + (promptPreview ? '<div style="font-size:11px;color:var(--text-sec);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.8">' + promptPreview + '</div>' : '')
+      + '</div>'
+      + '</div>'
       + '</div>';
   }).join('');
 }
@@ -8091,8 +8225,23 @@ function selectAiDiagScale(scaleId) {
 
   const diag = scale.aiDiag || {};
   document.getElementById('ai-diag-enabled').checked = diag.enabled !== false;
-  document.getElementById('ai-diag-prompt').value = diag.prompt || '';
-  document.getElementById('ai-diag-welcome').value = diag.welcome || '';
+  // 如果当前量表没有自定义 prompt，尝试从 DEFAULT_SCALES 加载默认提示词展示
+  var promptValue = diag.prompt || '';
+  if (!promptValue) {
+    var defScale = DEFAULT_SCALES.find(function(d) { return d.id === scaleId; });
+    if (defScale && defScale.aiDiag && defScale.aiDiag.prompt) {
+      promptValue = defScale.aiDiag.prompt;
+    }
+  }
+  document.getElementById('ai-diag-prompt').value = promptValue;
+  var welcomeValue = diag.welcome || '';
+  if (!welcomeValue) {
+    var defW = DEFAULT_SCALES.find(function(d) { return d.id === scaleId; });
+    if (defW && defW.aiDiag && defW.aiDiag.welcome) {
+      welcomeValue = defW.aiDiag.welcome;
+    }
+  }
+  document.getElementById('ai-diag-welcome').value = welcomeValue;
   document.getElementById('ai-diag-temp').value = diag.temperature || 0.7;
   document.getElementById('ai-diag-max-tokens').value = diag.maxTokens || 2000;
 
@@ -9142,12 +9291,18 @@ function saveScale() {
   };
 
   if (editingId !== null) {
-    // 编辑
+    // 编辑 — 保留原有不可编辑字段（aiDiag 等）
     const idx = scales.findIndex(s => s.id === editingId);
     if (idx !== -1) {
       scaleData.id = editingId;
       scaleData.completedCount = scales[idx].completedCount || 0;
       scaleData.rating = scales[idx].rating || 5.0;
+      // 保留 AI 诊断配置（量表编辑表单不包含此字段）
+      if (scales[idx].aiDiag) scaleData.aiDiag = scales[idx].aiDiag;
+      // 保留其他可能的自定义字段
+      if (scales[idx].scoring) scaleData.scoring = scales[idx].scoring;
+      if (scales[idx].maxScore !== undefined) scaleData.maxScore = scales[idx].maxScore;
+      if (scales[idx].aiDiagPrompt) scaleData.aiDiagPrompt = scales[idx].aiDiagPrompt;
       scales[idx] = scaleData;
       showToast(`「${name}」已更新`, 'success');
     }
@@ -11772,25 +11927,38 @@ var opsAiKeyData = null; // 缓存当前读取到的配置
 /**
  * 读取 ai-config.json 并渲染编辑表单
  */
-function opsLoadAiKeyFile() {
+function opsLoadAiKeysFromServer() {
   var body = document.getElementById('ops-aikey-body');
-  body.innerHTML = '<div class="ops-loading">正在读取 ai-config.json ...</div>';
+  body.innerHTML = '<div class="ops-loading">正在从 LNMP 服务端读取 Key 配置...</div>';
 
-  fetch(OPS_AIKEY_FILE + '?_t=' + Date.now())
+  fetch('/api/ai-config?_t=' + Date.now(), { headers: _getAdminSecretHeaders() })
     .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' — 文件不存在或无法访问');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     })
     .then(function(data) {
-      opsAiKeyData = data;
-      opsRenderAiKeyForm(data);
+      // 构建兼容格式给 opsRenderAiKeyForm
+      var keys = (data.data && data.data.keys) || [];
+      var config = {
+        provider: 'dashscope',
+        dashscope: {
+          apiKey: '',
+          keyName: '',
+          model: 'qwen-plus',
+          fallbacks: keys.slice(1).map(function(k, i) {
+            return { key: '', name: '备用 #' + (i + 1) };
+          })
+        },
+        ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' },
+        _serverKeys: keys  // 传给渲染函数显示服务端脱敏状态
+      };
+      opsAiKeyData = config;
+      opsRenderAiKeyForm(config);
     })
     .catch(function(err) {
-      body.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">❌ 读取失败：' + escHtml(err.message)
+      body.innerHTML = '<div style="padding:16px;color:var(--warning);font-size:13px">⚠️ 读取 LNMP 服务端失败：' + escHtml(err.message)
         + '<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">'
-        + '可能原因：<br>1. 文件路径不正确（当前读取：<code>' + OPS_AIKEY_FILE + '</code>）<br>'
-        + '2. 本地服务器未启动（需 <code>python3 -m http.server 8080</code>）<br>'
-        + '3. 文件不存在（需在项目根目录创建 ai-config.json）</div></div>';
+        + '可手动填写 Key 后直接点击「保存到服务端」</div></div>';
     });
 }
 
@@ -11888,17 +12056,18 @@ function opsRenderAiKeyForm(data) {
 
     // 操作按钮
     + '<div style="display:flex;gap:10px;align-items:center">'
-    + '  <button class="ops-btn ops-btn-primary" onclick="opsSaveAiKeyFile()">💾 保存到 ai-config.json</button>'
+    + '  <button class="ops-btn ops-btn-primary" onclick="opsSaveAiKeys()">💾 保存到服务端</button>'
     + '  <button class="ops-btn" onclick="opsTestAiKeyConfig()">🧪 测试主 Key</button>'
     + '  <span id="ops-ak-status" style="font-size:12px;color:var(--text-muted)"></span>'
     + '</div>'
 
     // 提示信息
     + '<div style="margin-top:14px;padding:10px 14px;background:var(--bg);border-radius:8px;border-left:3px solid var(--primary);font-size:11px;color:var(--text-muted);line-height:1.7">'
-    + '  📌 <strong>配置流转路径</strong>：<code>ai-config.json</code> → <code>build-deploy.py</code> 构建注入 → <code>shared-data.js</code>（前端生效）<br>'
-    + '  ⚡ 保存后请运行 <code>python3 build-deploy.py</code> 重新构建，并上传到云开发静态托管<br>'
-    + '  🔄 如只修改运行时配置（不重新构建），请在「量表管理 → AI 接口配置」中操作<br>'
-    + '  ⏳ 备用 Key 目前仅做存储管理，前端自动降级切换功能计划在小程序审核通过后实现'
+    + '  📌 <strong>配置流转路径</strong>：后台输入 Key → <code>PUT /api/ai-config</code> → 服务端内存 + 持久化<br>'
+    + '  🌐 <strong>LNMP 服务器</strong>：Key 持久化到 <code>.env</code>，服务重启不丢失<br>'
+    + '  ☁️ <strong>CloudBase 云端</strong>：Key 持久化到云数据库 <code>config/ai_config</code><br>'
+    + '  ⚡ 保存后立即生效，无需重新构建部署<br>'
+    + '  🔒 API Key 仅存于服务端，前端不持有密钥'
     + '</div>';
 
   body.innerHTML = html;
@@ -11923,7 +12092,8 @@ function opsAddFallbackKey() {
 }
 
 /**
- * 测试单个 Key 的有效性
+ * 测试单个 Key 的有效性（管理员专用，直连 DashScope 验证）
+ * 注：此函数仅用于管理后台验证 Key 是否有效，不涉及用户端调用
  */
 function opsTestSingleKey(inputId) {
   var input = document.getElementById(inputId);
@@ -11970,13 +12140,12 @@ function opsSwitchAkProvider(p) {
 }
 
 /**
- * 查看服务端（LNMP）当前加载的 API Key 状态
+ * 查看服务端当前加载的 API Key 状态（LNMP + CloudBase 双端）
  */
 function opsCheckServerKeys() {
   var body = document.getElementById('ops-aikey-body');
   if (!body) return;
 
-  // 插入状态显示区域
   var statusDiv = document.getElementById('ops-server-key-status');
   if (!statusDiv) {
     statusDiv = document.createElement('div');
@@ -11984,28 +12153,47 @@ function opsCheckServerKeys() {
     statusDiv.style.cssText = 'margin-top:12px;padding:12px;background:#f0f7ff;border-radius:8px;font-size:12px;border:1px solid #d0e3f7';
     body.appendChild(statusDiv);
   }
-  statusDiv.innerHTML = '<span style="color:var(--text-sec)">⏳ 正在查询服务端...</span>';
+  statusDiv.innerHTML = '<span style="color:var(--text-sec)">⏳ 正在查询 LNMP 和 CloudBase 服务端...</span>';
 
-  fetch('/api/ai-config?_t=' + Date.now())
+  // 并行查询两个服务端
+  var lnmpPromise = fetch('/api/ai-config?_t=' + Date.now(), { headers: _getAdminSecretHeaders() })
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(data) {
-      if (!data.data || data.data.count === 0) {
-        statusDiv.innerHTML = '<span style="color:var(--danger)">⚠️ 服务端无 API Key</span><div style="margin-top:4px;color:var(--text-muted)">请在 .env 中配置 DASHSCOPE_API_KEY 或通过此页面保存配置</div>';
-        return;
+    .then(function(data) { return { source: 'LNMP', data: data.data }; })
+    .catch(function(err) { return { source: 'LNMP', error: err.message }; });
+
+  var cloudBase = localStorage.getItem('psy_cloud_api_base') || '';
+  var cloudPromise;
+  if (cloudBase) {
+    cloudPromise = fetch(cloudBase + '/api/ai-config?_t=' + Date.now() + '&openid=' + encodeURIComponent(NPC_ADMIN_OPENID))
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data) { return { source: 'CloudBase', data: data.data }; })
+      .catch(function(err) { return { source: 'CloudBase', error: err.message }; });
+  } else {
+    cloudPromise = Promise.resolve({ source: 'CloudBase', error: '未配置 Cloud API 地址' });
+  }
+
+  Promise.all([lnmpPromise, cloudPromise]).then(function(results) {
+    var html = '';
+    results.forEach(function(result) {
+      var icon = result.source === 'LNMP' ? '🌐' : '☁️';
+      html += '<div style="font-weight:600;margin:8px 0 4px;color:var(--primary)">' + icon + ' ' + result.source + '</div>';
+      if (result.error) {
+        html += '<div style="color:var(--warning);font-size:11px">' + escHtml(result.error) + '</div>';
+      } else if (!result.data || result.data.count === 0) {
+        html += '<div style="color:var(--danger);font-size:11px">无 API Key</div>';
+      } else {
+        html += '<div style="font-size:11px;color:var(--text-sec)">共 ' + result.data.count + ' 个 Key（轮询模式）</div>';
+        (result.data.keys || []).forEach(function(k) {
+          html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">'
+            + '<span style="color:' + (k.active ? 'var(--success)' : 'var(--text-muted)') + '">' + (k.active ? '🟢' : '⚪') + '</span>'
+            + '<span style="font-family:monospace;font-size:11px">' + k.key + '</span>'
+            + (k.active ? '<span style="font-size:10px;color:var(--success);font-weight:600">当前</span>' : '')
+            + '</div>';
+        });
       }
-      var html = '<div style="font-weight:600;margin-bottom:8px;color:var(--primary)">🌐 服务端 API Key（' + data.data.count + ' 个，轮询模式）</div>';
-      (data.data.keys || []).forEach(function(k) {
-        html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
-          + '<span style="color:' + (k.active ? 'var(--success)' : 'var(--text-muted)') + '">' + (k.active ? '🟢' : '⚪') + '</span>'
-          + '<span style="font-family:monospace;font-size:11px">' + k.key + '</span>'
-          + (k.active ? '<span style="font-size:10px;color:var(--success);font-weight:600">当前</span>' : '')
-          + '</div>';
-      });
-      statusDiv.innerHTML = html;
-    })
-    .catch(function(err) {
-      statusDiv.innerHTML = '<span style="color:var(--warning)">⚠️ 查询失败: ' + escHtml(err.message) + '</span><div style="margin-top:4px;color:var(--text-muted)">可能服务端未部署或网络不通</div>';
     });
+    statusDiv.innerHTML = html;
+  });
 }
 
 /**
@@ -12030,84 +12218,79 @@ function opsCollectFallbacks() {
 }
 
 /**
- * 保存 AI 配置到 ai-config.json
- * 由于浏览器安全限制，尝试 fetch PUT，失败则降级为剪贴板
+ * 保存 AI Key 配置到两个服务端（LNMP + CloudBase）
+ * 不再写 ai-config.json，直接 PUT /api/ai-config
  */
-function opsSaveAiKeyFile() {
-  if (!opsAiKeyData) {
-    showToast('warning', '请先点击「读取配置文件」');
-    return;
-  }
-
-  var provider = (document.querySelector('input[name="ops-ak-provider"]:checked') || {}).value || 'dashscope';
+function opsSaveAiKeys() {
   var dsKeyEl = document.getElementById('ops-ak-ds-key');
   var dsKeyNameEl = document.getElementById('ops-ak-ds-keyname');
-  var dsModel = document.getElementById('ops-ak-ds-model');
-  var olUrl = document.getElementById('ops-ak-ol-url');
-  var olModel = document.getElementById('ops-ak-ol-model');
   var fallbacks = opsCollectFallbacks();
 
-  var newConfig = {
-    provider: provider,
-    dashscope: {
-      apiKey: dsKeyEl ? dsKeyEl.value.trim() : '',
-      keyName: dsKeyNameEl ? dsKeyNameEl.value.trim() : '',
-      model: dsModel ? dsModel.value.trim() : 'qwen-plus',
-      fallbacks: fallbacks
-    },
-    ollama: {
-      baseUrl: olUrl ? olUrl.value.trim() : 'http://localhost:11434',
-      model: olModel ? olModel.value.trim() : 'qwen2.5:7b'
-    }
-  };
-
-  // 验证
-  if (provider === 'dashscope' && !newConfig.dashscope.apiKey) {
+  // 收集所有 Key
+  var mainKey = dsKeyEl ? dsKeyEl.value.trim() : '';
+  if (!mainKey || mainKey.length <= 10) {
     showToast('warning', 'DashScope 模式下主 API Key 不能为空');
     return;
   }
 
-  // 尝试直接通过 fetch PUT 写入（仅本地 Python 服务器支持 CORS 时可用）
-  // 如果失败，降级为生成 JSON 并提示手动保存
-  fetch(OPS_AIKEY_FILE + '?_t=' + Date.now(), {
+  var allKeys = [mainKey];
+  if (fallbacks && fallbacks.length > 0) {
+    fallbacks.forEach(function(fb) { if (fb.key) allKeys.push(fb.key); });
+  }
+  allKeys = allKeys.filter(function(k) { return k && k.length > 10; });
+
+  if (allKeys.length === 0) {
+    showToast('warning', '无有效 Key');
+    return;
+  }
+
+  var statusEl = document.getElementById('ops-ak-status');
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-sec)">⏳ 正在保存到服务端...</span>';
+
+  // 并行保存到两个服务端
+  var lnmpPromise = fetch('/api/ai-config', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newConfig, null, 2)
+    headers: Object.assign({ 'Content-Type': 'application/json' }, _getAdminSecretHeaders()),
+    body: JSON.stringify({ keys: allKeys })
   })
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    opsAiKeyData = newConfig;
-    showToast('success', 'ai-config.json 已保存');
-    document.getElementById('ops-ak-status').innerHTML = '<span style="color:var(--success)">✅ 已保存 · 请执行 build-deploy.py 构建部署</span>';
-  })
-  .catch(function() {
-    // 降级方案：复制 JSON 到剪贴板
-    var jsonStr = JSON.stringify(newConfig, null, 2);
-    var statusEl = document.getElementById('ops-ak-status');
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(jsonStr).then(function() {
-        statusEl.innerHTML = '<span style="color:var(--warning)">⚠️ 服务器不支持直接写入，JSON 已复制到剪贴板</span>'
-          + '<div style="margin-top:6px;font-size:11px">请粘贴保存到项目根目录的 ai-config.json 文件</div>';
-        showToast('warning', 'JSON 已复制到剪贴板，请手动保存到 ai-config.json');
-      }).catch(function() {
-        opsShowJsonFallback(jsonStr);
-      });
+  .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(function(data) { return { source: 'LNMP', success: true, count: data.data ? data.data.count : 0 }; })
+  .catch(function(err) { return { source: 'LNMP', success: false, error: err.message }; });
+
+  var cloudBase = localStorage.getItem('psy_cloud_api_base') || '';
+  var cloudPromise;
+  if (cloudBase) {
+    cloudPromise = fetch(cloudBase + '/api/ai-config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys: allKeys, _openid: NPC_ADMIN_OPENID })
+    })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) { return { source: 'CloudBase', success: true, count: data.data ? data.data.count : 0 }; })
+    .catch(function(err) { return { source: 'CloudBase', success: false, error: err.message }; });
+  } else {
+    cloudPromise = Promise.resolve({ source: 'CloudBase', success: false, error: '未配置 Cloud API 地址' });
+  }
+
+  Promise.all([lnmpPromise, cloudPromise]).then(function(results) {
+    var html = '';
+    var allOk = true;
+    results.forEach(function(r) {
+      var icon = r.source === 'LNMP' ? '🌐' : '☁️';
+      if (r.success) {
+        html += '<span style="color:var(--success)">' + icon + ' ' + r.source + ': ✅ 已保存 ' + r.count + ' 个 Key</span><br>';
+      } else {
+        allOk = false;
+        html += '<span style="color:var(--warning)">' + icon + ' ' + r.source + ': ❌ ' + escHtml(r.error) + '</span><br>';
+      }
+    });
+    if (statusEl) statusEl.innerHTML = html;
+    if (allOk) {
+      showToast('success', 'API Key 已保存到所有服务端');
     } else {
-      opsShowJsonFallback(jsonStr);
+      showToast('warning', '部分服务端保存失败，请检查');
     }
   });
-
-  // 同步所有 Key（主 + 备用）到服务端，让 WebView AI 诊断也能用
-  if (provider === 'dashscope') {
-    var allKeys = [newConfig.dashscope.apiKey];
-    if (fallbacks && fallbacks.length > 0) {
-      fallbacks.forEach(function(fb) { if (fb.key) allKeys.push(fb.key); });
-    }
-    allKeys = allKeys.filter(function(k) { return k && k.length > 10; });
-    if (allKeys.length > 0) {
-      _syncKeysToServer(allKeys);
-    }
-  }
 }
 
 /**
@@ -12702,13 +12885,19 @@ function openAiOneClickModal(scaleId) {
   document.body.style.overflow = 'hidden';
 
   // 加载 iframe
-  document.getElementById('aiTestIframe').src = './ai-scoring-test.html';
+  var iframe = document.getElementById('aiTestIframe');
+  iframe.src = './ai-scoring-test.html?v=' + Date.now();
+
+  // iframe 加载完成后发送系统提示词
+  iframe.onload = function() {
+    _sendSysPromptToIframe();
+  };
 
   // 监听 iframe postMessage
   _aiMsgHandler = function(event) {
     if (!event.data || !event.data.type) return;
     if (event.data.type === 'ai-parse-start') {
-      _activateAiStep(2);
+      _activateAiStep(3);
     } else if (event.data.type === 'ai-parse-complete') {
       _activateAiStep(3);
     } else if (event.data.type === 'ai-normalize-complete') {
@@ -12718,12 +12907,36 @@ function openAiOneClickModal(scaleId) {
       // 启用导入按钮
       document.getElementById('aiImportBtn').disabled = false;
       document.getElementById('aiFooterImportBtn').disabled = false;
+    } else if (event.data.type === 'ai-extract-start') {
+      _activateAiStep(2);
+    } else if (event.data.type === 'ai-extract-complete') {
+      _activateAiStep(3);
     }
   };
   window.addEventListener('message', _aiMsgHandler);
 
   // 关闭下拉菜单
   closeAllDropdowns();
+}
+
+/**
+ * 发送系统提示词版本列表给 iframe
+ */
+function _sendSysPromptToIframe() {
+  var iframe = document.getElementById('aiTestIframe');
+  if (!iframe || !iframe.contentWindow) return;
+  var pt = getPt('scoring');
+  if (!pt) {
+    // spData 尚未初始化，先加载数据
+    if (window.spLoadData) { window.spLoadData(); }
+    pt = getPt('scoring');
+  }
+  if (!pt) return;
+  iframe.contentWindow.postMessage({
+    type: 'sys-prompt-versions',
+    versions: pt.versions,
+    defaultVersion: pt.currentVersion
+  }, '*');
 }
 
 /**
@@ -12863,10 +13076,9 @@ function aiOneClickImport() {
       ],
       currentVersion: '2.0',
       flowSteps: [
-        { num: '1', color: 'primary', title: '📝 复制提示词', desc: '后台 → 系统提示词 → 计分规则提取 → 点「📋 复制正文」' },
-        { num: '2', color: 'primary', title: '📄 追加手册原文', desc: '在 AI 对话中粘贴手册全文。⚠️ 主动告知 AI 实际导入的题目数量' },
-        { num: '3', color: 'primary', title: '📋 复制 AI 输出', desc: '核对摘要无误后，复制第二部分计分规则正文' },
-        { num: '4', color: 'highlight', title: '🤖 AI 一键配置', desc: '后台量表管理 → 选中量表 → AI 一键配置 → 粘贴 → 解析 → 导入' }
+        { num: '1', color: 'primary', title: '🤖 AI 一键配置', desc: '量表管理 → 选中量表 → AI 一键配置' },
+        { num: '2', color: 'primary', title: '📎 上传文档', desc: '上传 .docx/.txt/.md 手册文件，或直接粘贴文字' },
+        { num: '3', color: 'highlight', title: '✨ AI 提取 → 解析 → 导入', desc: 'AI 智能提取计分规则 → 检查结果 → 开始解析 → 导入量表' }
       ]
     },
     {
@@ -12999,6 +13211,7 @@ function aiOneClickImport() {
 
   // ---- 公开 API（挂到 window） ----
   window.spInit = function() { loadData(); renderTabs(); renderReadingArea(); renderFlowSteps(); };
+  window.spLoadData = loadData; // 仅加载数据不渲染（供 AI 一键配置等外部模块使用）
 
   window.spSwitchType = function(id) {
     spCurrentType = id;
@@ -13288,6 +13501,9 @@ function aiOneClickImport() {
       _origSwitch(name);
       if (name === 'sysPrompts') { spInit(); }
     };
+    // 暴露 spData 读取接口给外部函数使用（如 AI 一键配置）
+    window.getPt = getPt;
+    window.getSpData = function() { return spData; };
   }
 })();
 

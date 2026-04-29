@@ -645,10 +645,114 @@ app.delete('/api/history/:id', async (req, res) => {
   }
 });
 
-/**
- * POST /api/ai-diagnose
- * AI 诊断（代理调用）
- */
+// ====================================================
+// AI 多 Key 管理
+// ====================================================
+
+/** 内存缓存的 API Key 列表（主+备用） */
+let _cloudApiKeys = [];
+let _cloudKeyIndex = 0;
+let _cloudKeysLoaded = false;
+
+/** 从 CloudBase DB 加载 AI Key 配置 */
+async function _loadCloudAiKeys() {
+  if (!db) return;
+  try {
+    const configRes = await db.collection('config').doc('ai_config').get();
+    let aiConfigRaw = configRes.data;
+    if (Array.isArray(aiConfigRaw) && aiConfigRaw.length > 0 && aiConfigRaw[0].data !== undefined) {
+      aiConfigRaw = aiConfigRaw[0].data;
+    }
+    const ds = aiConfigRaw && aiConfigRaw.dashscope ? aiConfigRaw.dashscope : {};
+    const keys = [];
+
+    // 优先读 keys 数组（新格式：[{key, name}, ...]）
+    if (ds.keys && Array.isArray(ds.keys)) {
+      ds.keys.forEach(function(k) {
+        var keyVal = typeof k === 'object' ? (k.key || '') : k;
+        if (keyVal && keyVal.length > 10) keys.push(keyVal);
+      });
+    }
+
+    // 兼容旧格式：主 Key 在 apiKey 字段，备用在 fallbacks 数组
+    if (keys.length === 0 && ds.apiKey && ds.apiKey.length > 10) {
+      keys.push(ds.apiKey);
+      if (ds.fallbacks && Array.isArray(ds.fallbacks)) {
+        ds.fallbacks.forEach(function(fb) {
+          var keyVal = typeof fb === 'object' ? (fb.key || '') : fb;
+          if (keyVal && keyVal.length > 10) keys.push(keyVal);
+        });
+      }
+    }
+
+    if (keys.length > 0) {
+      _cloudApiKeys = keys;
+      _cloudKeysLoaded = true;
+      console.log('[AI] 已从 DB 加载 ' + keys.length + ' 个 API Key');
+    }
+  } catch (e) {
+    console.error('[AI] 从 DB 加载 Key 配置失败:', e.message);
+  }
+}
+
+/** 获取下一个 Key（轮询） */
+function _nextCloudKey() {
+  if (_cloudApiKeys.length === 0) return '';
+  const key = _cloudApiKeys[_cloudKeyIndex % _cloudApiKeys.length];
+  _cloudKeyIndex = (_cloudKeyIndex + 1) % _cloudApiKeys.length;
+  return key;
+}
+
+/** 带 Key 轮询的 DashScope 调用（CloudBase 版） */
+async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
+  // 确保已加载
+  if (!_cloudKeysLoaded) await _loadCloudAiKeys();
+
+  if (_cloudApiKeys.length === 0) {
+    throw new Error('AI API Key 未配置，请在管理后台设置');
+  }
+
+  let lastError = null;
+  for (let attempt = 0; attempt < _cloudApiKeys.length; attempt++) {
+    const key = _cloudApiKeys[_cloudKeyIndex % _cloudApiKeys.length];
+    _cloudKeyIndex = (_cloudKeyIndex + 1) % _cloudApiKeys.length;
+    console.log('[AI] 尝试 Key #' + ((_cloudKeyIndex - 1 + _cloudApiKeys.length) % _cloudApiKeys.length + 1) + '/' + _cloudApiKeys.length);
+
+    try {
+      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature })
+      });
+      const data = await response.json();
+
+      // 401/429 → 切换下一个 Key
+      if (data.error && (data.error.code === 'InvalidApiKey' || data.error.code === 'InvalidParameter' || response.status === 401 || response.status === 429)) {
+        console.warn('[AI] Key 失效 (' + response.status + '): ' + (data.error.message || '') + '，切换下一个');
+        lastError = new Error(data.error.message || 'Key 失效 (HTTP ' + response.status + ')');
+        continue;
+      }
+
+      if (data.error) {
+        return { error: true, message: data.error.message || 'AI 调用失败' };
+      }
+
+      const result = data.choices && data.choices[0] && data.choices[0].message
+        ? data.choices[0].message.content : '';
+      if (!result) return { error: true, message: 'AI 返回为空' };
+      return { error: false, data: result };
+    } catch (err) {
+      console.warn('[AI] 请求异常:', err.message);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('所有 API Key 均不可用');
+}
+
+// ====================================================
+// AI 诊断（代理调用）
+// ====================================================
 app.post('/api/ai-diagnose', async (req, res) => {
   if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
 
@@ -664,50 +768,18 @@ app.post('/api/ai-diagnose', async (req, res) => {
       return res.status(403).json({ code: -1, message: '需要 openid 参数' });
     }
 
-    // 从云数据库读 AI 配置
-    let aiConfig;
-    try {
-      const configRes = await db.collection('config').doc('ai_config').get();
-      let aiConfigRaw = configRes.data;
-      // 兼容数组格式 [{_id, data}]
-      if (Array.isArray(aiConfigRaw) && aiConfigRaw.length > 0 && aiConfigRaw[0].data !== undefined) {
-        aiConfigRaw = aiConfigRaw[0].data;
-      }
-      aiConfig = aiConfigRaw;
-      console.log('[AI] config loaded, type:', typeof aiConfig, ', keys:', aiConfig ? Object.keys(aiConfig).join(',') : 'null', ', dashscope.apiKey:', (aiConfig && aiConfig.dashscope && aiConfig.dashscope.apiKey) ? '有(' + String(aiConfig.dashscope.apiKey).length + ')' : '无');
-    } catch (e) {
-      console.error('[AI] 读取配置失败:', e.message);
-      // 不再直接返回错误，让后续逻辑使用兜底 apiKey
-      aiConfig = null;
-    }
-
-    const effectiveProvider = provider || (aiConfig && aiConfig.provider) || 'dashscope';
-    const effectiveModel = model || (aiConfig && aiConfig[effectiveProvider] || {}).model || 'qwen-plus';
-    const effectiveTemp = Math.max(0, Math.min(2, temperature !== undefined ? temperature : (aiConfig && aiConfig.temperature || 0.7)));
-    const effectiveMaxTokens = Math.max(100, Math.min(8000, maxTokens || (aiConfig && aiConfig.maxTokens || 2000)));
+    const effectiveProvider = provider || 'dashscope';
+    const effectiveModel = model || 'qwen-plus';
+    const effectiveTemp = Math.max(0, Math.min(2, temperature !== undefined ? temperature : 0.7));
+    const effectiveMaxTokens = Math.max(100, Math.min(8000, maxTokens || 2000));
 
     let result = '';
     if (effectiveProvider === 'dashscope') {
-      const apiKey = aiConfig.dashscope ? aiConfig.dashscope.apiKey : '';
-      // 兜底：如果数据库配置读取失败（SDK 认证问题），使用硬编码的 Key
-      const effectiveApiKey = apiKey || 'sk-b2c5ed670faf41568a7774a86ba8d448';
-      if (!effectiveApiKey) {
-        console.error('[AI] DashScope apiKey 为空, dashscope:', JSON.stringify((aiConfig && aiConfig.dashscope) || {}));
-        return res.status(503).json({ code: -2, message: 'DashScope API Key 未配置（兜底也失败）' });
+      const callResult = await _cloudCallDashScope(messages, effectiveModel, effectiveTemp, effectiveMaxTokens);
+      if (callResult.error) {
+        return res.status(502).json({ code: -1, message: callResult.message });
       }
-      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + effectiveApiKey },
-        body: JSON.stringify({ model: effectiveModel, messages, max_tokens: effectiveMaxTokens, temperature: effectiveTemp })
-      });
-      if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        console.error('[AI] DashScope HTTP', response.status, errBody.slice(0, 200));
-        return res.status(502).json({ code: -1, message: 'AI 服务返回错误: ' + response.status });
-      }
-      const data = await response.json();
-      result = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
-      if (!result) return res.status(502).json({ code: -1, message: data.error ? data.error.message : 'AI 返回为空' });
+      result = callResult.data;
     } else {
       return res.status(400).json({ code: -1, message: '不支持的 AI 提供商: ' + effectiveProvider });
     }
@@ -716,6 +788,102 @@ app.post('/api/ai-diagnose', async (req, res) => {
   } catch (err) {
     console.error('[AI] 错误:', err);
     res.status(500).json({ code: -1, message: 'AI 调用失败: ' + err.message });
+  }
+});
+
+// ====================================================
+// AI Key 配置管理接口
+// ====================================================
+
+/**
+ * GET /api/ai-config
+ * 获取当前 AI Key 配置（脱敏）
+ */
+app.get('/api/ai-config', async (req, res) => {
+  try {
+    // 管理员权限验证
+    var openid = req.query.openid || req.query._openid || '';
+    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (!ADMIN_OPENIDS.includes(openid)) {
+      return res.status(403).json({ code: -1, message: '无管理员权限' });
+    }
+
+    if (!_cloudKeysLoaded) await _loadCloudAiKeys();
+    const masked = _cloudApiKeys.map(function(k, i) {
+      return {
+        index: i + 1,
+        key: k.substring(0, 8) + '***' + k.substring(k.length - 4),
+        active: i === (_cloudKeyIndex % Math.max(1, _cloudApiKeys.length))
+      };
+    });
+    res.json({ code: 0, data: { count: _cloudApiKeys.length, keys: masked } });
+  } catch (err) {
+    res.status(500).json({ code: -1, message: err.message });
+  }
+});
+
+/**
+ * PUT /api/ai-config
+ * 更新 AI Key 配置（管理员专用）
+ * Body: { keys: string[] } 或 { keys: "key1,key2,..." }
+ * 同时更新内存缓存和 CloudBase DB
+ */
+app.put('/api/ai-config', async (req, res) => {
+  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  try {
+    // 管理员权限验证
+    var bodyOpenid = req.body._openid || req.body.openid || '';
+    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (!ADMIN_OPENIDS.includes(bodyOpenid)) {
+      return res.status(403).json({ code: -1, message: '无管理员权限' });
+    }
+
+    var body = req.body;
+    var keys = body.keys;
+    if (!keys) return res.status(400).json({ code: -1, message: '需要 keys 参数' });
+
+    var keyArr = typeof keys === 'string' ? keys.split(/[,，]/).map(function(k) { return k.trim(); }).filter(function(k) { return k.length > 10; })
+      : Array.isArray(keys) ? keys.filter(function(k) { return typeof k === 'string' && k.trim().length > 10; }).map(function(k) { return k.trim(); })
+      : [];
+
+    if (keyArr.length === 0) return res.status(400).json({ code: -1, message: '无有效 Key（需超过10个字符）' });
+
+    // 更新内存
+    _cloudApiKeys = keyArr;
+    _cloudKeyIndex = 0;
+    _cloudKeysLoaded = true;
+    console.log('[AI] Key 配置已更新，共 ' + keyArr.length + ' 个');
+
+    // 持久化到 CloudBase DB
+    try {
+      // 读取现有配置，只更新 keys 部分
+      var existingConfig = {};
+      try {
+        var configRes = await db.collection('config').doc('ai_config').get();
+        var raw = configRes.data;
+        if (Array.isArray(raw) && raw.length > 0 && raw[0].data !== undefined) {
+          raw = raw[0].data;
+        }
+        if (raw && typeof raw === 'object') existingConfig = raw;
+      } catch (e) { /* 文档不存在，用空配置 */ }
+
+      if (!existingConfig.dashscope) existingConfig.dashscope = {};
+      // 新格式：keys 数组，保留名称信息
+      existingConfig.dashscope.keys = keyArr.map(function(k, i) {
+        return { key: k, name: i === 0 ? '主 Key' : '备用 #' + i };
+      });
+      existingConfig.provider = existingConfig.provider || 'dashscope';
+
+      await db.collection('config').doc('ai_config').set(existingConfig);
+      console.log('[AI] Key 配置已持久化到 CloudBase DB');
+    } catch (e) {
+      console.warn('[AI] 持久化到 DB 失败:', e.message);
+      // 内存已更新，不影响本次调用
+    }
+
+    res.json({ code: 0, data: { count: keyArr.length } });
+  } catch (err) {
+    res.status(500).json({ code: -1, message: err.message });
   }
 });
 

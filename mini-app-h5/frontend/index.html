@@ -6776,95 +6776,46 @@ async function callAiFromFrontend(messages) {
   var temp = diag.temperature || 0.7;
   var maxTokens = diag.maxTokens || 2000;
 
-  // 云端模式下，通过 CloudData.callAi 代理调用（API Key 安全存储在云端 config 集合）
-  if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
-    console.log('[AI Diag] 尝试云端 AI 代理调用');
-    try {
-      var result = await window.CloudData.callAi(messages, { temperature: temp, maxTokens: maxTokens });
-      console.log('[AI Diag] ✅ 云端代理成功');
-      return result;
-    } catch(e) {
-      console.warn('[AI Diag] 云端代理失败，降级为直连:', e.message);
-    }
-  } else {
-    console.log('[AI Diag] ⚠️ 跳过云端代理，使用直连模式');
-  }
-
-  // 获取 AI 配置（优先级：localStorage > SharedData 内置 > 默认值）
+  // 获取 AI 配置（仅 provider/model，不含 apiKey）
   var cfg;
   try {
     cfg = JSON.parse(localStorage.getItem('psy_ai_config'));
   } catch(e) {}
-  // WebView 模式下 localStorage 不可用，尝试从 SharedData 读取内置配置
-  if (!cfg || !cfg.dashscope || !cfg.dashscope.apiKey) {
-    if (window.SharedData && typeof SharedData.getAiConfig === 'function') {
-      cfg = SharedData.getAiConfig();
-    }
+  if (!cfg && window.SharedData && typeof SharedData.getAiConfig === 'function') {
+    cfg = SharedData.getAiConfig();
   }
-  if (!cfg) cfg = { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+  if (!cfg) cfg = { provider: 'dashscope', dashscope: { model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
 
-  if (cfg.provider === 'dashscope') {
-    if (!cfg.dashscope.apiKey) {
-      // 直连模式无 apiKey，尝试通过 CloudAPI 代理
-      if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
-        console.log('[AI Diag] 直连无 apiKey，通过 CloudAPI 代理');
-        return window.CloudAPI.aiDiagnose(messages, { temperature: temp, maxTokens: maxTokens });
-      }
-      throw new Error('系统服务未配置，请联系管理员');
-    }
-    // 构建待尝试的 Key 列表：主 Key + fallbacks
-    var keysToTry = [{ key: cfg.dashscope.apiKey, name: cfg.dashscope.keyName || '主 Key' }];
-    var fallbacks = cfg.dashscope.fallbacks || [];
-    // 兼容旧格式：fallbacks 可能是字符串数组 [{key,name}] 或纯字符串
-    for (var fi = 0; fi < fallbacks.length; fi++) {
-      var fb = fallbacks[fi];
-      if (typeof fb === 'string' && fb.trim()) {
-        keysToTry.push({ key: fb.trim(), name: '备用 #' + (fi + 1) });
-      } else if (fb && typeof fb === 'object' && fb.key && fb.key.trim()) {
-        keysToTry.push({ key: fb.key.trim(), name: fb.name || '备用 #' + (fi + 1) });
-      }
-    }
-    var lastError = null;
-    for (var ki = 0; ki < keysToTry.length; ki++) {
-      var tryKey = keysToTry[ki];
-      try {
-        var res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tryKey.key },
-          body: JSON.stringify({ model: cfg.dashscope.model, messages: messages, max_tokens: maxTokens, temperature: temp })
-        });
-        if (res.ok) {
-          var data = await res.json();
-          var content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
-          if (content) return content;
-        }
-        // 非 401/429 的错误不降级，直接抛出
-        if (res.status !== 401 && res.status !== 429) {
-          var err = await res.json().catch(function() { return {}; });
-          throw new Error(err.error && err.error.message ? err.error.message : 'HTTP ' + res.status);
-        }
-        // 401/429 记录错误，尝试下一个 Key
-        lastError = 'HTTP ' + res.status;
-        console.warn('[AI Diag] ' + tryKey.name + ' 失败(' + res.status + ')，尝试下一个...' + (ki < keysToTry.length - 1 ? '' : '（已无更多 Key）'));
-      } catch (e) {
-        // fetch 本身抛异常（网络错误等），如果是最后一个 Key 则抛出
-        if (ki === keysToTry.length - 1) throw e;
-        lastError = e.message;
-        console.warn('[AI Diag] ' + tryKey.name + ' 异常: ' + e.message);
-      }
-    }
-    throw new Error('所有 API Key 均已失效，请检查后台密钥配置' + (lastError ? '（最后错误: ' + lastError + '）' : ''));
-  } else {
+  var provider = cfg.provider || 'dashscope';
+
+  // Ollama 本地模式：直连（Key 不涉及安全问题）
+  if (provider === 'ollama') {
     var baseUrl = cfg.ollama.baseUrl || 'http://localhost:11434';
     var res = await fetch(baseUrl + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: cfg.ollama.model, messages: messages, stream: false })
+      body: JSON.stringify({ model: cfg.ollama.model || 'qwen2.5:7b', messages: messages, stream: false })
     });
     if (!res.ok) throw new Error('Ollama 错误: HTTP ' + res.status);
     var data = await res.json();
     return data.message && data.message.content ? data.message.content : '';
   }
+
+  // DashScope 模式：统一走服务端代理（API Key 不暴露到前端）
+  // WebView → CloudBase 云端代理，浏览器 → LNMP 服务端代理
+  if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
+    console.log('[AI Diag] 走 CloudBase 云端代理');
+    var model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
+    return window.CloudData.callAi(messages, { provider: 'dashscope', model: model, temperature: temp, maxTokens: maxTokens });
+  }
+
+  if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
+    console.log('[AI Diag] 走 LNMP 服务端代理');
+    var model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
+    return window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', model: model, temperature: temp, maxTokens: maxTokens });
+  }
+
+  throw new Error('系统服务未配置，请联系管理员');
 }
 
 // ===== 历史记录 =====

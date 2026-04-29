@@ -513,8 +513,20 @@ app.post('/api/ai-diagnose', async (req, res) => {
   }
 });
 
+// 管理员密钥验证中间件（用于 AI Key 等敏感接口）
+// ADMIN_API_SECRET 环境变量，未设置则不验证（向后兼容）
+function adminSecretMiddleware(req, res, next) {
+  const secret = process.env.ADMIN_API_SECRET;
+  if (!secret) return next(); // 未配置则放行
+  const reqSecret = req.headers['x-admin-secret'] || req.query.admin_secret || '';
+  if (reqSecret !== secret) {
+    return res.status(403).json({ code: -1, message: '无管理员权限' });
+  }
+  next();
+}
+
 // 更新 AI Key 配置（管理员专用）
-app.put('/api/ai-config', async (req, res) => {
+app.put('/api/ai-config', adminSecretMiddleware, async (req, res) => {
   try {
     const { keys } = req.body; // keys: string[] 或逗号分隔字符串
     if (!keys) return res.status(400).json({ code: -1, message: '需要 keys 参数' });
@@ -525,14 +537,37 @@ app.put('/api/ai-config', async (req, res) => {
     keyArr.forEach(k => _apiKeys.push(k));
     _keyIndex = 0;
     console.log('[AI] Key 配置已更新，共 ' + _apiKeys.length + ' 个');
+
+    // 持久化到 .env 文件，防止服务重启丢失
+    try {
+      const envPath = path.resolve(process.cwd(), '.env');
+      let envContent = '';
+      try { envContent = fs.readFileSync(envPath, 'utf-8'); } catch (e) { /* 文件不存在则新建 */ }
+      const envLines = envContent.split('\n');
+      const newLine = 'DASHSCOPE_API_KEY=' + keyArr.join(',');
+      let found = false;
+      for (let i = 0; i < envLines.length; i++) {
+        if (envLines[i].startsWith('DASHSCOPE_API_KEY=')) {
+          envLines[i] = newLine;
+          found = true;
+          break;
+        }
+      }
+      if (!found) envLines.push(newLine);
+      fs.writeFileSync(envPath, envLines.join('\n'));
+      console.log('[AI] Key 已持久化到 .env');
+    } catch (e) {
+      console.warn('[AI] 持久化到 .env 失败:', e.message);
+    }
+
     res.json({ code: 0, data: { count: _apiKeys.length } });
   } catch (err) {
     res.status(500).json({ code: -1, message: err.message });
   }
 });
 
-// 查询当前 AI Key 配置状态（脱敏）
-app.get('/api/ai-config', async (req, res) => {
+// 查询当前 AI Key 配置状态（脱敏，管理员专用）
+app.get('/api/ai-config', adminSecretMiddleware, async (req, res) => {
   try {
     const masked = _apiKeys.map((k, i) => ({
       index: i + 1,

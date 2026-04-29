@@ -273,7 +273,24 @@
     <div class="panel">
       <div class="panel-header">📋 粘贴量表计分说明</div>
       <div class="panel-body">
-        <textarea id="input-text" placeholder="请将量表手册中的计分规则说明粘贴到此处，例如：&#10;&#10;1. 总分：所有题目得分之和，范围 90~450 分。&#10;2. 总均分 = 总分 / 90&#10;3. 阳性项目数：单项得分 ≥ 2 的题目数&#10;4. 因子分：各因子所属项目得分之和 / 项目数&#10;   - 躯体化：1-5, 40, 42, 48, 49, 52, 53, 56, 58&#10;   - 强迫：6, 10, 28, 38, 45, 46, 51, 55, 65&#10;   ...&#10;5. 阳性症状痛苦水平 = (总分 - 阳性项目数) / 阳性项目数&#10;6. 划界标准：总分 > 160 或阳性项目数 > 43 提示需筛查"></textarea>
+        <!-- 文件上传 + 提示词选择 -->
+        <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <input type="file" id="file-upload" accept=".docx,.txt,.md" style="display:none;" onchange="handleFileUpload(this.files[0]);this.value=''">
+          <button class="btn btn-secondary" style="flex-shrink:0;font-size:12px;padding:6px 12px;" onclick="document.getElementById('file-upload').click()">
+            📎 上传文件
+          </button>
+          <span id="file-upload-info" style="font-size:11px;color:var(--text-muted);">.docx / .txt / .md</span>
+        </div>
+        <!-- 提示词选择 + AI 提取 -->
+        <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+          <select id="sys-prompt-select" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg);color:var(--text);min-width:120px;">
+            <option value="">— 计分规则提取提示词 —</option>
+          </select>
+          <button class="btn btn-primary" id="extract-btn" style="background:#6366f1;font-size:12px;padding:6px 12px;display:none;white-space:nowrap;" disabled onclick="startExtract()">
+            🤖 生成量表计分说明
+          </button>
+        </div>
+        <textarea id="input-text" placeholder="请将量表手册中的计分规则说明粘贴到此处，或点击上方上传文件，例如：&#10;&#10;1. 总分：所有题目得分之和，范围 90~450 分。&#10;2. 总均分 = 总分 / 90&#10;3. 阳性项目数：单项得分 ≥ 2 的题目数&#10;4. 因子分：各因子所属项目得分之和 / 项目数&#10;   - 躯体化：1-5, 40, 42, 48, 49, 52, 53, 56, 58&#10;   - 强迫：6, 10, 28, 38, 45, 46, 51, 55, 65&#10;   ...&#10;5. 阳性症状痛苦水平 = (总分 - 阳性项目数) / 阳性项目数&#10;6. 划界标准：总分 > 160 或阳性项目数 > 43 提示需筛查"></textarea>
 
         <div class="input-actions">
           <button class="btn btn-primary" id="parse-btn" onclick="startParse()">
@@ -361,8 +378,290 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js"></script>
+<script>
+if (typeof JSZip === 'undefined') {
+  document.write('<script src="https://cdn.bootcdn.net/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');
+}
+</script>
 <script src="../scoring-engine.js?v=2"></script>
 <script>
+// ====================================================
+// 系统提示词版本列表（从父窗口 postMessage 接收）
+// ====================================================
+var _sysPromptVersions = []; // [{version, status, note, date, content}, ...]
+
+window.addEventListener('message', function(event) {
+  if (!event.data || !event.data.type) return;
+  if (event.data.type === 'sys-prompt-versions') {
+    _sysPromptVersions = event.data.versions || [];
+    var defaultVersion = event.data.defaultVersion || '';
+    // 渲染下拉框
+    var sel = document.getElementById('sys-prompt-select');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— 计分规则提取提示词 —</option>';
+    _sysPromptVersions.forEach(function(v) {
+      var opt = document.createElement('option');
+      opt.value = v.version;
+      var sl = v.status === 'active' ? '当前' : v.status === 'draft' ? '草稿' : '历史';
+      opt.textContent = 'v' + v.version + ' [' + sl + '] ' + (v.note || '').substring(0, 25);
+      if (v.version === defaultVersion) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    // 有版本时显示提取按钮
+    var extractBtn = document.getElementById('extract-btn');
+    if (extractBtn && _sysPromptVersions.length > 0) {
+      extractBtn.style.display = 'inline-flex';
+      // 绑定 change 事件更新按钮状态
+      sel.onchange = _updateExtractBtnState;
+    }
+    // 初始检查按钮状态
+    _updateExtractBtnState();
+  }
+});
+
+/**
+ * 获取当前选中的系统提示词 content
+ */
+function getSelectedSysPrompt() {
+  var sel = document.getElementById('sys-prompt-select');
+  var ver = sel ? sel.value : '';
+  if (!ver) return null;
+  var found = _sysPromptVersions.find(function(v) { return v.version === ver; });
+  return found ? found.content : null;
+}
+
+/**
+ * 更新「生成量表计分说明」按钮状态
+ * 条件：textarea 有内容 且 提示词版本已选择
+ */
+function _updateExtractBtnState() {
+  var btn = document.getElementById('extract-btn');
+  if (!btn || btn.style.display === 'none') return;
+  var hasContent = document.getElementById('input-text').value.trim().length > 0;
+  var hasVersion = !!document.getElementById('sys-prompt-select').value;
+  btn.disabled = !(hasContent && hasVersion);
+}
+
+// ====================================================
+// 文件上传处理
+// ====================================================
+function handleFileUpload(file) {
+  if (!file) return;
+  var infoEl = document.getElementById('file-upload-info');
+  var ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'docx') {
+    if (typeof JSZip === 'undefined') {
+      infoEl.textContent = '❌ JSZip 库未加载，请检查网络后刷新页面重试';
+      console.error('[docx] JSZip is undefined');
+      return;
+    }
+  }
+
+  if (ext === 'txt' || ext === 'md') {
+    infoEl.textContent = '正在读取 ' + file.name + '...';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var text = e.target.result;
+      if (!text.trim()) {
+        infoEl.textContent = '⚠️ ' + file.name + ' 内容为空';
+        return;
+      }
+      localStorage.removeItem(INPUT_SAVE_KEY);
+      document.getElementById('input-text').value = text;
+      saveInputText();
+      infoEl.textContent = '✅ ' + file.name + '（' + (file.size / 1024).toFixed(1) + ' KB）';
+      _updateExtractBtnState();
+    };
+    reader.onerror = function() {
+      infoEl.textContent = '❌ 读取失败';
+    };
+    reader.readAsText(file);
+  } else if (ext === 'docx') {
+    infoEl.textContent = '正在解析 ' + file.name + '...';
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      JSZip.loadAsync(e.target.result).then(function(zip) {
+        var docFile = zip.file('word/document.xml');
+        if (!docFile) throw new Error('word/document.xml 不存在，非标准 docx 文件');
+        return docFile.async('string');
+      }).then(function(xmlStr) {
+        console.log('[docx] XML 长度:', xmlStr.length, '前200字符:', xmlStr.substring(0, 200));
+        var text = _parseDocxXml(xmlStr);
+        console.log('[docx] 解析结果长度:', text.length, '前200字符:', text.substring(0, 200));
+        if (!text.trim()) {
+          infoEl.textContent = '⚠️ ' + file.name + ' 解析后内容为空（XML ' + xmlStr.length + ' 字符），可能是文档格式不兼容';
+          console.warn('[docx] 解析结果为空！XML 前1000字符:', xmlStr.substring(0, 1000));
+          // 清空 textarea，防止用户误用旧内容
+          document.getElementById('input-text').value = '';
+          localStorage.removeItem(INPUT_SAVE_KEY);
+          _updateExtractBtnState();
+          return;
+        }
+        // ★ 先清空 localStorage 旧值，防止任何覆盖场景
+        localStorage.removeItem(INPUT_SAVE_KEY);
+        // ★ 设置新内容
+        document.getElementById('input-text').value = text;
+        // ★ 立即持久化新内容
+        saveInputText();
+        infoEl.textContent = '✅ ' + file.name + '（' + (file.size / 1024).toFixed(1) + ' KB，' + text.length + ' 字符）';
+        _updateExtractBtnState();
+      }).catch(function(err) {
+        console.error('[docx] 解析失败:', err);
+        infoEl.textContent = '❌ 解析失败：' + err.message;
+      });
+    };
+    reader.onerror = function() {
+      infoEl.textContent = '❌ 读取失败';
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    infoEl.textContent = '❌ 不支持的格式：.' + ext;
+  }
+}
+
+/**
+ * 解析 docx 的 XML，提取文本和表格
+ * 策略：
+ *  1. 主路径：按 w:tbl 和 w:p 边界分割，正则提取 w:t 文本
+ *  2. fallback：如果主路径无结果，尝试纯正则暴力提取所有文本
+ */
+function _parseDocxXml(xmlStr) {
+  // 清理 XML 声明
+  xmlStr = xmlStr.replace(/<\?xml[^?]*\?>/g, '');
+
+  // ★ WPS 兼容：将 ns0: 前缀统一替换为 w:
+  // WPS 导出的 docx 使用 ns0:p / ns0:t / ns0:tbl 等，标准 Word 使用 w: 前缀
+  if (xmlStr.indexOf('ns0:') !== -1) {
+    console.log('[docx] 检测到 WPS ns0: 命名空间前缀，正在标准化...');
+    xmlStr = xmlStr.replace(/<(\/?)ns0:/g, '<$1w:');
+    // 同时修复属性中的 ns0: 前缀（如 ns0:val="center" → w:val="center"）
+    xmlStr = xmlStr.replace(/ns0:(\w+)=/g, 'w:$1=');
+    console.log('[docx] ns0: 标准化完成');
+  }
+
+  var lines = [];
+  var pos = 0;
+  var len = xmlStr.length;
+
+  // XML 实体解码
+  function decode(s) {
+    return s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+  }
+
+  // 从一段 XML 文本中提取所有 <w:t> 的内容
+  // 关键：(?=>|\s) 前瞻确保不匹配 <w:tbl>、<w:tPr> 等前缀相同的标签
+  function extractTexts(fragment) {
+    var texts = [];
+    var re = /<w:t(?=>|\s)([^>]*?)>([\s\S]*?)<\/w:t>/gi;
+    var m;
+    while ((m = re.exec(fragment)) !== null) {
+      var t = decode(m[2]);
+      if (t) texts.push(t);
+    }
+    return texts.join('');
+  }
+
+  // 精确查找标签开始位置，避免 <w:tbl 匹配 <w:tblGrid，<w:p 匹配 <w:pPr
+  function findOpenTag(str, start, tagName) {
+    var search = '<' + tagName;
+    var idx = str.indexOf(search, start);
+    while (idx !== -1) {
+      var nextChar = str.charAt(idx + search.length);
+      if (nextChar === '>' || nextChar === ' ' || nextChar === '\n' || nextChar === '\r' || nextChar === '/') {
+        return idx;
+      }
+      idx = str.indexOf(search, idx + 1);
+    }
+    return -1;
+  }
+
+  // ========== 主路径：按 w:tbl/w:p 结构化解析 ==========
+  while (pos < len) {
+    // 找下一个 <w:tbl> 或 <w:p>，用精确匹配避免前缀误匹配
+    var tblStart = findOpenTag(xmlStr, pos, 'w:tbl');
+    var pStart = findOpenTag(xmlStr, pos, 'w:p');
+
+    // 两个都找不到就结束
+    if (tblStart === -1 && pStart === -1) break;
+
+    // 取最近的
+    var isTable = tblStart !== -1 && (pStart === -1 || tblStart < pStart);
+
+    if (isTable) {
+      // 提取整个表格内容
+      var tblEnd = xmlStr.indexOf('</w:tbl>', tblStart);
+      if (tblEnd === -1) tblEnd = xmlStr.indexOf('</tbl>', tblStart);
+      if (tblEnd === -1) { pos = tblStart + 1; continue; }
+      tblEnd += '</w:tbl>'.length;
+      var tblXml = xmlStr.substring(tblStart, tblEnd);
+
+      // 按行分割
+      var rowSplit = tblXml.split(/<\/w:tr>/gi);
+      for (var r = 0; r < rowSplit.length; r++) {
+        if (!/<w:tr[\s>]/i.test(rowSplit[r])) continue;
+        var cellSplit = rowSplit[r].split(/<\/w:tc>/gi);
+        var cells = [];
+        for (var c = 0; c < cellSplit.length; c++) {
+          if (!/<w:tc[\s>]/i.test(cellSplit[c])) continue;
+          cells.push(extractTexts(cellSplit[c]));
+        }
+        if (cells.length > 0) lines.push(cells.join('\t'));
+      }
+      lines.push(''); // 表格后空行
+      pos = tblEnd;
+    } else {
+      // 提取整个段落内容
+      var pEnd = xmlStr.indexOf('</w:p>', pStart);
+      if (pEnd === -1) pEnd = xmlStr.indexOf('</p>', pStart);
+      if (pEnd === -1) { pos = pStart + 1; continue; }
+      pEnd += '</w:p>'.length;
+      var pXml = xmlStr.substring(pStart, pEnd);
+      var text = extractTexts(pXml);
+      if (text.trim()) lines.push(text);
+      pos = pEnd;
+    }
+  }
+
+  // 如果主路径提取到了内容，直接返回
+  if (lines.length > 0) return lines.join('\n');
+
+  // ========== Fallback：暴力正则提取所有 <w:t> 文本 ==========
+  console.log('[docx] 主路径无结果，尝试 fallback 正则提取');
+  var fallbackTexts = [];
+  var fallbackRe = /<w:t(?=>|\s)([^>]*?)>([\s\S]*?)<\/w:t>/gi;
+  var fm;
+  while ((fm = fallbackRe.exec(xmlStr)) !== null) {
+    var ft = decode(fm[2]);
+    if (ft && ft.trim()) fallbackTexts.push(ft);
+  }
+  if (fallbackTexts.length > 0) {
+    console.log('[docx] fallback 提取到', fallbackTexts.length, '个文本片段');
+    return fallbackTexts.join('\n');
+  }
+
+  // ========== 最终 fallback：提取所有标签之间的纯文本 ==========
+  console.log('[docx] fallback 也无结果，尝试纯文本提取');
+  var plainText = xmlStr
+    .replace(/<[^>]+>/g, '\n')     // 所有标签替换为换行
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')    // 多行合并
+    .trim();
+
+  if (plainText) {
+    console.log('[docx] 纯文本提取到', plainText.length, '字符');
+    return plainText;
+  }
+
+  console.warn('[docx] 所有提取方式均无结果，XML 前500字符:', xmlStr.substring(0, 500));
+  return '';
+}
+
 // ====================================================
 // AI 配置读取（与后台共享 localStorage）
 // ====================================================
@@ -386,12 +685,14 @@ function checkConfig() {
   const link = document.getElementById('config-link');
 
   if (cfg.provider === 'dashscope') {
-    if (cfg.dashscope.apiKey) {
+    // 安全改造后 apiKey 不再存储到前端，改为检查父窗口代理是否可用
+    const hasProxy = (parent && typeof parent.callAi === 'function');
+    if (hasProxy || cfg.dashscope.apiKey) {
       dot.className = 'dot ok';
-      text.textContent = 'DashScope 已配置（' + cfg.dashscope.model + '）';
+      text.textContent = 'DashScope 已配置（' + (cfg.dashscope.model || 'qwen-plus') + '）' + (hasProxy ? ' [服务端代理]' : '');
     } else {
       dot.className = 'dot err';
-      text.textContent = 'DashScope API Key 未配置';
+      text.textContent = 'DashScope 服务不可用（请确认管理后台 AI 密钥已配置）';
     }
   } else {
     dot.className = 'dot ok';
@@ -405,15 +706,24 @@ function checkConfig() {
 async function callAi(messages) {
   const cfg = getAiConfig();
   if (cfg.provider === 'dashscope') {
-    if (!cfg.dashscope.apiKey) throw new Error('DashScope API Key 未配置');
-    const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.dashscope.apiKey },
-      body: JSON.stringify({ model: cfg.dashscope.model, messages, max_tokens: 8000, temperature: 0.1 })
-    });
-    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'HTTP ' + res.status); }
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || '';
+    // 优先通过父窗口（admin-legacy.html）的服务端代理调用，不再前端直连
+    if (parent && typeof parent.callAi === 'function') {
+      return await parent.callAi(messages);
+    }
+    // fallback：如果父窗口不可用，直接调用 LNMP /api/ai-diagnose
+    try {
+      const res = await fetch('/api/ai-diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'dashscope', model: cfg.dashscope.model || 'qwen-plus', messages, maxTokens: 8000, temperature: 0.1 })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data.code !== 0) throw new Error(data.message || 'AI 调用失败');
+      return data.data || '';
+    } catch(e) {
+      throw new Error('AI 服务不可用：' + e.message + '（请确认服务端已配置 API Key）');
+    }
   } else {
     const baseUrl = cfg.ollama.baseUrl || 'http://localhost:11434';
     const res = await fetch(baseUrl + '/api/chat', {
@@ -691,16 +1001,96 @@ function buildPrompt(userText) {
 }
 
 // ====================================================
-// 解析逻辑
+// AI 智能提取（第一步：从手册原文提取计分规则文本）
+// ====================================================
+async function startExtract() {
+  var input = document.getElementById('input-text').value.trim();
+  if (!input) { alert('请先上传手册文件或粘贴手册原文'); return; }
+  var sysPrompt = getSelectedSysPrompt();
+  if (!sysPrompt) { alert('请先选择计分规则提取提示词版本'); return; }
+
+  var sel = document.getElementById('sys-prompt-select');
+  var verLabel = sel ? ('v' + sel.value) : '';
+  var btn = document.getElementById('extract-btn');
+  var loading = document.getElementById('loading');
+  var loadingMsg = document.getElementById('loading-msg');
+  var loadingSub = document.getElementById('loading-sub');
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ 生成中...';
+  loading.style.display = 'flex';
+  loadingMsg.textContent = 'AI 正在从手册原文提取计分规则...';
+  loadingSub.textContent = '使用提示词 ' + verLabel + '，通常需要 15-60 秒';
+
+  // 通知父页面
+  try { window.parent.postMessage({ type: 'ai-extract-start' }, '*'); } catch(e) {}
+
+  var startTime = Date.now();
+
+  try {
+    var rawResponse = await callAi([
+      { role: 'system', content: sysPrompt },
+      { role: 'user', content: input }
+    ]);
+
+    console.log('[startExtract] rawResponse 类型:', typeof rawResponse, '长度:', (rawResponse || '').length, '前100字符:', String(rawResponse).substring(0, 100));
+
+    // 兼容 rawResponse 可能是对象的情况（某些 API 返回 {content: "..."}）
+    var resultText = '';
+    if (typeof rawResponse === 'string') {
+      resultText = rawResponse;
+    } else if (rawResponse && typeof rawResponse === 'object') {
+      resultText = rawResponse.content || rawResponse.text || rawResponse.data || JSON.stringify(rawResponse);
+    }
+    resultText = (resultText || '').trim();
+
+    if (!resultText) {
+      console.error('[startExtract] AI 返回内容为空！rawResponse:', rawResponse);
+      loadingMsg.textContent = '⚠️ AI 返回内容为空';
+      loadingSub.textContent = '请检查 AI 配置和网络连接';
+      setTimeout(function() { loading.style.display = 'none'; }, 3000);
+      btn.disabled = false;
+      btn.innerHTML = '🤖 生成量表计分说明';
+      return;
+    }
+
+    var elapsed = Date.now() - startTime;
+    // 将 AI 提取的计分规则文本替换到 textarea
+    var textarea = document.getElementById('input-text');
+    console.log('[startExtract] 设置前 textarea 长度:', textarea.value.length);
+    textarea.value = resultText;
+    console.log('[startExtract] 设置后 textarea 长度:', textarea.value.length);
+    saveInputText(); // AI 生成结果也要持久化
+    loadingMsg.textContent = '✅ 计分规则说明生成完成（' + resultText.length + ' 字符）';
+    loadingSub.textContent = '耗时 ' + (elapsed / 1000).toFixed(1) + ' 秒，请检查下方文本，确认后点击「✨ 开始解析」';
+
+    try { window.parent.postMessage({ type: 'ai-extract-complete' }, '*'); } catch(e) {}
+  } catch(e) {
+    console.error('[startExtract] 异常:', e);
+    loadingMsg.textContent = '❌ 生成失败';
+    loadingSub.textContent = e.message;
+  }
+
+  setTimeout(function() { loading.style.display = 'none'; }, 1500);
+  btn.disabled = false;
+  btn.innerHTML = '🤖 生成量表计分说明';
+}
+
+// ====================================================
+// 解析逻辑（第二步：将计分规则文本解析为 JSON）
 // ====================================================
 async function startParse() {
   const input = document.getElementById('input-text').value.trim();
   if (!input) { alert('请先粘贴量表计分说明文字'); return; }
 
   const cfg = getAiConfig();
-  if (cfg.provider === 'dashscope' && !cfg.dashscope.apiKey) {
-    alert('DashScope API Key 未配置，请先在后台"AI 配置"页填写');
-    return;
+  if (cfg.provider === 'dashscope') {
+    // 安全改造后 apiKey 不再存前端，检查父窗口代理是否可用
+    const hasProxy = (parent && typeof parent.callAi === 'function');
+    if (!hasProxy && !cfg.dashscope.apiKey) {
+      alert('DashScope AI 服务不可用，请先在后台"运维工具 → AI 密钥管理"配置服务端 Key');
+      return;
+    }
   }
 
   const btn = document.getElementById('parse-btn');
@@ -1070,7 +1460,9 @@ BFI 共44题，每题1-5分（1=非常不同意，2=不同意，3=中性，4=同
 };
 
 function loadExample(key) {
-  document.getElementById('input-text').value = EXAMPLES[key] || '';
+  var val = EXAMPLES[key] || '';
+  document.getElementById('input-text').value = val;
+  saveInputText(); // 示例内容也要持久化
 }
 
 // ====================================================
@@ -1088,6 +1480,10 @@ function clearAll() {
     '<div class="result-placeholder"><div class="icon">🧩</div><div>粘贴量表说明后点击"开始解析"</div></div>';
   document.getElementById('debug-prompt').textContent = '-';
   document.getElementById('debug-response').textContent = '-';
+  // 重置文件上传信息
+  var infoEl = document.getElementById('file-upload-info');
+  if (infoEl) infoEl.textContent = '.docx / .txt / .md';
+  _updateExtractBtnState();
 }
 
 function toggleDebug() {
