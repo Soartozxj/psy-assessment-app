@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 计分规则解析 - 测试页</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --text-sec: #555;
+      --text-muted: #999;
+      --border: #e2e8f0;
+      --primary: #667eea;
+      --primary-dark: #5a6fd6;
+      --success: #4caf50;
+      --error: #e53935;
+      --warning: #ff9800;
+      --radius: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header .back-link { color: rgba(255,255,255,.8); text-decoration: none; font-size: 13px; }
+    .header .back-link:hover { color: #fff; }
+
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+
+    .config-banner {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .config-banner .status { display: flex; align-items: center; gap: 8px; }
+    .config-banner .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .config-banner .dot.ok { background: var(--success); }
+    .config-banner .dot.err { background: var(--error); }
+    .config-banner a { color: var(--primary); text-decoration: none; }
+    .config-banner a:hover { text-decoration: underline; }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .panel-body { padding: 20px; flex: 1; overflow-y: auto; }
+
+    textarea {
+      width: 100%;
+      min-height: 360px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.8;
+      resize: vertical;
+      font-family: inherit;
+    }
+    textarea:focus { outline: none; border-color: var(--primary); }
+
+    .input-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+
+    .examples { margin-top: 12px; }
+    .example-btn {
+      display: inline-block;
+      padding: 5px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      margin: 0 6px 6px 0;
+      transition: all .15s;
+    }
+    .example-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* 解析结果区域 */
+    .result-placeholder {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .result-placeholder .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .result-section { margin-bottom: 20px; }
+    .result-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .result-table th {
+      background: var(--bg);
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .result-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .result-table tr:hover td { background: rgba(102,126,234,.04); }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tag-blue { background: #e8f0fe; color: #1a73e8; }
+    .tag-green { background: #e8f5e9; color: #2e7d32; }
+    .tag-orange { background: #fff3e0; color: #e65100; }
+    .tag-red { background: #ffebee; color: #c62828; }
+    .tag-purple { background: #f3e5f5; color: #7b1fa2; }
+
+    /* JSON 预览 */
+    .json-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* 调试面板 */
+    .debug-panel {
+      margin-top: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .debug-toggle {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sec);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    .debug-toggle:hover { background: var(--bg); }
+    .debug-body {
+      display: none;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .debug-body.open { display: block; }
+    .debug-label { font-weight: 600; color: var(--text-sec); margin-bottom: 4px; }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .loading-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px 48px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-card .msg { font-size: 14px; color: var(--text-sec); }
+    .loading-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🤖 AI 计分规则解析</h1>
+  <a class="back-link" href="admin-legacy.html">← 返回后台</a>
+</div>
+
+<div class="container">
+  <!-- 配置状态 -->
+  <div class="config-banner" id="config-banner">
+    <div class="status">
+      <span class="dot" id="config-dot"></span>
+      <span id="config-text">检查配置中...</span>
+    </div>
+    <a href="admin-legacy.html" id="config-link">前往配置</a>
+  </div>
+
+  <div class="main-grid">
+    <!-- 左侧：输入 -->
+    <div class="panel">
+      <div class="panel-header">📋 粘贴量表计分说明</div>
+      <div class="panel-body">
+        <textarea id="input-text" placeholder="请将量表手册中的计分规则说明粘贴到此处，例如：&#10;&#10;1. 总分：所有题目得分之和，范围 90~450 分。&#10;2. 总均分 = 总分 / 90&#10;3. 阳性项目数：单项得分 ≥ 2 的题目数&#10;4. 因子分：各因子所属项目得分之和 / 项目数&#10;   - 躯体化：1-5, 40, 42, 48, 49, 52, 53, 56, 58&#10;   - 强迫：6, 10, 28, 38, 45, 46, 51, 55, 65&#10;   ...&#10;5. 阳性症状痛苦水平 = (总分 - 阳性项目数) / 阳性项目数&#10;6. 划界标准：总分 > 160 或阳性项目数 > 43 提示需筛查"></textarea>
+
+        <div class="input-actions">
+          <button class="btn btn-primary" id="parse-btn" onclick="startParse()">
+            ✨ 开始解析
+          </button>
+          <button class="btn btn-secondary" onclick="clearAll()">
+            🗑 清空
+          </button>
+        </div>
+
+        <div class="examples">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">示例文本：</div>
+          <span class="example-btn" onclick="loadExample('scl90')">SCL-90</span>
+          <span class="example-btn" onclick="loadExample('phq9')">PHQ-9</span>
+          <span class="example-btn" onclick="loadExample('sas')">SAS</span>
+          <span class="example-btn" onclick="loadExample('bfi')">大五人格 BFI</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：结果 -->
+    <div class="panel">
+      <div class="panel-header">📊 解析结果</div>
+      <div class="panel-body" id="result-area">
+        <div class="result-placeholder">
+          <div class="icon">🧩</div>
+          <div>粘贴量表说明后点击"开始解析"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt 模板面板 -->
+  <div class="panel" style="margin-top:20px;">
+    <div class="panel-header" style="cursor:pointer;user-select:none;" onclick="togglePromptPanel()">
+      📝 Prompt 模板
+      <span id="prompt-mode-tag" style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.25);color:#fff;margin-left:8px;">默认</span>
+      <span id="prompt-toggle-hint" style="font-size:12px;font-weight:400;color:rgba(255,255,255,.7);margin-left:auto;">（点击收起/展开）</span>
+    </div>
+    <div class="panel-body" id="prompt-panel-body" style="max-height:600px;overflow-y:auto;padding:0;">
+      <!-- 操作栏 -->
+      <div id="prompt-toolbar" style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;">
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;" onclick="event.stopPropagation();copyPromptText()">
+          📋 复制 Prompt
+        </button>
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;" id="prompt-edit-btn" onclick="event.stopPropagation();togglePromptEdit()">
+          ✏️ 编辑
+        </button>
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;display:none;" id="prompt-save-btn" onclick="event.stopPropagation();savePromptEdit()">
+          💾 保存
+        </button>
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;display:none;" id="prompt-cancel-btn" onclick="event.stopPropagation();cancelPromptEdit()">
+          ✕ 取消
+        </button>
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;display:none;color:var(--error);" id="prompt-reset-btn" onclick="event.stopPropagation();resetPromptToDefault()">
+          🔄 恢复默认
+        </button>
+        <span id="prompt-save-hint" style="font-size:11px;color:var(--text-muted);margin-left:auto;"></span>
+      </div>
+      <!-- 只读预览 -->
+      <pre id="prompt-preview" style="white-space:pre-wrap;word-break:break-all;font-size:12px;line-height:1.7;color:var(--text-sec);font-family:inherit;margin:0;padding:16px 20px;"></pre>
+      <!-- 编辑模式 -->
+      <textarea id="prompt-editor" style="display:none;width:100%;min-height:500px;border:none;padding:16px 20px;font-size:12px;line-height:1.7;color:var(--text);font-family:inherit;resize:vertical;outline:none;background:transparent;"></textarea>
+    </div>
+  </div>
+
+  <!-- 调试面板 -->
+  <div class="debug-panel">
+    <div class="debug-toggle" onclick="toggleDebug()">🐛 调试信息</div>
+    <div class="debug-body" id="debug-body">
+      <div class="debug-label">完整 Prompt（system + user，JSON 格式）</div>
+      <div class="json-block" id="debug-prompt">-</div>
+      <div class="debug-label" style="margin-top:12px;">AI 原始回复</div>
+      <div class="json-block" id="debug-response">-</div>
+    </div>
+  </div>
+</div>
+
+<!-- 加载遮罩 -->
+<div class="loading-overlay" id="loading" style="display:none;">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="msg" id="loading-msg">AI 正在解析计分规则...</div>
+    <div class="sub" id="loading-sub">首次解析可能需要 10-30 秒</div>
+  </div>
+</div>
+
+<script src="../scoring-engine.js?v=2"></script>
+<script>
+// ====================================================
+// AI 配置读取（与后台共享 localStorage）
+// ====================================================
+const AI_CONFIG_KEY = 'psy_ai_config';
+
+function getAiConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(AI_CONFIG_KEY)) || { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+  } catch(e) {
+    return { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+  }
+}
+
+// ====================================================
+// 配置状态检查
+// ====================================================
+function checkConfig() {
+  const cfg = getAiConfig();
+  const dot = document.getElementById('config-dot');
+  const text = document.getElementById('config-text');
+  const link = document.getElementById('config-link');
+
+  if (cfg.provider === 'dashscope') {
+    if (cfg.dashscope.apiKey) {
+      dot.className = 'dot ok';
+      text.textContent = 'DashScope 已配置（' + cfg.dashscope.model + '）';
+    } else {
+      dot.className = 'dot err';
+      text.textContent = 'DashScope API Key 未配置';
+    }
+  } else {
+    dot.className = 'dot ok';
+    text.textContent = 'Ollama（' + cfg.ollama.model + '）' + cfg.ollama.baseUrl;
+  }
+}
+
+// ====================================================
+// AI 调用
+// ====================================================
+async function callAi(messages) {
+  const cfg = getAiConfig();
+  if (cfg.provider === 'dashscope') {
+    if (!cfg.dashscope.apiKey) throw new Error('DashScope API Key 未配置');
+    const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.dashscope.apiKey },
+      body: JSON.stringify({ model: cfg.dashscope.model, messages, max_tokens: 8000, temperature: 0.1 })
+    });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'HTTP ' + res.status); }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  } else {
+    const baseUrl = cfg.ollama.baseUrl || 'http://localhost:11434';
+    const res = await fetch(baseUrl + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: cfg.ollama.model, messages, stream: false })
+    });
+    if (!res.ok) throw new Error('Ollama 错误: HTTP ' + res.status);
+    const data = await res.json();
+    return data.message?.content || '';
+  }
+}
+
+// ====================================================
+// 引入计分引擎（用于标准化转换 + 模拟验证）
+// ====================================================
+// ScoringEngine 已在下面 script 引入
+
+// ====================================================
+// Prompt 构建（v4：增强 transform / 自动推算分值范围 / 通用字段示例）
+// ====================================================
+var PROMPT_SAVE_KEY = 'psy_scoring_prompt_custom';
+var _promptCustomCache = null;
+
+function getDefaultPromptText() {
+  return `你是心理量表计分规则解析专家。阅读用户提供的量表计分规则文字，输出严格符合以下结构定义的 JSON。
+
+═══════════════════════════════════════════
+一、JSON 结构定义（严格遵守）
+═══════════════════════════════════════════
+
+{
+  "dimensions": [
+    {
+      "key": "英文标识（如 somatization、neuroticism）",
+      "label": "维度中文名（如"躯体化"、"神经质"）",
+      "items": "题目编号，格式：1-5,7,12-15（连续用短横线，不连续用逗号）",
+      "formula": "SUM 或 AVG",
+      "transform": "线性变换（可选），如 \\"1.25*x\\"。无变换则省略此字段",
+      "maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
+      "interpretation": [
+        { "min": 1, "max": 1.5, "level": "normal", "label": "正常", "color": "#43A047", "text": "说明文字" },
+        { "min": 1.51, "max": 2.5, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "说明文字" },
+        { "min": 2.51, "max": 4, "level": "severe", "label": "重度", "color": "#E53935", "text": "说明文字" }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "key": "英文标识（如 total_score、positive_count）",
+      "label": "指标中文名（如"总分"、"阳性项目数"）",
+      "formula": "SUM / AVG / COUNT_IF / DERIVED",
+      "items": "ALL 或具体题号（DERIVED 时省略）",
+      "condition": "仅 COUNT_IF 使用，如 {">=": 2}",
+      "transform": "线性变换（可选），如 \\"1.25*x\\"。无变换则省略此字段",
+      "maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
+      "expression": "仅 DERIVED 使用，引用其他指标的 key，如 \\"(total_score - negative_count) / positive_count\\""
+    }
+  ],
+  "interpretation": [
+    {
+      "metric": "此处必须是 dimensions 或 metrics 中已定义的英文 key，严禁使用中文",
+      "min": 1.5,
+      "max": 2.5,
+      "level": "normal | mild | moderate | severe",
+      "label": "等级中文标签",
+      "color": "#rrggbb",
+      "text": "解释说明文字"
+    }
+  ],
+  "screening": null
+}
+
+═══════════════════════════════════════════
+二、字段规范
+═══════════════════════════════════════════
+
+【key 命名规则】
+- 使用英文小写 + 下划线，如 somatization、obsessive_compulsive、total_score、positive_count
+- 严禁使用 dim_ 前缀、中文、空格或特殊字符
+
+【metric 引用规则（最常见错误，务必遵守）】
+- interpretation 和 screening 中的 metric 字段必须引用 dimensions/metrics 中定义的英文 key
+- ✅ 正确："metric": "somatization"、"metric": "total_score"
+- ❌ 错误："metric": "躯体化"、"metric": "dim_神经质"、"metric": "总分"
+- 引用前先在 dimensions 和 metrics 中查找匹配的 key，找不到则不要生成该条 interpretation
+
+【min/max 区间规则（重要：每档必须完整）】
+- 第一档必须有 min，最后一档必须有 max，所有区间必须首尾衔接、无断档、无重叠
+- { "min": 0, "max": 1.5 } — 0 ≤ 分数 ≤ 1.5
+- { "min": 1.51, "max": 2.5 } — 1.51 ≤ 分数 ≤ 2.5（与前档衔接时 +0.01 避免重叠）
+- { "min": 2.51, "max": 5 } — 2.51 ≤ 分数 ≤ 5（最后一档必须有 max）
+- ⚠️ min 和 max 都必须填写具体数值，不要省略、不要留空
+
+【自动推算分值范围（原文无明确范围时必须执行）】
+- 根据题目数量和选项分值范围，自动推算每个指标/维度的理论最低分和最高分：
+  - SUM 公式：min = 每题最低分 × 题数，max = 每题最高分 × 题数
+  - AVG 公式：min = 每题最低分，max = 每题最高分
+  - COUNT_IF：min = 0，max = 该条件所涉题目总数
+  - DERIVED：根据依赖指标的范围推算
+- 示例：某量表共 9 题，每题 0-3 分 → SUM 总分 min=0, max=27
+- 示例：某维度共 12 题，每题 1-5 分，AVG 公式 → 维度均分 min=1, max=5
+- 如果原文明确给出了区间范围（如 PHQ-9 总分 0-27），直接使用原文的值
+- 如果原文只给了划界分（如"≥10分为阳性"），仍需推算完整的理论 min/max
+- 推算的 min/max 必须能覆盖所有 interpretation 分档，如果分档边界超出推算范围，以分档边界为准
+
+【transform 线性变换规则】
+- transform 仅用于线性变换（y = a*x + b），x 为原始计算值
+- 常见场景与写法对照：
+  - 原文"标准分 = 粗分 × 1.25" → "transform": "1.25*x"
+  - 原文"因子分 = 因子总分 × 100 / 题数" → "transform": "100*x/N"（N 填具体数字）
+  - 原文"指数 = (总分 - 阴性项目数) / 阳性项目数" → 不用 transform，用 DERIVED 指标
+  - 原文"T分 = 50 + 10×z"（z 为标准化分数） → "transform": "50+10*x"
+- 以下情况不要设置 transform：非线性变换（取对数、开方）、无任何变换、已在公式中体现
+- 如果原文没有提到任何分数转换或标准化，省略此字段
+
+【顶层 interpretation 覆盖规则】
+- 必须覆盖所有维度 + 所有全局指标的分档
+- 如果某个维度有自己的 interpretation（维度级别），也要在顶层再输出一份
+- 如果原文未提供某维度/指标的划界分，则不输出该维度/指标的 interpretation（不要编造）
+
+═══════════════════════════════════════════
+三、公式类型与严格使用规则
+═══════════════════════════════════════════
+
+【公式定义】
+- SUM：求和（总分 = 所有题得分之和）
+- AVG：平均（维度均分 = 维度内得分之和 / 题目数）
+- COUNT_IF：条件计数（统计满足条件的题目数），必须配合 condition，如 {">=": 2}、{"==": 1}
+- DERIVED：派生指标，必须配合 expression，使用其他指标的 key 作为变量引用
+  - ✅ 正确："expression": "(total_score - negative_count) / positive_count"
+  - ❌ 错误："expression": "(总分-阴性项目数)/阳性项目数"
+
+【⚠️ 公式选择严格规则（最常见错误，务必遵守）】
+公式类型必须严格以原文为准，绝不可自行推断或添加：
+
+1. 原文明确说"求和""总分""得分之和" → SUM
+2. 原文明确说"平均""均分""均值""除以题数" → AVG
+3. 原文只说了维度求和，没有说"计算平均分" → 维度用 SUM，不要额外生成 AVG 指标
+4. 原文没有提到全局指标（如"总分""综合分"） → metrics 设为空数组 []，不要自行创建全局指标
+5. 不要因为以下原因将 SUM 改为 AVG：
+   - 看到统计描述中的"均值""平均分""M = ..."（这些是样本统计量，不是计分公式）
+   - 觉得维度之间需要可比（是否标准化是作者决定的事）
+   - 原文某处提到"每题平均 X 分"（这是描述性统计，不是计分公式）
+
+错误示例：原文只定义了两个 SUM 维度，但 AI 自行添加了一个"AVG 全局指标"→ ❌ 错误，metrics 应为 []
+正确示例：原文只定义了两个 SUM 维度 → dimensions 填这两个维度，metrics 填 []
+
+═══════════════════════════════════════════
+四、量表类型与 level 语义（解析前先判断）
+═══════════════════════════════════════════
+
+【筛查量表】（SCL-90、SAS、SDS、PHQ-9、GAD-7 等）
+- 分数越高越严重，有"正常 vs 异常"之分
+- level 和 label 映射：
+  - normal → 正常（#43A047 绿）
+  - mild → 轻度（#FB8C00 橙）
+  - moderate → 中度（#FF6F00 深橙）
+  - severe → 重度（#E53935 红）
+- 有筛查条件时设 screening，无则 null
+
+【区分度量表】（大五人格、EPQ、MBTI、16PF 等）
+- 分数代表特质强弱，无正常/异常之分
+- level 和 label 映射（严禁使用"轻度/中度/重度"）：
+  - normal → 低分（#43A047 绿）
+  - mild → 中低（#26A69A 青绿）
+  - moderate → 中等（#1E88E5 蓝）
+  - severe → 高分（#7E57C2 紫）
+- screening 通常为 null
+
+【判断方法】
+1. 出现"阳性筛查""病理""症状""需转介" → 筛查量表
+2. 出现"特质""倾向""人格""性格" → 区分度量表
+3. 无法判断时默认按筛查量表处理
+
+═══════════════════════════════════════════
+五、输出示例（两种量表类型）
+═══════════════════════════════════════════
+
+【示例 A：筛查量表骨架】
+假设：某量表 10 题，每题 0-4 分，1 个维度（items: "1-7"，AVG），1 个全局指标（total_score，SUM）
+
+{
+  "dimensions": [
+    {
+      "key": "example_dimension",
+      "label": "示例维度",
+      "items": "1-7",
+      "formula": "AVG",
+      "maxScore": 4
+    }
+  ],
+  "metrics": [
+    {
+      "key": "total_score",
+      "label": "总分",
+      "formula": "SUM",
+      "items": "ALL",
+      "maxScore": 40
+    }
+  ],
+  "interpretation": [
+    { "metric": "total_score", "min": 0, "max": 15, "level": "normal", "label": "正常", "color": "#43A047", "text": "..." },
+    { "metric": "total_score", "min": 16, "max": 25, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "..." },
+    { "metric": "total_score", "min": 26, "max": 40, "level": "moderate", "label": "中度及以上", "color": "#E53935", "text": "..." }
+  ],
+  "screening": {
+    "conditions": [
+      { "metric": "total_score", "operator": ">=", "value": 16, "label": "需进一步评估" }
+    ],
+    "logic": "OR",
+    "positiveLabel": "筛查阳性",
+    "negativeLabel": "筛查阴性"
+  }
+}
+
+【示例 B：区分度量表骨架】
+假设：某量表 20 题，每题 1-5 分，3 个维度（AVG），无筛查条件
+
+{
+  "dimensions": [
+    {
+      "key": "trait_a",
+      "label": "特质A",
+      "items": "1,3,5,7,9,11",
+      "formula": "AVG",
+      "maxScore": 5
+    },
+    {
+      "key": "trait_b",
+      "label": "特质B",
+      "items": "2,4,6,8,10,12",
+      "formula": "AVG",
+      "maxScore": 5
+    }
+  ],
+  "metrics": [],
+  "interpretation": [
+    { "metric": "trait_a", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "..." },
+    { "metric": "trait_a", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "..." },
+    { "metric": "trait_a", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "..." },
+    { "metric": "trait_b", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "..." },
+    { "metric": "trait_b", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "..." },
+    { "metric": "trait_b", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "..." }
+  ],
+  "screening": null
+}
+
+═══════════════════════════════════════════
+六、输出要求
+═══════════════════════════════════════════
+
+1. 只输出纯 JSON，不包含 markdown 代码块标记（不要 \`\`\`json）
+2. 确保 JSON 格式合法，可直接 JSON.parse
+3. 未提及的字段用空数组 [] 或 null
+4. 反向计分题号在 items 中正常列出即可
+5. DERIVED 的 expression 中只能引用 metrics 中已定义的 key
+6. screening.conditions 中不要出现 "any_factor>2" 等模糊表述
+7. 原文未提及的分档标准不要编造，但 min/max 理论范围必须推算填写
+8. ⚠️ 原文未明确要求计算的全局指标（如平均分、综合分等），不要自行生成。原文只定义了维度但没有全局指标时，metrics 必须为空数组 []`;
+}
+
+function buildPrompt(userText) {
+  var systemText = getDefaultPromptText();
+  try {
+    var custom = localStorage.getItem(PROMPT_SAVE_KEY);
+    if (custom && custom.trim()) {
+      systemText = custom.trim();
+    }
+  } catch(e) {}
+  return {
+    system: systemText,
+    user: userText
+  };
+}
+
+// ====================================================
+// 解析逻辑
+// ====================================================
+async function startParse() {
+  const input = document.getElementById('input-text').value.trim();
+  if (!input) { alert('请先粘贴量表计分说明文字'); return; }
+
+  const cfg = getAiConfig();
+  if (cfg.provider === 'dashscope' && !cfg.dashscope.apiKey) {
+    alert('DashScope API Key 未配置，请先在后台"AI 配置"页填写');
+    return;
+  }
+
+  const btn = document.getElementById('parse-btn');
+  const loading = document.getElementById('loading');
+  const loadingMsg = document.getElementById('loading-msg');
+  const loadingSub = document.getElementById('loading-sub');
+
+  btn.disabled = true;
+  loading.style.display = 'flex';
+  loadingMsg.textContent = 'AI 正在解析计分规则...';
+  loadingSub.textContent = cfg.provider === 'ollama' ? '本地模型处理中，可能需要较长时间' : '云端处理中，通常需要 10-30 秒';
+
+  // 通知父页面开始解析
+  try { window.parent.postMessage({ type: 'ai-parse-start' }, '*'); } catch(e) {}
+
+  const prompt = buildPrompt(input);
+
+  // 显示调试信息
+  document.getElementById('debug-prompt').textContent = JSON.stringify(prompt, null, 2);
+  document.getElementById('debug-response').textContent = '（等待回复）';
+
+  const startTime = Date.now();
+
+  try {
+    const rawResponse = await callAi([
+      { role: 'system', content: prompt.system },
+      { role: 'user', content: prompt.user }
+    ]);
+
+    const elapsed = Date.now() - startTime;
+    document.getElementById('debug-response').textContent = rawResponse;
+
+    // 提取 JSON（兼容可能包含的 markdown 代码块）
+    let jsonStr = rawResponse.trim();
+    const codeBlockMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+    if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch(e) {
+      throw new Error('AI 返回的 JSON 格式有误：' + e.message + '\n\n原始内容：' + rawResponse.substring(0, 500));
+    }
+
+    renderResult(parsed, elapsed);
+    loadingSub.textContent = '解析完成（' + (elapsed / 1000).toFixed(1) + '秒）';
+
+  } catch(e) {
+    document.getElementById('debug-response').textContent = 'ERROR: ' + e.message;
+    document.getElementById('result-area').innerHTML =
+      '<div style="text-align:center;padding:40px 20px;">' +
+      '<div style="font-size:48px;margin-bottom:12px;">❌</div>' +
+      '<div style="font-size:14px;color:var(--error);margin-bottom:8px;">解析失败</div>' +
+      '<div style="font-size:12px;color:var(--text-sec);">' + escHtml(e.message) + '</div>' +
+      '</div>';
+  }
+
+  setTimeout(() => { loading.style.display = 'none'; }, 800);
+  btn.disabled = false;
+}
+
+// ====================================================
+// 结果渲染
+// ====================================================
+function renderResult(data, elapsed) {
+  const area = document.getElementById('result-area');
+  let html = '<div style="margin-bottom:16px;font-size:12px;color:var(--text-muted);">解析耗时 ' + (elapsed / 1000).toFixed(1) + '秒</div>';
+
+  // 维度
+  const dims = data.dimensions || [];
+  html += '<div class="result-section">';
+  html += '<div class="result-section-title">📐 维度配置（' + dims.length + '项）</div>';
+  if (dims.length === 0) {
+    html += '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">说明中未提及维度/因子信息</div>';
+  } else {
+    html += '<table class="result-table"><tr><th>维度名</th><th>题目范围</th><th>公式</th><th>变换</th></tr>';
+    dims.forEach(d => {
+      html += '<tr><td><strong>' + escHtml(d.label) + '</strong></td><td><span class="tag tag-blue">' + escHtml(d.items) + '</span></td><td>' + escHtml(d.formula) + '</td><td>' + escHtml(d.transform || '-') + '</td></tr>';
+    });
+    html += '</table>';
+  }
+  html += '</div>';
+
+  // 指标
+  const metrics = data.metrics || [];
+  html += '<div class="result-section">';
+  html += '<div class="result-section-title">📊 全局指标（' + metrics.length + '项）</div>';
+  if (metrics.length === 0) {
+    html += '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">说明中未提及全局指标</div>';
+  } else {
+    html += '<table class="result-table"><tr><th>指标名</th><th>公式</th><th>题目</th><th>变换</th><th>说明</th></tr>';
+    metrics.forEach(m => {
+      html += '<tr><td><strong>' + escHtml(m.name) + '</strong></td><td><span class="tag tag-purple">' + escHtml(m.formula) + '</span></td><td>' + escHtml(m.items) + '</td><td>' + escHtml(m.transform || '-') + '</td><td style="max-width:200px;font-size:11px;color:var(--text-sec);">' + escHtml(m.description || '') + '</td></tr>';
+    });
+    html += '</table>';
+  }
+  html += '</div>';
+
+  // 解释规则
+  const interps = data.interpretation || [];
+  html += '<div class="result-section">';
+  html += '<div class="result-section-title">🎯 解释规则（' + interps.length + '条）</div>';
+  if (interps.length === 0) {
+    html += '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">说明中未提及等级划分/解释规则</div>';
+  } else {
+    html += '<table class="result-table"><tr><th>指标</th><th>区间</th><th>等级</th><th>说明</th></tr>';
+    interps.forEach(i => {
+      const colorMap = { green: 'tag-green', yellow: 'tag-orange', orange: 'tag-orange', red: 'tag-red', purple: 'tag-purple', blue: 'tag-blue' };
+      // 兼容旧字段名
+      const rangeStr = (i.min !== undefined || i.max !== undefined)
+        ? (i.min !== undefined ? i.min : '-∞') + ' ~ ' + (i.max !== undefined ? i.max : '+∞')
+        : escHtml(i.condition || '-');
+      html += '<tr><td>' + escHtml(i.metric) + '</td><td>' + rangeStr + '</td><td><span class="tag ' + (colorMap[i.color] || 'tag-blue') + '">' + escHtml(i.label) + '</span></td><td style="max-width:200px;font-size:11px;color:var(--text-sec);">' + escHtml(i.text || i.advice || '') + '</td></tr>';
+    });
+    html += '</table>';
+  }
+  html += '</div>';
+
+  // 筛查
+  const scr = data.screening;
+  html += '<div class="result-section">';
+  html += '<div class="result-section-title">🔍 筛查规则</div>';
+  if (!scr) {
+    html += '<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">说明中未提及筛查规则</div>';
+  } else {
+    html += '<div style="padding:12px;background:#fff8e1;border:1px solid #ffcc02;border-radius:6px;font-size:13px;">';
+    html += '<strong>指标：</strong>' + escHtml(scr.metric) + '  ';
+    if (scr.conditions) {
+      scr.conditions.forEach(c => {
+        const condStr = (c.operator || c.op || '') + ' ' + (c.value !== undefined ? c.value : '');
+        html += '<span class="tag tag-red">' + escHtml((c.metric || '') + ' ' + condStr) + ' → ' + escHtml(c.label) + '</span> ';
+      });
+    }
+    if (scr.logic) html += '<span class="tag tag-orange">逻辑：' + escHtml(scr.logic) + '</span> ';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // JSON 预览
+  html += '<div class="result-section">';
+  html += '<div class="result-section-title">{ } 完整 JSON</div>';
+  html += '<div class="json-block">' + escHtml(JSON.stringify(data, null, 2)) + '</div>';
+  html += '</div>';
+
+  // 操作按钮
+  html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">';
+  html += '<button class="btn btn-primary" onclick="copyJson()">📋 复制原始 JSON</button>';
+  html += '<button class="btn btn-secondary" onclick="normalizeAndVerify()">🔧 标准化 + 验证</button>';
+  html += '<button class="btn btn-secondary" onclick="copyNormalizedJson()">📋 复制标准化 JSON</button>';
+  html += '</div>';
+  html += '<div id="verify-area"></div>';
+
+  area.innerHTML = html;
+
+  // 保存解析结果供复制
+  window._lastParsedData = data;
+
+  // 通知父页面解析完成（iframe 模式下）
+  try { window.parent.postMessage({ type: 'ai-parse-complete', data: data }, '*'); } catch(e) {}
+}
+
+function copyJson() {
+  if (!window._lastParsedData) return;
+  const jsonStr = JSON.stringify(window._lastParsedData, null, 2);
+  navigator.clipboard.writeText(jsonStr).then(() => {
+    const btn = event.target;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ 已复制';
+    setTimeout(() => btn.innerHTML = orig, 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = jsonStr;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    alert('已复制到剪贴板');
+  });
+}
+
+// ====================================================
+// 标准化 + 模拟验证
+// ====================================================
+function normalizeAndVerify() {
+  if (!window._lastParsedData) { alert('请先解析计分规则'); return; }
+  const area = document.getElementById('verify-area');
+  if (!area) return;
+
+  // 1. 标准化转换
+  const normalized = ScoringEngine.normalizeAiJson(window._lastParsedData);
+  window._lastNormalizedData = normalized;
+
+  // 2. 验证报告
+  let report = '';
+  const dimCount = (normalized.dimensions || []).length;
+  const metCount = (normalized.metrics || []).length;
+  const intCount = (normalized.interpretation || []).length;
+  const scrCond = normalized.screening ? normalized.screening.conditions.length : 0;
+
+  report += '<div style="margin-top:16px;padding:16px;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;">';
+  report += '<div style="font-size:14px;font-weight:600;color:#1565c0;margin-bottom:12px;">🔧 标准化验证报告</div>';
+
+  report += '<table class="result-table"><tr><th>项目</th><th>数量</th><th>状态</th></tr>';
+  report += '<tr><td>维度配置</td><td>' + dimCount + '</td><td>' + (dimCount > 0 ? '<span class="tag tag-green">✅</span>' : '<span class="tag tag-orange">⚠️ 未提取到</span>') + '</td></tr>';
+  report += '<tr><td>全局指标</td><td>' + metCount + '</td><td>' + (metCount > 0 ? '<span class="tag tag-green">✅</span>' : '<span class="tag tag-orange">⚠️ 未提取到</span>') + '</td></tr>';
+  report += '<tr><td>解释规则</td><td>' + intCount + '</td><td>' + (intCount > 0 ? '<span class="tag tag-green">✅</span>' : '<span class="tag tag-orange">⚠️ 未提取到</span>') + '</td></tr>';
+  report += '<tr><td>筛查条件</td><td>' + scrCond + '</td><td>' + (scrCond > 0 ? '<span class="tag tag-green">✅</span>' : '<span class="tag tag-orange">⚠️ 未提取到</span>') + '</td></tr>';
+  report += '</table>';
+
+  // 公式类型统计
+  const formulaTypes = {};
+  (normalized.metrics || []).forEach(m => { formulaTypes[m.formula] = (formulaTypes[m.formula] || 0) + 1; });
+  (normalized.dimensions || []).forEach(d => { formulaTypes[d.formula || 'SUM'] = (formulaTypes[d.formula || 'SUM'] || 0) + 1; });
+  report += '<div style="margin-top:12px;font-size:12px;color:var(--text-sec);">公式类型：';
+  for (const [type, count] of Object.entries(formulaTypes)) {
+    report += '<span class="tag tag-blue" style="margin-right:4px;">' + type + ' ×' + count + '</span>';
+  }
+  report += '</div>';
+
+  // 派生指标
+  const derived = (normalized.metrics || []).filter(m => m.formula === 'DERIVED');
+  if (derived.length > 0) {
+    report += '<div style="margin-top:8px;font-size:12px;color:var(--text-sec);">派生指标：';
+    derived.forEach(d => { report += '<span class="tag tag-purple" style="margin-right:4px;">' + escHtml(d.label) + ': ' + escHtml(d.expression) + '</span>'; });
+    report += '</div>';
+  }
+
+  // COUNT_IF 指标
+  const countIfs = (normalized.metrics || []).filter(m => m.formula === 'COUNT_IF');
+  if (countIfs.length > 0) {
+    report += '<div style="margin-top:8px;font-size:12px;color:var(--text-sec);">条件计数：';
+    countIfs.forEach(m => { report += '<span class="tag tag-orange" style="margin-right:4px;">' + escHtml(m.label) + ' ' + JSON.stringify(m.condition) + '</span>'; });
+    report += '</div>';
+  }
+
+  // 标准化 JSON 预览
+  report += '<div style="margin-top:16px;"><div class="result-section-title">{ } 标准化 JSON（可直接写入量表 scoring 字段）</div>';
+  report += '<div class="json-block" id="normalized-json-block">' + escHtml(JSON.stringify(normalized, null, 2)) + '</div></div>';
+
+  report += '</div>';
+  area.innerHTML = report;
+
+  // 通知父页面标准化完成
+  try { window.parent.postMessage({ type: 'ai-normalize-complete', data: normalized }, '*'); } catch(e) {}
+}
+
+function copyNormalizedJson() {
+  if (!window._lastNormalizedData) {
+    // 尝试先标准化
+    if (window._lastParsedData) {
+      window._lastNormalizedData = ScoringEngine.normalizeAiJson(window._lastParsedData);
+    } else {
+      alert('请先解析并标准化');
+      return;
+    }
+  }
+  const jsonStr = JSON.stringify(window._lastNormalizedData, null, 2);
+  navigator.clipboard.writeText(jsonStr).then(() => {
+    alert('标准化 JSON 已复制到剪贴板，可粘贴到量表 scoring 字段');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = jsonStr;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    alert('已复制');
+  });
+}
+
+// ====================================================
+// 示例文本
+// ====================================================
+const EXAMPLES = {
+  scl90: `SCL-90 计分规则
+
+一、计分方法
+SCL-90 包含90个题目，每个题目采用1-5级评分（1=没有，2=很轻，3=中等，4=偏重，5=严重）。
+
+二、总分与总均分
+1. 总分（GSI）：将90个项目的得分相加，总分范围为90-450分。
+2. 总均分（GSI_AVERAGE）：总分 ÷ 90。
+
+三、阳性项目数与阳性症状痛苦水平
+3. 阳性项目数（POS_COUNT）：单项得分 ≥ 2（即"很轻"及以上）的题目数量。
+4. 阳性症状痛苦水平（PDI）：（总分 - 阳性项目数）÷ 阳性项目数。
+
+四、因子分（维度分）
+每个因子的因子分 = 该因子所属项目得分之和 ÷ 该因子的项目数。
+因子分需要乘以 1.25 进行标准化转换（使因子分在0-4之间）。
+
+各因子包含的题目编号：
+1. 躯体化（SOM）：第1, 4, 12, 27, 40, 42, 48, 49, 52, 53, 56, 58 题（12题）
+2. 强迫症状（O-C）：第3, 9, 10, 28, 38, 45, 46, 51, 55, 65 题（10题）
+3. 人际关系敏感（INT）：第6, 21, 34, 36, 37, 41, 61, 69, 73 题（9题）
+4. 抑郁（DEP）：第5, 14, 15, 20, 22, 26, 29, 30, 31, 32, 54, 71, 79 题（13题）
+5. 焦虑（ANX）：第2, 17, 23, 33, 39, 57, 72, 78, 80, 86 题（10题）
+6. 敌对（HOS）：第11, 24, 63, 67, 74, 81 题（6题）
+7. 恐怖（PHOB）：第13, 25, 47, 50, 70, 75, 82 题（7题）
+8. 偏执（PAR）：第8, 18, 43, 68, 76, 83 题（6题）
+9. 精神病性（PSY）：第7, 16, 35, 62, 77, 84, 85, 87 题（8题）
+10. 其他：第19, 44, 59, 60, 64, 66, 89 题（7题）
+
+五、划界标准
+- 总分 > 160 分，提示可能存在心理问题，建议进一步检查
+- 阳性项目数 > 43 项，提示筛查阳性
+- 因子分 ≥ 2 分，表示该因子存在轻度以上问题
+- 因子分 ≥ 3 分，表示该因子存在中度以上问题
+- 总分 > 160 或 阳性项目数 > 43，提示需要进一步评估筛查`,
+
+  phq9: `PHQ-9 患者健康问卷计分规则
+
+PHQ-9 共9个题目，每题0-3分（0=完全不会，1=好几天，2=一半以上天数，3=几乎每天）。
+
+总分：9题得分相加，范围0-27分。
+
+评分分级标准：
+- 0-4分：无抑郁症状
+- 5-9分：轻度抑郁
+- 10-14分：中度抑郁
+- 15-19分：中重度抑郁
+- 20-27分：重度抑郁
+
+筛查标准：
+- 总分 ≥ 10 分，提示需要进一步评估
+- 第9题（自杀意念）得分 ≥ 1 分，需特别关注`,
+
+  sas: `SAS 焦虑自评量表计分规则
+
+SAS 共20个题目，每题1-4分（1=没有或很少时间，2=小部分时间，3=相当多时间，4=绝大部分时间）。
+
+注意：第5, 9, 13, 17, 19 题为反向计分题（正向记分应为 4, 3, 2, 1）。导入时需预先翻转分值。
+
+粗分：20题得分相加，范围20-80分。
+标准分 = 粗分 × 1.25（四舍五入取整），范围25-100分。
+
+焦虑分级标准：
+- 标准分 < 50：正常范围
+- 50-59分：轻度焦虑
+- 60-69分：中度焦虑
+- ≥ 70分：重度焦虑
+
+筛查标准：标准分 ≥ 50 分为筛查阳性`,
+
+  bfi: `大五人格量表（BFI-44）计分规则
+
+BFI 共44题，每题1-5分（1=非常不同意，2=不同意，3=中性，4=同意，5=非常同意）。
+
+反向计分题：第6, 21, 31, 2, 12, 27, 37, 8, 18, 23, 43 为反向题，需预先翻转分值。
+
+五个维度及对应题目：
+1. 外向性（E）：第1, 6R, 11, 16, 21R, 26, 31R, 36 题（R=反向）
+2. 宜人性（A）：第7R, 12R, 17, 22, 27R, 32, 37R, 42 题
+3. 尽责性（C）：第3, 8R, 13, 18R, 23R, 28, 33, 38, 43R 题
+4. 神经质（N）：第4, 9, 14, 19, 24, 29, 34, 39 题
+5. 开放性（O）：第5, 10, 15, 20, 25, 30, 35, 40, 41, 44 题
+
+各维度分 = 该维度所有题目得分求和（注意反向题已预先翻转）。
+维度分范围：8-40（外向性和尽责性9题），8-40（其他维度）。
+
+解释标准：
+- 维度分 ≥ 35：该维度特征非常明显
+- 维度分 28-34：该维度特征较明显
+- 维度分 20-27：中等水平
+- 维度分 < 20：该维度特征不明显`
+};
+
+function loadExample(key) {
+  document.getElementById('input-text').value = EXAMPLES[key] || '';
+}
+
+// ====================================================
+// 工具函数
+// ====================================================
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function clearAll() {
+  document.getElementById('input-text').value = '';
+  localStorage.removeItem(INPUT_SAVE_KEY);
+  document.getElementById('result-area').innerHTML =
+    '<div class="result-placeholder"><div class="icon">🧩</div><div>粘贴量表说明后点击"开始解析"</div></div>';
+  document.getElementById('debug-prompt').textContent = '-';
+  document.getElementById('debug-response').textContent = '-';
+}
+
+function toggleDebug() {
+  document.getElementById('debug-body').classList.toggle('open');
+}
+
+// ====================================================
+// Prompt 模板面板（可预览 / 可编辑 / 可复制 / 可恢复默认）
+// ====================================================
+var _promptEditing = false;
+
+function renderPromptPreview() {
+  var prompt = buildPrompt('');
+  document.getElementById('prompt-preview').textContent = prompt.system;
+  document.getElementById('prompt-editor').value = prompt.system;
+  updatePromptModeTag();
+}
+
+function updatePromptModeTag() {
+  var tag = document.getElementById('prompt-mode-tag');
+  try {
+    var custom = localStorage.getItem(PROMPT_SAVE_KEY);
+    if (custom && custom.trim()) {
+      tag.textContent = '自定义';
+      tag.style.background = 'rgba(102,126,234,.35)';
+    } else {
+      tag.textContent = '默认';
+      tag.style.background = 'rgba(255,255,255,.25)';
+    }
+  } catch(e) {
+    tag.textContent = '默认';
+    tag.style.background = 'rgba(255,255,255,.25)';
+  }
+}
+
+function copyPromptText() {
+  var text = _promptEditing
+    ? document.getElementById('prompt-editor').value
+    : document.getElementById('prompt-preview').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    showPromptHint('✅ 已复制到剪贴板');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    showPromptHint('✅ 已复制到剪贴板');
+  });
+}
+
+function togglePromptEdit() {
+  if (_promptEditing) return;
+  _promptEditing = true;
+  document.getElementById('prompt-preview').style.display = 'none';
+  document.getElementById('prompt-editor').style.display = 'block';
+  document.getElementById('prompt-edit-btn').style.display = 'none';
+  document.getElementById('prompt-save-btn').style.display = '';
+  document.getElementById('prompt-cancel-btn').style.display = '';
+  document.getElementById('prompt-reset-btn').style.display = '';
+  showPromptHint('编辑模式：修改后点击「💾 保存」生效');
+}
+
+function savePromptEdit() {
+  var text = document.getElementById('prompt-editor').value.trim();
+  if (!text) { showPromptHint('⚠️ Prompt 内容不能为空'); return; }
+  try {
+    localStorage.setItem(PROMPT_SAVE_KEY, text);
+  } catch(e) {}
+  _promptEditing = false;
+  document.getElementById('prompt-preview').textContent = text;
+  document.getElementById('prompt-preview').style.display = '';
+  document.getElementById('prompt-editor').style.display = 'none';
+  document.getElementById('prompt-edit-btn').style.display = '';
+  document.getElementById('prompt-save-btn').style.display = 'none';
+  document.getElementById('prompt-cancel-btn').style.display = 'none';
+  document.getElementById('prompt-reset-btn').style.display = 'none';
+  updatePromptModeTag();
+  showPromptHint('✅ 自定义 Prompt 已保存');
+}
+
+function cancelPromptEdit() {
+  _promptEditing = false;
+  document.getElementById('prompt-preview').style.display = '';
+  document.getElementById('prompt-editor').style.display = 'none';
+  document.getElementById('prompt-editor').value = document.getElementById('prompt-preview').textContent;
+  document.getElementById('prompt-edit-btn').style.display = '';
+  document.getElementById('prompt-save-btn').style.display = 'none';
+  document.getElementById('prompt-cancel-btn').style.display = 'none';
+  document.getElementById('prompt-reset-btn').style.display = 'none';
+  showPromptHint('已取消编辑');
+}
+
+function resetPromptToDefault() {
+  if (!confirm('确定恢复为默认 Prompt 吗？当前自定义内容将被清除。')) return;
+  try { localStorage.removeItem(PROMPT_SAVE_KEY); } catch(e) {}
+  var defaultText = getDefaultPromptText();
+  document.getElementById('prompt-editor').value = defaultText;
+  document.getElementById('prompt-preview').textContent = defaultText;
+  updatePromptModeTag();
+  showPromptHint('✅ 已恢复默认 Prompt（请点击「💾 保存」确认）');
+}
+
+function showPromptHint(msg) {
+  var el = document.getElementById('prompt-save-hint');
+  el.textContent = msg;
+  setTimeout(function() { if (el.textContent === msg) el.textContent = ''; }, 3000);
+}
+
+function togglePromptPanel() {
+  if (_promptEditing) return; // 编辑模式下不允许收起
+  var body = document.getElementById('prompt-panel-body');
+  var hint = document.getElementById('prompt-toggle-hint');
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    hint.textContent = '（点击收起/展开）';
+  } else {
+    body.style.display = 'none';
+    hint.textContent = '（已收起，点击展开）';
+  }
+}
+
+// ====================================================
+// 输入内容持久化（弹窗关闭后自动恢复）
+// ====================================================
+const INPUT_SAVE_KEY = 'psy_ai_parse_input';
+
+function saveInputText() {
+  try {
+    const val = document.getElementById('input-text').value;
+    localStorage.setItem(INPUT_SAVE_KEY, val);
+  } catch(e) {}
+}
+
+function restoreInputText() {
+  try {
+    const saved = localStorage.getItem(INPUT_SAVE_KEY);
+    if (saved) document.getElementById('input-text').value = saved;
+  } catch(e) {}
+}
+
+// 监听输入，实时保存
+document.getElementById('input-text').addEventListener('input', saveInputText);
+
+// ====================================================
+// 初始化
+// ====================================================
+checkConfig();
+renderPromptPreview();
+restoreInputText();
+</script>
+</body>
+</html>

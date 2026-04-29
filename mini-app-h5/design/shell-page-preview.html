@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星蓝心镜 - 壳首页设计稿</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    padding: 20px;
+    writing-mode: horizontal-tb !important;
+    direction: ltr !important;
+  }
+
+  /* 手机外壳 */
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #F0F6FF;
+    border-radius: 34px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 模拟小程序导航栏 */
+  .status-bar {
+    height: 44px;
+    background: #4A90D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .capsule {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 87px;
+    height: 32px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  .capsule-left, .capsule-right {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .capsule-left {
+    width: 54px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+  }
+  .capsule-left::before {
+    content: '···';
+    color: #fff;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .capsule-right { width: 33px; }
+  .capsule-right::before {
+    content: '×';
+    color: #fff;
+    font-size: 16px;
+  }
+
+  /* ===== 壳首页内容 ===== */
+  .shell-page {
+    height: calc(100% - 44px);
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #E8F2FF 0%, #F5F9FF 40%, #FFFFFF 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 装饰圆 */
+  .deco-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: #4A90D9;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .deco-circle:nth-child(1) {
+    width: 200px; height: 200px;
+    top: -40px; right: -60px;
+    opacity: 0.06;
+  }
+  .deco-circle:nth-child(2) {
+    width: 120px; height: 120px;
+    top: 200px; left: -30px;
+    opacity: 0.06;
+  }
+
+  /* 全身人物 - 居中放大 */
+  .character-area {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    animation: charRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    position: relative;
+    z-index: 1;
+  }
+
+  .character-area img {
+    width: 80%;
+    height: auto;
+    object-fit: contain;
+    object-position: bottom center;
+    filter: drop-shadow(0 4px 12px rgba(74, 144, 217, 0.15));
+  }
+
+  /* 打字文字 - 叠在人物上方 */
+  .typing-layer {
+    position: absolute;
+    top: 80px;
+    left: 32px;
+    right: 32px;
+    z-index: 2;
+    opacity: 0;
+    animation: fadeUp 0.5s ease-out 0.8s both;
+    writing-mode: horizontal-tb !important;
+    direction: ltr !important;
+    text-orientation: mixed !important;
+  }
+
+  .typing-text {
+    font-size: 15px;
+    color: rgba(44, 62, 80, 0.85);
+    line-height: 2;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+    writing-mode: horizontal-tb !important;
+    direction: ltr !important;
+  }
+
+  /* 打字光标 - 已移除 */
+  .typing-cursor {
+    display: none;
+  }
+
+  /* 逐行出现动画 */
+  .typing-line {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  }
+
+  .typing-line.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 底部按钮区 */
+  .bottom-area {
+    padding: 0 28px 40px;
+    position: relative;
+    z-index: 3;
+  }
+
+  /* 进入测评按钮 */
+  .enter-btn-wrap {
+    width: 100%;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+    animation: fadeUp 0.6s ease-out 0.4s both;
+  }
+
+  .enter-btn-wrap.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .enter-btn {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #4A90D9, #3A7BC8);
+    color: #fff;
+    border: none;
+    border-radius: 26px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(74, 144, 217, 0.35);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .enter-btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+
+  .enter-btn .arrow {
+    transition: transform 0.3s;
+  }
+
+  .enter-btn:active .arrow {
+    transform: translateX(4px);
+  }
+
+  /* 底部 */
+  .footer-text {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #C0C8D4;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease-out 0.6s both;
+  }
+
+  .footer-text.show {
+    opacity: 1;
+  }
+
+  /* ===== 动画 ===== */
+  @keyframes charRise {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ===== 标签 ===== */
+  .design-label {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <div class="status-bar">
+        <div class="capsule">
+          <div class="capsule-left"></div>
+          <div class="capsule-right"></div>
+        </div>
+      </div>
+
+      <div class="shell-page">
+        <!-- 装饰圆 -->
+        <div class="deco-circle"></div>
+        <div class="deco-circle"></div>
+
+        <!-- 打字文字层（叠在人物上方） -->
+        <div class="typing-layer" id="typingLayer">
+          <div class="typing-text" id="typingText"></div>
+        </div>
+
+        <!-- 全身人物 - 充满中间区域 -->
+        <div class="character-area">
+          <img src="npc-character.png" alt="星蓝心镜">
+        </div>
+
+        <!-- 底部：按钮 + footer -->
+        <div class="bottom-area">
+          <div class="enter-btn-wrap" id="btnWrap">
+            <button class="enter-btn">
+              进入测评 <span class="arrow">→</span>
+            </button>
+          </div>
+          <div class="footer-text" id="footerText">每一种感受，都值得被温柔以待</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="design-label">人物全身 + 逐行打字 + 按钮动画</div>
+</div>
+
+<script>
+(function() {
+  // 按行拆分的欢迎词
+  var lines = [
+    '你好呀，欢迎来到星蓝心镜～',
+    '在这里，你可以完成专业量表测评，',
+    '获取多维分析报告，',
+    '还有 AI 辅助诊断。',
+    '准备好了吗？',
+    '让我们一起探索内心世界吧！'
+  ];
+
+  var typingText = document.getElementById('typingText');
+
+  var lineIdx = 0;
+  var charIdx = 0;
+  var currentLineEl = null;
+  var speed = 45;       // 每字 ms
+  var lineDelay = 500;  // 行间额外停顿
+
+  function startLine() {
+    if (lineIdx >= lines.length) {
+      // 全部打完，结束
+      return;
+    }
+
+    // 创建新行
+    currentLineEl = document.createElement('div');
+    currentLineEl.className = 'typing-line';
+    typingText.appendChild(currentLineEl);
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        currentLineEl.classList.add('visible');
+      });
+    });
+
+    charIdx = 0;
+    typeChar();
+  }
+
+  function typeChar() {
+    var line = lines[lineIdx];
+    if (charIdx >= line.length) {
+      lineIdx++;
+      setTimeout(startLine, lineDelay);
+      return;
+    }
+
+    currentLineEl.appendChild(document.createTextNode(line[charIdx]));
+    charIdx++;
+    setTimeout(typeChar, speed);
+  }
+
+  // 等动画完成再开始打字
+  setTimeout(startLine, 1400);
+})();
+</script>
+
+</body>
+</html>

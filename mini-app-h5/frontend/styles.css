@@ -1,0 +1,342 @@
+/* 心理健康测评系统 - 前端样式 */
+
+:root {
+    --primary-color: #4a90e2;
+    --primary-dark: #3a7bc8;
+    --bg-color: #ffffff;
+    --bg-light: #f8f9fa;
+    --bg-gray: #f0f2f5;
+    --text: #1a1a1a;
+    --text-sec: #666666;
+    --text-muted: #999999;
+    --border-light: #e8e8e8;
+    --border-color: #e0e0e0;
+    --r-lg: 12px;
+    --r-md: 8px;
+    --shadow-light: 0 2px 8px rgba(0,0,0,0.06);
+    --danger-color: #ff4757;
+    --secondary-color: #ff6b6b;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: var(--bg-light);
+    color: var(--text);
+    line-height: 1.5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 主容器 */
+.phone-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 200px; /* 为底部菜单栏预留大量空间 */
+}
+
+.page {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+}
+
+.page.active {
+    display: flex;
+}
+
+/* 导航栏 */
+.nav-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg-color);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+.nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.nav-tab.active {
+    color: var(--primary-color);
+}
+
+.nav-tab .icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+/* 列表页样式 */
+.list-header {
+    padding: 20px 16px;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.list-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.list-subtitle {
+    font-size: 13px;
+    color: var(--text-sec);
+}
+
+.scale-list-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.scale-card {
+    background: var(--bg-color);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.scale-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-gray);
+    border-radius: 8px;
+}
+
+.scale-info {
+    flex: 1;
+}
+
+.scale-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.scale-category {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-bottom: 6px;
+}
+
+.scale-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.scale-action .btn-start-compact {
+    padding: 8px 16px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* 详情页头部 */
+.detail-header {
+    height: 180px;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: #fff;
+}
+
+.detail-header .emoji {
+    position: absolute;
+    top: 30px;
+    right: 24px;
+    font-size: 60px;
+    opacity: 0.3;
+}
+
+.detail-header .detail-meta {
+    position: relative;
+    z-index: 1;
+}
+
+.detail-header .detail-category {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 6px;
+}
+
+.detail-header .detail-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.detail-header .detail-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* 详情主体 */
+.detail-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    padding-bottom: 150px; /* 大幅度增加底部padding，确保按钮有充足的空间 */
+    min-height: 0; /* 允许容器缩小到最小高度 */
+    overflow-y: auto; /* 允许内容滚动 */
+}
+
+.card {
+    background: var(--bg-color);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-light);
+}
+
+.card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 14px;
+    color: var(--text-sec);
+    line-height: 1.7;
+}
+
+/* 量表说明部分 */
+.detail-description-section p {
+    transition: all 0.3s ease;
+}
+
+/* 查看更多按钮 */
+.view-more-btn {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--primary-color);
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.view-more-btn:hover {
+    text-decoration: underline;
+}
+
+/* 答题须知 */
+.notice-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-sec);
+}
+
+.notice-item:last-child {
+    margin-bottom: 0;
+}
+
+.notice-icon {
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+/* 答题须知容器内的按钮容器样式 */
+.notice-button-container {
+    margin-top: 24px;
+    margin-bottom: 120px; /* 大幅度增加按钮容器下边距，确保按钮不会被底部菜单栏遮挡 */
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.notice-button-container .btn-start {
+    width: 90%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* 开始测评按钮 */
+.btn-start {
+    width: 100%;
+    height: 52px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 26px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-start:active {
+    background: var(--primary-dark);
+}
+
+.btn-start-compact {
+    width: 100%;
+    height: 48px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-start-compact:active {
+    background: var(--primary-dark);
+}
+
+/* 底部透明容器 - 方案3：抬高内容防止被底部菜单栏遮挡 */
+.bottom-spacer {
+    height: 200px; /* 大幅度增加高度，确保按钮有充足空间 */
+    margin-top: 20px;
+    background: transparent;
+    pointer-events: none; /* 不影响交互 */
+}

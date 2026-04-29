@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测评结果页设计方案</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      background: #f0f2f5; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      padding: 20px;
+    }
+    .design-title { 
+      text-align: center; 
+      font-size: 20px; 
+      font-weight: 600; 
+      margin-bottom: 24px;
+      color: #333;
+    }
+    .phone-container {
+      max-width: 375px;
+      margin: 0 auto 40px;
+      background: #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .design-label {
+      background: #4A90D9;
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ========== 公共头部 ========== */
+    .header {
+      background: linear-gradient(135deg, #4A90D9 0%, #3A7BC8 100%);
+      padding: 44px 16px 16px;
+      color: #fff;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .back-btn { 
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-right: 8px;
+    }
+    .header-title { font-size: 17px; font-weight: 600; flex: 1; }
+    .header-action { font-size: 16px; opacity: 0.7; }
+    .header-sub { 
+      font-size: 13px; 
+      opacity: 0.9;
+      padding-left: 4px;
+    }
+
+    /* ========== 方案A+：紧凑融合式 ========== */
+    .design-a .content { padding: 0 16px 16px; background: #f8f9fa; }
+    .design-a .main-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    /* 得分区 */
+    .design-a .score-section {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .design-a .score-ring {
+      width: 100px; height: 100px; flex-shrink: 0;
+      border-radius: 50%;
+      border: 8px solid #4A90D9;
+      border-right-color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .design-a .score-num { font-size: 32px; font-weight: 700; color: #4A90D9; }
+    .design-a .score-meta { font-size: 11px; color: #999; }
+    .design-a .score-info { flex: 1; }
+    .design-a .score-level {
+      display: inline-block;
+      background: #4A90D9;
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .design-a .score-desc { font-size: 13px; color: #666; line-height: 1.5; }
+    /* 分割线 */
+    .design-a .section-divider {
+      height: 1px;
+      background: #f0f0f0;
+      margin: 0 20px;
+    }
+    /* 维度区 */
+    .design-a .dims-section { padding: 16px 20px; }
+    .design-a .dims-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 14px; }
+    .design-a .dim-item { padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .design-a .dim-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .design-a .dim-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .design-a .dim-name { font-size: 13px; color: #555; }
+    .design-a .dim-score { font-size: 14px; font-weight: 600; color: #4A90D9; }
+    .design-a .dim-bar { height: 5px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+    .design-a .dim-bar-fill { height: 100%; border-radius: 3px; }
+    .design-a .dim-meta { font-size: 11px; color: #bbb; margin-top: 3px; text-align: right; }
+    .design-a .dim-interp { font-size: 12px; color: #666; line-height: 1.6; margin-top: 8px; padding: 8px 10px; background: #f8f9fb; border-radius: 6px; border-left: 3px solid #4A90D9; }
+    .design-a .dim-interp.warn { border-left-color: #F5A623; background: #fffdf5; }
+    .design-a .dim-interp.good { border-left-color: #7ED321; background: #f5fff5; }
+    /* AI 入口 */
+    .design-a .ai-entry {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+    .design-a .ai-entry-title { font-size: 14px; font-weight: 600; }
+    .design-a .ai-entry-desc { font-size: 12px; opacity: 0.8; }
+    .design-a .ai-entry-arrow { font-size: 18px; }
+
+    /* ========== 方案B：沉浸式卡片 ========== */
+    .design-b .content { 
+      padding: 0 16px 16px; 
+      background: linear-gradient(180deg, #4A90D9 0%, #f8f9fa 120px);
+    }
+    .design-b .main-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .design-b .score-section {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 20px;
+    }
+    .design-b .score-big {
+      font-size: 56px;
+      font-weight: 700;
+      color: #4A90D9;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .design-b .score-label {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 12px;
+    }
+    .design-b .level-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #4A90D9, #3A7BC8);
+      color: #fff;
+      padding: 8px 24px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .design-b .advice-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.7;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .design-b .dims-section { margin-bottom: 16px; }
+    .design-b .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    .design-b .dim-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .design-b .dim-label { 
+      font-size: 13px; color: #666; width: 60px;
+    }
+    .design-b .dim-progress { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; }
+    .design-b .dim-fill { height: 100%; background: #4A90D9; border-radius: 4px; }
+    .design-b .dim-value { font-size: 13px; color: #4A90D9; font-weight: 600; width: 40px; text-align: right; }
+    .design-b .ai-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ========== 方案C：简洁列表式 ========== */
+    .design-c .content { background: #fff; }
+    .design-c .score-hero {
+      background: linear-gradient(135deg, #4A90D9 0%, #3A7BC8 100%);
+      padding: 32px 24px;
+      text-align: center;
+      color: #fff;
+    }
+    .design-c .score-circle {
+      width: 120px; height: 120px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .design-c .score-value { font-size: 40px; font-weight: 700; }
+    .design-c .score-total { font-size: 13px; opacity: 0.8; }
+    .design-c .level-text { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .design-c .advice-short { font-size: 13px; opacity: 0.9; }
+    .design-c .dims-list { padding: 16px; }
+    .design-c .dim-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .design-c .dim-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .design-c .dim-title { font-size: 14px; font-weight: 600; color: #333; }
+    .design-c .dim-score-tag {
+      background: #4A90D9;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .design-c .dim-desc { font-size: 13px; color: #666; line-height: 1.5; }
+    .design-c .ai-bar {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .design-c .ai-bar-text { font-size: 15px; font-weight: 500; }
+    .design-c .ai-bar-arrow { font-size: 20px; }
+
+    /* ========== 方案D：数据可视化 ========== */
+    .design-d .content { padding: 20px 16px; background: #f8f9fa; }
+    .design-d .score-panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .design-d .score-left {
+      width: 100px; height: 100px;
+      background: conic-gradient(#4A90D9 75%, #e8ecf0 0);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .design-d .score-inner {
+      width: 80px; height: 80px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .design-d .score-number { font-size: 28px; font-weight: 700; color: #4A90D9; }
+    .design-d .score-unit { font-size: 11px; color: #999; }
+    .design-d .score-right { flex: 1; }
+    .design-d .level-badge {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #4A90D9;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .design-d .score-summary { font-size: 13px; color: #666; line-height: 1.6; }
+    .design-d .dims-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .design-d .dim-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .design-d .dim-box-name { font-size: 12px; color: #999; margin-bottom: 8px; }
+    .design-d .dim-box-score { font-size: 24px; font-weight: 700; color: #4A90D9; margin-bottom: 4px; }
+    .design-d .dim-box-level { font-size: 11px; color: #4A90D9; background: #e3f2fd; display: inline-block; padding: 2px 8px; border-radius: 8px; }
+    .design-d .ai-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 20px;
+      color: #fff;
+      text-align: center;
+    }
+    .design-d .ai-card-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .design-d .ai-card-desc { font-size: 13px; opacity: 0.85; margin-bottom: 12px; }
+    .design-d .ai-card-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="design-title">测评结果页设计方案</div>
+
+  <!-- 方案A+：紧凑融合式 -->
+  <div class="phone-container design-a">
+    <div class="design-label">方案A+：紧凑融合式 — 单卡片，得分与维度无缝衔接</div>
+    <div class="header">
+      <div class="header-top">
+        <div class="back-btn">‹</div>
+        <div class="header-title">测评报告</div>
+        <div class="header-action">🔄</div>
+      </div>
+      <div class="header-sub">🎉 测评完成 · 父母共同教养关系感知量表</div>
+    </div>
+    <div class="content">
+      <div class="main-card">
+        <div class="score-section">
+          <div class="score-ring">
+            <div class="score-num">41</div>
+            <div class="score-meta">满分 3.66</div>
+          </div>
+          <div class="score-info">
+            <div class="score-level">中等</div>
+            <div class="score-desc">建议关注自身状态，必要时寻求专业帮助。</div>
+          </div>
+        </div>
+        <div class="section-divider"></div>
+        <div class="dims-section">
+          <div class="dims-title">各维度分析</div>
+          <div class="dim-item">
+            <div class="dim-header">
+              <span class="dim-name">支持性</span>
+              <span class="dim-score" style="color:#4A90D9">2.9分</span>
+            </div>
+            <div class="dim-bar"><div class="dim-bar-fill" style="width:78%;background:#4A90D9"></div></div>
+            <div class="dim-meta">满分 3.66 · 78% · 中等</div>
+            <div class="dim-interp">伴侣在教养过程中提供的情感支持和实际协助处于中等水平。双方在孩子教育方面有一定的合作基础，但仍存在提升空间。</div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-header">
+              <span class="dim-name">非支持性</span>
+              <span class="dim-score" style="color:#F5A623">3.0分</span>
+            </div>
+            <div class="dim-bar"><div class="dim-bar-fill" style="width:82%;background:#F5A623"></div></div>
+            <div class="dim-meta">满分 3.66 · 82% · 中等</div>
+            <div class="dim-interp warn">伴侣在教养中表现出一定程度的非支持行为（如批评、指责或干涉），需关注双方沟通方式，减少消极互动对孩子的影响。</div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-header">
+              <span class="dim-name">合作满意度</span>
+              <span class="dim-score" style="color:#7ED321">3.4分</span>
+            </div>
+            <div class="dim-bar"><div class="dim-bar-fill" style="width:93%;background:#7ED321"></div></div>
+            <div class="dim-meta">满分 3.66 · 93% · 良好</div>
+            <div class="dim-interp good">双方对共同教养的整体满意度较高，说明在教育理念和实践层面有较好的共识。建议继续保持开放的沟通和协作态度。</div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-entry">
+        <div>
+          <div class="ai-entry-title">AI 智能诊断</div>
+          <div class="ai-entry-desc">获取个性化分析报告</div>
+        </div>
+        <div class="ai-entry-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 方案B：沉浸式卡片 -->
+  <div class="phone-container design-b">
+    <div class="design-label">方案B：沉浸式卡片 — 头部渐变延伸，整体感强</div>
+    <div class="header" style="padding-bottom:0">
+      <div class="header-top">
+        <div class="back-btn">‹</div>
+        <div class="header-title">测评报告</div>
+        <div class="header-action">🔄</div>
+      </div>
+      <div class="header-sub" style="margin-bottom:16px">🎉 测评完成 · 父母共同教养关系感知量表</div>
+    </div>
+    <div class="content">
+      <div class="main-card">
+        <div class="score-section">
+          <div class="score-big">41</div>
+          <div class="score-label">满分 3.66 · 100%</div>
+          <div class="level-tag">中等</div>
+        </div>
+        <div class="advice-text">
+          建议关注自身状态，必要时寻求专业帮助。
+        </div>
+        <div class="dims-section">
+          <div class="section-title">各维度分析</div>
+          <div class="dim-row">
+            <span class="dim-label">支持性</span>
+            <div class="dim-progress"><div class="dim-fill" style="width:78%"></div></div>
+            <span class="dim-value">2.9</span>
+          </div>
+          <div class="dim-row">
+            <span class="dim-label">非支持性</span>
+            <div class="dim-progress"><div class="dim-fill" style="width:82%"></div></div>
+            <span class="dim-value">3.0</span>
+          </div>
+        </div>
+        <button class="ai-btn">
+          <span>AI 智能诊断</span>
+          <span>›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 方案C：简洁列表式 -->
+  <div class="phone-container design-c">
+    <div class="design-label">方案C：简洁列表式 — 得分突出，维度卡片化</div>
+    <div class="header" style="background:#fff; color:#333; padding:44px 16px 0">
+      <div class="header-top">
+        <div class="back-btn" style="color:#4A90D9">‹</div>
+        <div class="header-title" style="color:#333">测评报告</div>
+        <div class="header-action" style="color:#999">🔄</div>
+      </div>
+      <div class="header-sub" style="color:#666; margin-bottom:16px">🎉 测评完成 · 父母共同教养关系感知量表</div>
+    </div>
+    <div class="content">
+      <div class="score-hero">
+        <div class="score-circle">
+          <div class="score-value">41</div>
+          <div class="score-total">满分 3.66</div>
+        </div>
+        <div class="level-text">中等</div>
+        <div class="advice-short">建议关注自身状态，必要时寻求专业帮助</div>
+      </div>
+      <div class="dims-list">
+        <div class="dim-card">
+          <div class="dim-top">
+            <span class="dim-title">支持性</span>
+            <span class="dim-score-tag">2.9分 · 中等</span>
+          </div>
+          <div class="dim-desc">伴侣在教养中给予的支持程度处于中等水平</div>
+        </div>
+        <div class="dim-card">
+          <div class="dim-top">
+            <span class="dim-title">非支持性</span>
+            <span class="dim-score-tag">3.0分 · 中等</span>
+          </div>
+          <div class="dim-desc">伴侣在教养中表现出的非支持行为处于中等水平</div>
+        </div>
+      </div>
+      <div class="ai-bar">
+        <span class="ai-bar-text">AI 智能诊断 · 获取个性化分析报告</span>
+        <span class="ai-bar-arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 方案D：数据可视化 -->
+  <div class="phone-container design-d">
+    <div class="design-label">方案D：数据可视化 — 环形图+网格卡片，信息密度高</div>
+    <div class="header">
+      <div class="header-top">
+        <div class="back-btn">‹</div>
+        <div class="header-title">测评报告</div>
+        <div class="header-action">🔄</div>
+      </div>
+      <div class="header-sub">🎉 测评完成 · 父母共同教养关系感知量表</div>
+    </div>
+    <div class="content">
+      <div class="score-panel">
+        <div class="score-left">
+          <div class="score-inner">
+            <div class="score-number">41</div>
+            <div class="score-unit">/ 3.66</div>
+          </div>
+        </div>
+        <div class="score-right">
+          <div class="level-badge">中等</div>
+          <div class="score-summary">
+            建议关注自身状态，必要时寻求专业帮助。测评结果仅供参考。
+          </div>
+        </div>
+      </div>
+      <div class="dims-grid">
+        <div class="dim-box">
+          <div class="dim-box-name">支持性</div>
+          <div class="dim-box-score">2.9</div>
+          <div class="dim-box-level">中等</div>
+        </div>
+        <div class="dim-box">
+          <div class="dim-box-name">非支持性</div>
+          <div class="dim-box-score">3.0</div>
+          <div class="dim-box-level">中等</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-title">AI 智能诊断</div>
+        <div class="ai-card-desc">获取专业心理咨询师的个性化分析报告</div>
+        <div class="ai-card-btn">立即查看 ›</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

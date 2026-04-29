@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 15:04
+      - generic [ref=e5]:
+        - generic [ref=e6]: 📶
+        - generic [ref=e7]: 📡
+        - generic [ref=e8]: 🔋
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47] [cursor=pointer]: ‹
+          - generic [ref=e48]: 测评记录
+          - generic "分享给朋友" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+        - generic [ref=e52]: 每一次测评，都是更了解自己的一步 🌱
+      - generic [ref=e53]:
+        - button "全部" [ref=e54] [cursor=pointer]
+        - button "近一周" [ref=e55] [cursor=pointer]
+        - button "近一月" [ref=e56] [cursor=pointer]
+        - button "近三月" [ref=e57] [cursor=pointer]
+      - generic [ref=e59]:
+        - generic [ref=e60]: 今天（1）
+        - generic [ref=e61] [cursor=pointer]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: 📋 90项症状清单
+            - generic [ref=e64]: 2.98分
+          - generic [ref=e65]:
+            - generic [ref=e66]: 躯体化 2.8/5
+            - generic [ref=e67]: 强迫症状 3.3/5
+            - generic [ref=e68]: 人际关系敏感 3.4/5
+            - generic [ref=e69]: 抑郁 3.9/5
+          - generic [ref=e71]: 📋 报告已生成
+          - generic [ref=e72]:
+            - generic [ref=e73]: 4/27 09:31
+            - generic [ref=e74]: ✓ 异常
+          - generic [ref=e75]:
+            - generic [ref=e76]: ✅
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - generic [ref=e79]: ⭐⭐⭐☆☆
+                - generic [ref=e80]: 一般
+              - generic [ref=e81]: 4/27
+              - generic [ref=e82]: AI诊断报告内容详实，维度分析全面，改善建议具有实操性。综合评估部分对常模对照的说明很清晰，温馨提醒也体现了专业的人文关怀。
+  - generic:
+    - generic:
+      - generic: 🗑
+      - generic: 删除测评记录
+      - generic: 确定删除这条记录吗？删除后无法恢复。
+      - generic:
+        - button "取消"
+        - button "删除"

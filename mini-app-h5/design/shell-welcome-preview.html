@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星蓝心镜 - 壳首页设计稿</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    padding: 20px;
+  }
+
+  /* 手机外壳 */
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #F0F6FF;
+    border-radius: 34px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 模拟小程序导航栏 */
+  .status-bar {
+    height: 44px;
+    background: #4A90D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .capsule {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 87px;
+    height: 32px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  .capsule-left, .capsule-right {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .capsule-left {
+    width: 54px;
+    border-right: 1px solid rgba(0,0,0,0.1);
+  }
+  .capsule-left::before {
+    content: '···';
+    color: #fff;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .capsule-right { width: 33px; }
+  .capsule-right::before {
+    content: '×';
+    color: #fff;
+    font-size: 16px;
+  }
+
+  /* ===== 壳首页内容 ===== */
+  .shell-page {
+    height: calc(100% - 44px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(180deg, #E8F2FF 0%, #F5F9FF 30%, #FFFFFF 100%);
+    position: relative;
+    padding: 0 28px;
+  }
+
+  /* 人物形象 */
+  .character-area {
+    margin-top: 40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(74, 144, 217, 0.2);
+    border: 4px solid #fff;
+    animation: fadeInUp 0.8s ease-out both;
+  }
+
+  .character-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* 品牌名 */
+  .brand-name {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2C3E50;
+    letter-spacing: 2px;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+  }
+
+  /* 对话气泡 */
+  .chat-bubble {
+    margin-top: 28px;
+    background: #fff;
+    border-radius: 20px 20px 20px 4px;
+    padding: 20px 22px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(74, 144, 217, 0.12);
+    position: relative;
+    min-height: 80px;
+    animation: fadeInUp 0.6s ease-out 0.6s both;
+  }
+
+  /* 气泡小三角 */
+  .chat-bubble::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 28px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 4px rgba(74, 144, 217, 0.06);
+  }
+
+  .bubble-text {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+  }
+
+  /* 打字光标 */
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 18px;
+    background: #4A90D9;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 0.8s infinite;
+  }
+
+  .typing-cursor.hidden {
+    display: none;
+  }
+
+  /* 进入测评按钮 */
+  .enter-btn-wrap {
+    margin-top: 36px;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+
+  .enter-btn-wrap.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .enter-btn {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #4A90D9, #3A7BC8);
+    color: #fff;
+    border: none;
+    border-radius: 26px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(74, 144, 217, 0.35);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .enter-btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+
+  .enter-btn .arrow {
+    transition: transform 0.3s;
+  }
+
+  .enter-btn:active .arrow {
+    transform: translateX(4px);
+  }
+
+  /* 底部 */
+  .footer-text {
+    position: absolute;
+    bottom: 40px;
+    font-size: 12px;
+    color: #C0C8D4;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 1.2s both;
+  }
+
+  /* ===== 装饰元素 ===== */
+  .deco-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.06;
+    background: #4A90D9;
+    pointer-events: none;
+  }
+  .deco-circle:nth-child(1) {
+    width: 200px; height: 200px;
+    top: -40px; right: -60px;
+  }
+  .deco-circle:nth-child(2) {
+    width: 120px; height: 120px;
+    bottom: 80px; left: -30px;
+  }
+  .deco-circle:nth-child(3) {
+    width: 80px; height: 80px;
+    top: 180px; right: -20px;
+    opacity: 0.04;
+  }
+
+  /* ===== 动画 ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ===== 标签 ===== */
+  .design-label {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <div class="status-bar">
+        <div class="capsule">
+          <div class="capsule-left"></div>
+          <div class="capsule-right"></div>
+        </div>
+      </div>
+
+      <div class="shell-page">
+        <!-- 装饰圆 -->
+        <div class="deco-circle"></div>
+        <div class="deco-circle"></div>
+        <div class="deco-circle"></div>
+
+        <!-- 人物形象 -->
+        <div class="character-area">
+          <img src="../frontend/assets/counselor.png" alt="咨询师">
+        </div>
+
+        <!-- 品牌名 -->
+        <div class="brand-name">星蓝心镜</div>
+
+        <!-- 对话气泡 -->
+        <div class="chat-bubble">
+          <div class="bubble-text">
+            <span id="typedText"></span><span class="typing-cursor" id="cursor"></span>
+          </div>
+        </div>
+
+        <!-- 进入测评按钮（打字完成后显示） -->
+        <div class="enter-btn-wrap" id="btnWrap">
+          <button class="enter-btn" onclick="alert('进入测评')">
+            进入测评 <span class="arrow">→</span>
+          </button>
+        </div>
+
+        <div class="footer-text">每一种感受，都值得被温柔以待</div>
+      </div>
+    </div>
+  </div>
+  <div class="design-label">人物 + 打字气泡 + 按钮动画方案</div>
+</div>
+
+<script>
+(function() {
+  const welcomeText = '你好，我是你的心理健康咨询师。\n在这里，你可以完成专业量表测评，获取多维分析报告，还有 AI 辅助诊断。\n准备好了吗？让我们开始吧～';
+  const typedEl = document.getElementById('typedText');
+  const cursorEl = document.getElementById('cursor');
+  const btnWrap = document.getElementById('btnWrap');
+
+  let idx = 0;
+  const chars = welcomeText.split('');
+  const speed = 50; // 每字间隔 ms
+  const lineBreakDelay = 300; // 换行额外延迟
+
+  function type() {
+    if (idx >= chars.length) {
+      // 打字完成
+      setTimeout(function() {
+        cursorEl.classList.add('hidden');
+        btnWrap.classList.add('show');
+      }, 500);
+      return;
+    }
+
+    const ch = chars[idx];
+    if (ch === '\n') {
+      typedEl.innerHTML += '<br>';
+      idx++;
+      setTimeout(type, lineBreakDelay);
+    } else {
+      typedEl.innerHTML += ch;
+      idx++;
+      setTimeout(type, speed);
+    }
+  }
+
+  // 延迟启动打字（等人物和品牌名动画完成）
+  setTimeout(type, 1200);
+})();
+</script>
+
+</body>
+</html>

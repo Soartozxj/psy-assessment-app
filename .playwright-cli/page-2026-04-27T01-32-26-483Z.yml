@@ -1,0 +1,38 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 15:04
+      - generic [ref=e5]:
+        - generic [ref=e6]: 📶
+        - generic [ref=e7]: 📡
+        - generic [ref=e8]: 🔋
+    - generic [ref=e9]:
+      - generic:
+        - generic:
+          - img "心理咨询师"
+      - generic [ref=e325]:
+        - generic [ref=e326]:
+          - generic [ref=e327]:
+            - generic [ref=e328] [cursor=pointer]: ‹
+            - generic [ref=e329]: 测评详情报告
+            - generic "评价本次测评" [ref=e330] [cursor=pointer]: 💬
+            - generic "分享给朋友" [ref=e331] [cursor=pointer]:
+              - img [ref=e332]
+          - generic [ref=e334]:
+            - generic [ref=e335]: 📋
+            - generic [ref=e336]: 90项症状清单
+            - generic [ref=e337]: "|"
+            - generic [ref=e338]: "2.98"
+            - generic [ref=e339]: 异常
+        - generic [ref=e341]:
+          - heading "测评详情报告" [level=3] [ref=e342]
+          - paragraph [ref=e343]: 基于您的测评结果，系统将为您生成一份专业的个性化测评分析报告
+          - button "✨ 开始测评" [ref=e344] [cursor=pointer]
+  - generic:
+    - generic:
+      - generic: 🗑
+      - generic: 删除测评记录
+      - generic: 确定删除这条记录吗？删除后无法恢复。
+      - generic:
+        - button "取消"
+        - button "删除"

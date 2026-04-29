@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>评价反馈系统 - 设计稿 v1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+    padding: 20px;
+  }
+  .design-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+  }
+  .design-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 32px;
+  }
+  .phones-row {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-container {
+    width: 375px;
+    background: #fff;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .phone-frame {
+    width: 100%;
+    max-height: 720px;
+    overflow-y: auto;
+    background: #f8f9fa;
+  }
+  .phone-frame::-webkit-scrollbar { width: 0; }
+  .design-label {
+    background: #4A90D9;
+    color: #fff;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 12px;
+    max-width: 260px;
+  }
+
+  /* ========== 公共组件 ========== */
+  .header {
+    background: linear-gradient(135deg, #4A90D9 0%, #3A7BC8 100%);
+    padding: 44px 16px 16px;
+    color: #fff;
+  }
+  .nav-bar {
+    display: flex; align-items: center; padding: 44px 16px 12px;
+    background: linear-gradient(135deg, #4A90D9 0%, #3A7BC8 100%);
+    color: #fff; font-size: 17px; font-weight: 600;
+  }
+  .back-btn { font-size: 22px; margin-right: 8px; width: 32px; text-align: center; }
+  .nav-title { flex: 1; }
+
+  /* 用户卡片 */
+  .user-card {
+    background: linear-gradient(135deg, #5B9BD5 0%, #4A90D9 50%, #3A7BC8 100%);
+    margin: 12px;
+    border-radius: 16px;
+    padding: 20px 16px 16px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .user-card::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .user-info-row {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .user-detail { flex: 1; }
+  .user-nick { font-size: 16px; font-weight: 600; }
+  .user-id { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .user-motto { margin-top: 14px; font-size: 13px; opacity: 0.9; line-height: 1.6; }
+
+  /* 菜单列表 */
+  .menu-section { margin: 12px; background: #fff; border-radius: 12px; overflow: hidden; }
+  .menu-section-title { font-size: 12px; color: #999; padding: 16px 16px 8px; font-weight: 500; }
+  .menu-item {
+    display: flex; align-items: center; padding: 14px 16px;
+    border-bottom: 1px solid #f5f5f5; cursor: pointer;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item-icon { font-size: 18px; margin-right: 12px; }
+  .menu-item-text { flex: 1; font-size: 14px; color: #333; }
+  .menu-item-value { font-size: 12px; color: #999; margin-right: 8px; }
+  .menu-arrow { font-size: 16px; color: #ccc; }
+
+  /* ============================================================ */
+  /*  核心组件：评价反馈区                                          */
+  /* ============================================================ */
+  .feedback-section {
+    margin: 12px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 16px;
+  }
+  .feedback-title-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .feedback-title {
+    font-size: 15px; font-weight: 600; color: #333;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .feedback-title .icon { font-size: 18px; }
+  .feedback-more {
+    font-size: 12px; color: #4A90D9; cursor: pointer;
+    display: flex; align-items: center; gap: 2px;
+  }
+
+  /* —— 星级评分 —— */
+  .star-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stars {
+    display: flex; gap: 4px;
+  }
+  .star {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; cursor: pointer;
+    transition: transform 0.15s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .star:active { transform: scale(1.2); }
+  .star.active { filter: none; }
+  .star.inactive { filter: grayscale(1) opacity(0.3); }
+  .star-label {
+    font-size: 14px; font-weight: 600; color: #f5a623;
+    min-width: 60px;
+  }
+
+  /* —— 快捷标签 —— */
+  .tag-group {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .tag-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1.5px solid #e8e8e8;
+    color: #666;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .tag-chip:active { transform: scale(0.96); }
+  .tag-chip.selected {
+    border-color: #4A90D9;
+    background: #f0f7ff;
+    color: #4A90D9;
+    font-weight: 500;
+  }
+
+  /* —— 文字输入 —— */
+  .feedback-textarea {
+    width: 100%;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    color: #333;
+    background: #fafafa;
+    transition: border-color 0.2s;
+  }
+  .feedback-textarea:focus {
+    border-color: #4A90D9;
+    background: #fff;
+  }
+  .feedback-textarea::placeholder { color: #bbb; }
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #bbb;
+    margin-top: 4px;
+  }
+  .char-count.warn { color: #e74c3c; }
+
+  /* —— 提交按钮 —— */
+  .feedback-submit-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #4A90D9 0%, #3A7BC8 100%);
+    cursor: pointer;
+    margin-top: 14px;
+    transition: opacity 0.2s;
+  }
+  .feedback-submit-btn:active { opacity: 0.85; }
+  .feedback-submit-btn:disabled {
+    background: #d9d9d9;
+    color: #999;
+    cursor: not-allowed;
+  }
+
+  /* —— 已评价状态 —— */
+  .feedback-done {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  .feedback-done .done-icon { font-size: 36px; margin-bottom: 8px; }
+  .feedback-done .done-text { font-size: 13px; color: #999; }
+  .feedback-done .done-stars { font-size: 24px; margin: 8px 0 4px; letter-spacing: 2px; }
+  .feedback-done .done-label { font-size: 14px; font-weight: 600; color: #f5a623; }
+
+  /* —— 已有评价列表（展示区） —— */
+  .review-list { margin-top: 16px; border-top: 1px solid #f0f0f0; padding-top: 14px; }
+  .review-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f8f8f8;
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .review-user {
+    font-size: 13px; font-weight: 600; color: #333;
+  }
+  .review-date { font-size: 11px; color: #bbb; }
+  .review-stars { font-size: 12px; margin-bottom: 6px; letter-spacing: 1px; }
+  .review-tags {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;
+  }
+  .review-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f0f7ff;
+    color: #4A90D9;
+  }
+  .review-text { font-size: 12px; color: #666; line-height: 1.6; }
+
+  /* 分隔标题 */
+  .section-divider {
+    display: flex; align-items: center; gap: 8px;
+    margin: 14px 0 10px;
+  }
+  .section-divider .line { flex: 1; height: 1px; background: #f0f0f0; }
+  .section-divider .text { font-size: 12px; color: #bbb; white-space: nowrap; }
+
+  /* ========== 方案2：报告页内嵌 ========== */
+  .report-card {
+    background: #fff;
+    border-radius: 16px;
+    margin: 12px;
+    padding: 20px 16px;
+  }
+  .report-card-title {
+    font-size: 15px; font-weight: 600; color: #333;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* 内嵌紧凑版 */
+  .feedback-compact {
+    background: #f8f9fb;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .feedback-compact .compact-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .feedback-compact .compact-title {
+    font-size: 14px; font-weight: 600; color: #333;
+  }
+  .feedback-compact .compact-stars {
+    display: flex; gap: 4px;
+  }
+  .feedback-compact .compact-star {
+    width: 28px; height: 28px;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .feedback-compact .compact-star:active { transform: scale(1.15); }
+  .feedback-compact .tag-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .feedback-compact .mini-tag {
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    border: 1px solid #e8e8e8;
+    color: #888;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .feedback-compact .mini-tag.selected {
+    border-color: #4A90D9;
+    background: #f0f7ff;
+    color: #4A90D9;
+  }
+  .feedback-compact .compact-input {
+    width: 100%;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.5;
+    background: #fff;
+  }
+  .feedback-compact .compact-input:focus { border-color: #4A90D9; }
+  .feedback-compact .compact-input::placeholder { color: #ccc; }
+  .compact-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px;
+  }
+  .compact-char-count { font-size: 11px; color: #bbb; }
+  .compact-submit {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #4A90D9, #3A7BC8);
+    cursor: pointer;
+  }
+  .compact-submit:active { opacity: 0.85; }
+
+  /* 内嵌已评价状态 */
+  .feedback-rated {
+    display: flex; align-items: center; gap: 10px;
+    background: #f8f9fb;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .rated-info { flex: 1; }
+  .rated-stars-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 4px;
+  }
+  .rated-label { font-size: 12px; color: #f5a623; font-weight: 600; }
+  .rated-date { font-size: 11px; color: #bbb; }
+  .rated-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .rated-tag { font-size: 10px; padding: 2px 6px; border-radius: 8px; background: #f0f7ff; color: #4A90D9; }
+
+  /* ========== 设计说明区域 ========== */
+  .design-notes {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .design-notes h2 {
+    font-size: 18px; color: #333;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #4A90D9;
+  }
+  .notes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .note-card {
+    background: #f8f9fb;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .note-card h4 {
+    font-size: 14px; color: #4A90D9;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .note-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .note-card li {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.8;
+    padding-left: 14px;
+    position: relative;
+  }
+  .note-card li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #4A90D9;
+    font-weight: 700;
+  }
+  .interaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 12px;
+  }
+  .interaction-table th {
+    background: #f0f7ff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #4A90D9;
+    border-bottom: 2px solid #4A90D9;
+  }
+  .interaction-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #555;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="design-title">📝 评价反馈系统 — 设计稿 v1</div>
+<div class="design-subtitle">星蓝心镜 · 三处反馈入口 · 2026-04-26</div>
+
+<div class="phones-row">
+
+  <!-- ==================== 方案1：我的页面 ==================== -->
+  <div class="phone-wrap">
+    <div class="design-label">① 我的页面 — 整体满意度</div>
+    <div class="phone-container">
+      <div class="phone-frame">
+        <div class="nav-bar">
+          <span class="back-btn">‹</span>
+          <span class="nav-title">我的</span>
+        </div>
+        <div class="user-card">
+          <div class="user-info-row">
+            <div class="avatar">👤</div>
+            <div class="user-detail">
+              <div class="user-nick">体验用户</div>
+              <div class="user-id">点击完善个人信息 ›</div>
+            </div>
+          </div>
+          <div class="user-motto">每一次觉察，都是成长的开始 🌱</div>
+        </div>
+
+        <!-- ===== 新增：评价反馈区 ===== -->
+        <div class="feedback-section">
+          <div class="feedback-title-row">
+            <div class="feedback-title"><span class="icon">💬</span> 用户评价</div>
+            <div class="feedback-more">我的全部评价 ›</div>
+          </div>
+
+          <!-- 已有评价列表 -->
+          <div class="review-list">
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-user">用户***</span>
+                <span class="review-date">2026-04-25</span>
+              </div>
+              <div class="review-stars">⭐⭐⭐⭐⭐</div>
+              <div class="review-tags">
+                <span class="review-tag">界面美观</span>
+                <span class="review-tag">专业靠谱</span>
+              </div>
+              <div class="review-text">测评结果很详细，AI诊断报告也很专业，希望增加更多量表。</div>
+            </div>
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-user">用户***</span>
+                <span class="review-date">2026-04-24</span>
+              </div>
+              <div class="review-stars">⭐⭐⭐⭐</div>
+              <div class="review-tags">
+                <span class="review-tag">方便快捷</span>
+              </div>
+              <div class="review-text">操作简单，不用注册就能用，方便。</div>
+            </div>
+            <div class="review-item">
+              <div class="review-header">
+                <span class="review-user">用户***</span>
+                <span class="review-date">2026-04-22</span>
+              </div>
+              <div class="review-stars">⭐⭐⭐⭐⭐</div>
+              <div class="review-tags">
+                <span class="review-tag">内容专业</span>
+                <span class="review-tag">AI报告好</span>
+                <span class="review-tag">咨询师亲切</span>
+              </div>
+              <div class="review-text">非常有用，推荐给朋友了！</div>
+            </div>
+          </div>
+
+          <!-- 分隔线 -->
+          <div class="section-divider">
+            <div class="line"></div>
+            <div class="text">写下你的评价</div>
+            <div class="line"></div>
+          </div>
+
+          <!-- 评价表单 -->
+          <div class="star-row">
+            <div class="stars">
+              <div class="star active">⭐</div>
+              <div class="star active">⭐</div>
+              <div class="star active">⭐</div>
+              <div class="star active">⭐</div>
+              <div class="star inactive">⭐</div>
+            </div>
+            <div class="star-label">很满意</div>
+          </div>
+          <div class="tag-group">
+            <div class="tag-chip selected">界面美观</div>
+            <div class="tag-chip">方便快捷</div>
+            <div class="tag-chip selected">专业靠谱</div>
+            <div class="tag-chip">内容丰富</div>
+            <div class="tag-chip">AI报告好</div>
+            <div class="tag-chip">咨询师亲切</div>
+            <div class="tag-chip">值得推荐</div>
+            <div class="tag-chip">需要改进</div>
+          </div>
+          <textarea class="feedback-textarea" rows="3" placeholder="说说你的使用感受吧（选填）" maxlength="200"></textarea>
+          <div class="char-count">0 / 200</div>
+          <button class="feedback-submit-btn">提交评价</button>
+        </div>
+        <!-- ===== 评价反馈区结束 ===== -->
+
+        <div class="menu-section">
+          <div class="menu-section-title">我的服务</div>
+          <div class="menu-item">
+            <span class="menu-item-icon">📊</span>
+            <span class="menu-item-text">测评记录</span>
+            <span class="menu-item-value">共3次</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item">
+            <span class="menu-item-icon">⭐</span>
+            <span class="menu-item-text">收藏报告</span>
+            <span class="menu-item-value">0份</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 方案2：测评报告页（列表摘要） ==================== -->
+  <div class="phone-wrap">
+    <div class="design-label">② 测评记录 — 单次评价</div>
+    <div class="phone-container">
+      <div class="phone-frame">
+        <div class="nav-bar">
+          <span class="back-btn">‹</span>
+          <span class="nav-title">测评记录</span>
+        </div>
+
+        <!-- 模拟一条记录卡 -->
+        <div style="margin:12px; background:#fff; border-radius:16px; overflow:hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <div style="padding:16px; border-bottom:1px solid #f5f5f5;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <div style="font-size:15px; font-weight:600; color:#333;">PPCRS 家长压力</div>
+              <div style="font-size:12px; color:#999;">2026-04-25</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:56px;height:56px;border-radius:50%;border:6px solid #52c41a;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#52c41a;">42</div>
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#52c41a;">心理健康</div>
+                <div style="font-size:11px;color:#999;margin-top:2px;">满分 150 · 正常范围</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 新增：评价反馈区（内嵌紧凑版） ===== -->
+          <div style="padding:0 16px 16px;">
+            <div class="feedback-compact">
+              <div class="compact-header">
+                <div class="compact-title">💬 本次测评评价</div>
+                <div class="compact-stars">
+                  <div class="compact-star inactive">⭐</div>
+                  <div class="compact-star inactive">⭐</div>
+                  <div class="compact-star inactive">⭐</div>
+                  <div class="compact-star inactive">⭐</div>
+                  <div class="compact-star inactive">⭐</div>
+                </div>
+              </div>
+              <div class="tag-row">
+                <div class="mini-tag">题目清晰</div>
+                <div class="mini-tag">报告详细</div>
+                <div class="mini-tag">有帮助</div>
+                <div class="mini-tag">AI分析准</div>
+                <div class="mini-tag">建议实用</div>
+              </div>
+              <textarea class="compact-input" rows="2" placeholder="对本次测评有什么想说的？（选填）" maxlength="200"></textarea>
+              <div class="compact-actions">
+                <span class="compact-char-count">0/200</span>
+                <button class="compact-submit">提交</button>
+              </div>
+            </div>
+          </div>
+          <!-- ===== 评价反馈区结束 ===== -->
+
+          <div style="padding:0 16px 14px; display:flex; gap:10px;">
+            <div style="flex:1; padding:10px; text-align:center; background:#f8f9fb; border-radius:10px; font-size:13px; color:#4A90D9; cursor:pointer;">📋 查看详情</div>
+            <div style="flex:1; padding:10px; text-align:center; background:#f8f9fb; border-radius:10px; font-size:13px; color:#666; cursor:pointer;">🗑️ 删除</div>
+          </div>
+        </div>
+
+        <!-- 第二条：已评价状态 -->
+        <div style="margin:12px; background:#fff; border-radius:16px; overflow:hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <div style="padding:16px; border-bottom:1px solid #f5f5f5;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <div style="font-size:15px; font-weight:600; color:#333;">SCL-90 症状自评</div>
+              <div style="font-size:12px; color:#999;">2026-04-23</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:56px;height:56px;border-radius:50%;border:6px solid #f5a623;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#f5a623;">168</div>
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#f5a623;">轻度异常</div>
+                <div style="font-size:11px;color:#999;margin-top:2px;">满分 450 · 建议关注</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 已评价状态 ===== -->
+          <div style="padding:0 16px 16px;">
+            <div class="feedback-rated">
+              <div style="font-size:24px;">✅</div>
+              <div class="rated-info">
+                <div class="rated-stars-row">
+                  <span style="font-size:12px;letter-spacing:1px;">⭐⭐⭐⭐</span>
+                  <span class="rated-label">满意</span>
+                </div>
+                <div class="rated-tags">
+                  <span class="rated-tag">报告详细</span>
+                  <span class="rated-tag">有帮助</span>
+                </div>
+                <div class="rated-date">2026-04-23 评价</div>
+              </div>
+            </div>
+          </div>
+          <!-- ===== 已评价结束 ===== -->
+
+          <div style="padding:0 16px 14px; display:flex; gap:10px;">
+            <div style="flex:1; padding:10px; text-align:center; background:#f8f9fb; border-radius:10px; font-size:13px; color:#4A90D9; cursor:pointer;">📋 查看详情</div>
+            <div style="flex:1; padding:10px; text-align:center; background:#f8f9fb; border-radius:10px; font-size:13px; color:#666; cursor:pointer;">🗑️ 删除</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 方案3：测评详情报告页 ==================== -->
+  <div class="phone-wrap">
+    <div class="design-label">③ 测评详情报告 — 底部评价</div>
+    <div class="phone-container">
+      <div class="phone-frame">
+        <div class="nav-bar">
+          <span class="back-btn">‹</span>
+          <span class="nav-title">测评报告</span>
+          <span style="font-size:14px; opacity:0.8;">📤</span>
+        </div>
+
+        <!-- 报告头 -->
+        <div style="margin:12px; background:linear-gradient(135deg,#4A90D9,#3A7BC8); border-radius:16px; padding:20px; color:#fff;">
+          <div style="font-size:17px; font-weight:600; margin-bottom:10px;">PPCRS 家长压力量表</div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:80px;height:80px;border-radius:50%;border:8px solid rgba(255,255,255,0.4);border-right-color:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">42</div>
+            <div>
+              <div style="font-size:20px;font-weight:700;">心理健康</div>
+              <div style="font-size:12px;opacity:0.85;margin-top:4px;">满分 150 · 正常范围</div>
+              <div style="font-size:11px;opacity:0.7;margin-top:6px;">测评时间：2026-04-25 14:30</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 维度卡片 -->
+        <div style="margin:12px; background:#fff; border-radius:16px; padding:16px;">
+          <div style="font-size:14px; font-weight:600; color:#333; margin-bottom:12px;">📊 维度分析</div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:#555;">亲子压力</span>
+              <span style="color:#52c41a;font-weight:600;">12/50</span>
+            </div>
+            <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">
+              <div style="width:24%;height:100%;background:#52c41a;border-radius:3px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:#555;">角色限制</span>
+              <span style="color:#52c41a;font-weight:600;">8/40</span>
+            </div>
+            <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">
+              <div style="width:20%;height:100%;background:#52c41a;border-radius:3px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:#555;">生活变化</span>
+              <span style="color:#f5a623;font-weight:600;">22/60</span>
+            </div>
+            <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">
+              <div style="width:37%;height:100%;background:#f5a623;border-radius:3px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI 诊断建议 -->
+        <div style="margin:12px; background:#fff; border-radius:16px; padding:16px;">
+          <div style="font-size:14px; font-weight:600; color:#333; margin-bottom:10px;">🤖 测评详情报告</div>
+          <div style="font-size:13px; color:#555; line-height:1.7;">
+            <p style="margin-bottom:8px;">根据您的测评结果，目前整体压力水平处于<strong>正常范围</strong>。</p>
+            <p>在"生活变化"维度上略高于参考值，建议关注近期生活变化带来的影响，适当进行放松训练。</p>
+          </div>
+        </div>
+
+        <!-- ===== 新增：底部评价反馈区 ===== -->
+        <div class="feedback-section">
+          <div class="feedback-title-row">
+            <div class="feedback-title"><span class="icon">💬</span> 对本次测评的评价</div>
+          </div>
+
+          <!-- 未评价状态：表单 -->
+          <div id="detail-form">
+            <div class="star-row">
+              <div class="stars">
+                <div class="star active">⭐</div>
+                <div class="star active">⭐</div>
+                <div class="star active">⭐</div>
+                <div class="star active">⭐</div>
+                <div class="star active">⭐</div>
+              </div>
+              <div class="star-label">非常满意</div>
+            </div>
+            <div class="tag-group">
+              <div class="tag-chip selected">题目清晰</div>
+              <div class="tag-chip">报告详细</div>
+              <div class="tag-chip selected">AI分析准</div>
+              <div class="tag-chip">建议实用</div>
+              <div class="tag-chip">有帮助</div>
+              <div class="tag-chip">值得推荐</div>
+            </div>
+            <textarea class="feedback-textarea" rows="3" placeholder="本次测评对你有什么帮助？（选填）" maxlength="200"></textarea>
+            <div class="char-count">0 / 200</div>
+            <button class="feedback-submit-btn">提交评价</button>
+          </div>
+
+          <!-- 已评价状态（示例，与未评价切换显示） -->
+          <div style="display:none;" id="detail-done">
+            <div class="feedback-done">
+              <div class="done-icon">✅</div>
+              <div class="done-stars">⭐⭐⭐⭐⭐</div>
+              <div class="done-label">非常满意</div>
+              <div class="done-text">感谢你的评价！</div>
+            </div>
+            <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:4px;">
+              <span class="review-tag">题目清晰</span>
+              <span class="review-tag">AI分析准</span>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#666; line-height:1.6; padding:10px; background:#f8f9fb; border-radius:8px;">
+              AI报告给了我很专业的建议，感觉被理解了。
+            </div>
+          </div>
+        </div>
+        <!-- ===== 评价反馈区结束 ===== -->
+
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== 设计说明 ==================== -->
+<div class="design-notes">
+  <h2>📐 设计说明与交互规范</h2>
+  <div class="notes-grid">
+    <div class="note-card">
+      <h4>① 我的页面</h4>
+      <ul>
+        <li>位置：用户卡片下方，菜单列表上方</li>
+        <li>展示：匿名评价列表（最新3条）</li>
+        <li>类型：整体使用体验评价</li>
+        <li>入口：「我的全部评价」跳转完整列表</li>
+        <li>标签池：8 个预设标签，最多选3个</li>
+      </ul>
+    </div>
+    <div class="note-card">
+      <h4>② 测评记录页</h4>
+      <ul>
+        <li>位置：每条记录卡内部</li>
+        <li>类型：单次测评评价</li>
+        <li>标签池：5 个业务相关标签</li>
+        <li>防刷：每条记录只能评价一次</li>
+        <li>已评价：显示 ✅ + 星级 + 标签</li>
+        <li>样式：内嵌紧凑版，不抢报告焦点</li>
+      </ul>
+    </div>
+    <div class="note-card">
+      <h4>③ 测评详情报告页</h4>
+      <ul>
+        <li>位置：报告最底部，AI 诊断下方</li>
+        <li>类型：单次测评深度评价</li>
+        <li>标签池：6 个评价维度标签</li>
+        <li>提交后：切换为已评价展示态</li>
+        <li>匿名：「用户***」格式展示</li>
+        <li>占位文案引导：「本次测评对你有什么帮助？」</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 style="margin-top:28px;">🔗 交互规则表</h2>
+  <table class="interaction-table">
+    <thead>
+      <tr>
+        <th style="width:140px;">交互元素</th>
+        <th>行为说明</th>
+        <th style="width:100px;">约束</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>⭐ 星级评分</td>
+        <td>点击选择 1-5 星，实时高亮前置星星，右侧显示文字标签（不满意→很满意→非常满意）</td>
+        <td>必填</td>
+      </tr>
+      <tr>
+        <td>🏷️ 标签选择</td>
+        <td>点击选中/取消，选中态：蓝色边框+浅蓝底色+蓝色文字，最多选 3 个</td>
+        <td>选填</td>
+      </tr>
+      <tr>
+        <td>📝 文字评价</td>
+        <td>输入框获得焦点后边框变蓝，右下角实时字数统计，超限变红</td>
+        <td>选填，50-200字</td>
+      </tr>
+      <tr>
+        <td>📤 提交评价</td>
+        <td>星级未选时按钮置灰不可点；提交成功后切换为已评价展示态，1.5s 后淡入 ✅ 动画</td>
+        <td>必填星级</td>
+      </tr>
+      <tr>
+        <td>🔒 防刷机制</td>
+        <td>基于 localStorage 记录已评价的 scaleId+recordId 组合，已评价的记录不显示表单</td>
+        <td>每条一次</td>
+      </tr>
+      <tr>
+        <td>👤 匿名展示</td>
+        <td>评价列表中用户名显示为「用户***」，取昵称首字+星号遮挡</td>
+        <td>自动处理</td>
+      </tr>
+      <tr>
+        <td>📋 全部评价</td>
+        <td>点击「我的全部评价」跳转到独立评价列表页，按时间倒序展示所有历史评价</td>
+        <td>独立页面</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:28px;">⏭️ 状态流转</h2>
+  <table class="interaction-table">
+    <thead>
+      <tr>
+        <th style="width:160px;">场景</th>
+        <th>未评价态</th>
+        <th>已评价态</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>我的页面</td>
+        <td>显示评价列表 + 底部表单（星级+标签+文字+提交）</td>
+        <td>表单区隐藏，新增一条评价到列表顶部</td>
+      </tr>
+      <tr>
+        <td>测评记录页</td>
+        <td>记录卡片底部显示紧凑评价表单</td>
+        <td>替换为 ✅ 图标 + 星级 + 标签 + 评价时间</td>
+      </tr>
+      <tr>
+        <td>测评详情页</td>
+        <td>报告底部显示完整评价表单</td>
+        <td>切换为已评价展示（星级+标签+文字内容）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

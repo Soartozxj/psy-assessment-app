@@ -1,0 +1,11 @@
+{
+  "provider": "dashscope",
+  "dashscope": {
+    "apiKey": "sk-b2c5ed670faf41568a7774a86ba8d448",
+    "model": "qwen-plus"
+  },
+  "ollama": {
+    "baseUrl": "http://localhost:11434",
+    "model": "qwen2.5:7b"
+  }
+}

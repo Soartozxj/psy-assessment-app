@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台新增「系统提示词」页签 - 设计稿 v4</title>
+<style>
+  :root {
+    --primary: #4A90D9;
+    --primary-light: #f0f7ff;
+    --primary-hover: #3a7bc8;
+    --danger: #e74c3c;
+    --danger-light: #fff1f0;
+    --success: #52c41a;
+    --success-light: #f6ffed;
+    --warning: #faad14;
+    --warning-light: #fffbe6;
+    --text: #1a1a2e;
+    --text-sec: #4a4a6a;
+    --text-muted: #8e8ea0;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --border: #e8e8ef;
+    --sidebar-bg: #1a1a2e;
+    --radius: 8px;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --code-bg: #1e1e2e;
+    --code-border: #313244;
+    --code-text: #cdd6f4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* 顶部说明栏 */
+  .design-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff; padding: 20px 28px;
+  }
+  .design-header h1 { font-size: 20px; margin-bottom: 6px; }
+  .design-header p { font-size: 13px; opacity: 0.85; line-height: 1.6; }
+
+  .design-body { display: flex; min-height: calc(100vh - 90px); }
+
+  /* 左侧设计说明 */
+  .design-sidebar {
+    width: 340px; background: var(--card); border-right: 1px solid var(--border);
+    padding: 20px; overflow-y: auto; flex-shrink: 0;
+  }
+  .design-sidebar h3 { font-size: 14px; color: var(--primary); margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--primary); }
+  .design-sidebar h3:first-child { margin-top: 0; }
+  .design-sidebar p, .design-sidebar li { font-size: 12.5px; color: var(--text-sec); line-height: 1.7; }
+  .design-sidebar ul { padding-left: 16px; }
+  .design-sidebar li { margin-bottom: 3px; }
+  .tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-right: 4px; }
+  .tag-new { background: #e6f7ff; color: #1890ff; }
+  .tag-changed { background: #fff7e6; color: #d48806; }
+  .tag-removed { background: #fff1f0; color: #e74c3c; }
+
+  .change-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }
+  .change-table th { background: var(--bg); padding: 5px 8px; text-align: left; font-weight: 600; color: var(--text-sec); border-bottom: 1px solid var(--border); }
+  .change-table td { padding: 5px 8px; border-bottom: 1px solid #f5f5f5; color: var(--text-sec); vertical-align: top; }
+
+  /* 右侧模拟真实后台 */
+  .design-main { flex: 1; display: flex; overflow: hidden; }
+
+  /* 模拟侧边栏 */
+  .mock-sidebar {
+    width: 210px; background: var(--sidebar-bg); color: rgba(255,255,255,0.8);
+    padding: 16px 0; flex-shrink: 0; font-size: 13px;
+  }
+  .mock-sidebar .mock-logo { padding: 0 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+  .mock-sidebar .mock-logo div:first-child { font-size: 14px; font-weight: 600; color: #fff; }
+  .mock-sidebar .mock-logo div:last-child { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .mock-menu-group { padding: 8px 16px 4px; font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+  .mock-menu-item { padding: 8px 16px; cursor: default; display: flex; align-items: center; gap: 8px; }
+  .mock-menu-item:hover { background: rgba(255,255,255,0.05); }
+  .mock-menu-item.active { background: rgba(74,144,217,0.3); color: #fff; border-right: 3px solid var(--primary); }
+  .mock-menu-item.new-item { color: var(--warning); }
+
+  /* 模拟内容区 */
+  .mock-content { flex: 1; background: var(--bg); overflow-y: auto; padding: 24px; }
+
+  /* 页面标题区 */
+  .page-title-bar { margin-bottom: 20px; }
+  .page-title-bar h2 { font-size: 18px; margin-bottom: 4px; }
+  .page-title-bar p { font-size: 12px; color: var(--text-muted); }
+
+  /* ============ 提示词类型页签（顶层） ============ */
+  .prompt-type-tabs {
+    display: flex; align-items: center; gap: 0; margin-bottom: 20px;
+    border-bottom: 2px solid var(--border); background: var(--card);
+    border-radius: var(--radius) var(--radius) 0 0; padding: 0 4px;
+  }
+  .prompt-type-tab {
+    padding: 12px 20px; font-size: 13.5px; font-weight: 500; cursor: pointer;
+    color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    position: relative; background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .prompt-type-tab:hover { color: var(--primary); background: var(--primary-light); }
+  .prompt-type-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  .prompt-type-tab .pt-icon { font-size: 16px; }
+  .prompt-type-tab .pt-count {
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600;
+    background: var(--bg); color: var(--text-muted);
+  }
+  .prompt-type-tab.active .pt-count { background: var(--primary-light); color: var(--primary); }
+
+  /* 页签上的 ··· 更多按钮 */
+  .prompt-type-tab .pt-more-btn {
+    width: 18px; height: 18px; border: none; background: transparent;
+    cursor: pointer; font-size: 12px; color: var(--text-muted); border-radius: 3px;
+    display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s;
+    padding: 0; line-height: 1;
+  }
+  .prompt-type-tab:hover .pt-more-btn { opacity: 1; }
+  .prompt-type-tab .pt-more-btn:hover { background: var(--border); color: var(--text); }
+
+  /* 页签更多菜单 */
+  .pt-more-menu {
+    position: absolute; top: 100%; right: 0; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; padding: 4px;
+    box-shadow: var(--shadow-md); z-index: 100; min-width: 140px; display: none;
+  }
+  .pt-more-menu.show { display: block; }
+  .pt-more-menu-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 12px;
+    font-size: 12.5px; color: var(--text-sec); cursor: pointer; border-radius: 5px;
+    transition: background 0.1s; border: none; background: none; width: 100%; text-align: left;
+  }
+  .pt-more-menu-item:hover { background: var(--bg); }
+  .pt-more-menu-item.danger-item { color: var(--danger); }
+  .pt-more-menu-item.danger-item:hover { background: var(--danger-light); }
+
+  .prompt-type-add-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px dashed var(--border); background: none;
+    font-size: 12px; cursor: pointer; color: var(--text-muted); margin-left: auto; transition: all 0.15s;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .prompt-type-add-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  /* ============ 提示词正文区域（左右分栏） ============ */
+  .prompt-reading-area {
+    background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .reading-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .reading-toolbar-left { display: flex; align-items: center; gap: 12px; }
+  .reading-toolbar-left .section-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .btn-copy {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--primary);
+    background: var(--primary-light); color: var(--primary); font-size: 12px;
+    cursor: pointer; font-weight: 500; transition: all 0.15s;
+  }
+  .btn-copy:hover { background: var(--primary); color: #fff; }
+  .btn-copy.copied { background: var(--success); border-color: var(--success); color: #fff; }
+
+  /* 左右分栏容器 */
+  .reading-split {
+    display: flex; min-height: 420px;
+  }
+
+  /* ===== 左侧：版本列表 ===== */
+  .version-panel {
+    width: 260px; flex-shrink: 0; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; background: var(--bg);
+  }
+  .version-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px 10px; font-size: 13px; font-weight: 600; color: var(--text-sec);
+  }
+  .version-add-btn {
+    padding: 3px 10px; border-radius: 5px; border: 1px dashed var(--border); background: none;
+    font-size: 11px; cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+  }
+  .version-add-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  .version-list {
+    flex: 1; overflow-y: auto; padding: 0 10px 10px;
+  }
+  .version-list::-webkit-scrollbar { width: 4px; }
+  .version-list::-webkit-scrollbar-thumb { background: #d0d0d8; border-radius: 2px; }
+
+  .version-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    border: 1.5px solid transparent; margin-bottom: 4px;
+  }
+  .version-item:hover { background: var(--card); border-color: var(--border); }
+  .version-item.active { background: var(--primary-light); border-color: var(--primary); }
+
+  .version-item-info { flex: 1; min-width: 0; }
+  .version-item-ver { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .version-item-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .version-item-date { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+
+  .v-badge {
+    font-size: 9.5px; padding: 1px 6px; border-radius: 3px; font-weight: 600; flex-shrink: 0;
+  }
+  .v-badge.active-v { background: var(--primary-light); color: var(--primary); }
+  .v-badge.old-v { background: #f0f0f3; color: var(--text-muted); }
+  .v-badge.draft-v { background: var(--warning-light); color: var(--warning); }
+
+  .version-item-actions {
+    display: flex; gap: 3px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .version-item:hover .version-item-actions { opacity: 1; }
+  .version-item-actions button {
+    width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .version-item-actions button:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .version-item-actions button.btn-del-v:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+
+  /* ===== 右侧：暗底正文 ===== */
+  .document-panel {
+    flex: 1; display: flex; flex-direction: column; background: var(--code-bg); overflow: hidden;
+  }
+  .version-meta-bar {
+    display: flex; align-items: center; gap: 16px; padding: 8px 16px;
+    background: #181825; border-bottom: 1px solid var(--code-border);
+    font-size: 11px; color: #7f849c;
+  }
+  .version-meta-bar span { display: flex; align-items: center; gap: 4px; }
+  .version-meta-bar .meta-version { color: var(--primary); font-weight: 600; }
+
+  .document-body {
+    flex: 1; padding: 24px 28px; overflow-y: auto;
+    font-size: 13.5px; line-height: 1.8; color: var(--code-text);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .document-body::-webkit-scrollbar { width: 6px; }
+  .document-body::-webkit-scrollbar-thumb { background: #585b70; border-radius: 3px; }
+  .document-body::-webkit-scrollbar-track { background: transparent; }
+
+  /* 文档内段落排版 */
+  .document-body .doc-para { margin-bottom: 10px; }
+  .document-body .doc-list {
+    margin: 8px 0 10px 1.5em; padding-left: 0;
+    list-style: decimal;
+  }
+  .document-body .doc-list li { margin-bottom: 4px; }
+  .document-body .doc-list-ul { list-style: disc; }
+  .document-body .doc-bold { color: #f5e0dc; font-weight: 600; }
+  .document-body .doc-highlight {
+    color: #f9e2af; /* yellow-ish */
+  }
+  .document-body .doc-warn {
+    color: #f38ba8; /* red-ish */
+  }
+  .document-body .doc-code {
+    display: block; background: #181825; border: 1px solid var(--code-border);
+    border-radius: 6px; padding: 14px 16px; margin: 10px 0;
+    font-size: 13px; line-height: 1.7; white-space: pre-wrap;
+  }
+
+  /* ============ 使用流程（横向布局 + 滑动） ============ */
+  .flow-section {
+    background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .flow-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg);
+  }
+  .flow-section-header h4 { font-size: 13.5px; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; gap: 6px; }
+  .flow-toolbar { display: flex; gap: 6px; }
+  .flow-toolbar button {
+    padding: 4px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--card);
+    font-size: 11.5px; cursor: pointer; color: var(--text-sec); transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  }
+  .flow-toolbar button:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .flow-toolbar button.btn-flow-done { border-color: var(--success); color: var(--success); background: var(--success-light); }
+
+  .flow-scroll-wrapper {
+    overflow-x: auto; overflow-y: hidden; padding: 18px 18px 14px;
+    scroll-behavior: smooth; cursor: grab;
+  }
+  .flow-scroll-wrapper:active { cursor: grabbing; }
+  .flow-scroll-wrapper::-webkit-scrollbar { height: 6px; }
+  .flow-scroll-wrapper::-webkit-scrollbar-thumb { background: #d0d0d8; border-radius: 3px; }
+  .flow-scroll-wrapper::-webkit-scrollbar-track { background: #f0f0f3; }
+
+  .flow-steps-h {
+    display: flex; align-items: flex-start; gap: 0; min-width: max-content;
+  }
+
+  .flow-item-h {
+    display: flex; flex-direction: column; align-items: center; width: 200px;
+    flex-shrink: 0; position: relative; padding: 0 4px;
+  }
+  .flow-item-h .flow-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 14px; width: 100%; text-align: center; transition: all 0.2s;
+    position: relative; cursor: grab;
+  }
+  .flow-item-h .flow-card:hover {
+    border-color: #c0c8d8; box-shadow: var(--shadow-md); transform: translateY(-2px);
+  }
+  .flow-item-h.dragging { opacity: 0.4; }
+  .flow-item-h.drag-over .flow-card { border-color: var(--primary); background: var(--primary-light); }
+
+  .flow-num-h {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 700; color: #fff;
+    margin: 0 auto 8px; flex-shrink: 0;
+  }
+  .flow-num-h.primary { background: var(--primary); }
+  .flow-num-h.success { background: var(--success); }
+  .flow-num-h.highlight {
+    background: #f0f7ff; color: var(--primary); border: 2px solid var(--primary);
+    width: 30px; height: 30px; font-size: 13px;
+  }
+  .flow-num-h.highlight-success {
+    background: #e8fde8; color: var(--success); border: 2px solid var(--success);
+    width: 30px; height: 30px; font-size: 13px;
+  }
+
+  .flow-title-h { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .flow-desc-h { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  .flow-arrow {
+    display: flex; align-items: center; padding: 0 2px; height: 60px; flex-shrink: 0;
+    margin-top: 14px; color: var(--border); font-size: 18px;
+  }
+
+  .flow-actions-h {
+    position: absolute; top: -6px; right: -6px;
+    display: flex; gap: 3px; opacity: 0; transition: opacity 0.15s; z-index: 5;
+  }
+  .flow-item-h:hover .flow-actions-h { opacity: 1; }
+  .flow-actions-h button {
+    width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .flow-actions-h button:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .flow-actions-h button.btn-del:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+
+  .flow-edit-input {
+    border: 1px solid var(--primary); border-radius: 4px; padding: 2px 6px;
+    font-size: 12px; outline: none; width: 100%; background: var(--primary-light);
+  }
+
+  /* ============ 版本编辑弹窗 ============ */
+  .version-edit-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45); z-index: 1001;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .version-edit-box {
+    background: var(--card); border-radius: 12px; width: 640px;
+    max-height: 75vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+  }
+  .version-edit-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .version-edit-header h3 { font-size: 14px; }
+  .version-edit-close {
+    width: 26px; height: 26px; border: none; background: var(--bg); border-radius: 6px;
+    cursor: pointer; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  }
+  .version-edit-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
+  .version-edit-footer {
+    padding: 10px 18px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+  }
+  .version-edit-footer .version-save-hint { font-size: 11px; color: var(--text-muted); margin-right: auto; }
+
+  .v-form-group { margin-bottom: 12px; }
+  .v-form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; }
+  .v-form-input { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+  .v-form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,144,217,0.15); }
+  .v-form-textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 12px; outline: none; min-height: 260px; line-height: 1.7;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; resize: vertical;
+  }
+  .v-form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,144,217,0.15); }
+  .v-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v-form-hint { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+
+  .btn-primary { padding: 7px 16px; border-radius: 6px; border: none; background: var(--primary); color: #fff; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-default { padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text-sec); font-size: 13px; cursor: pointer; }
+  .btn-danger { padding: 7px 16px; border-radius: 6px; border: 1px solid var(--danger); background: var(--card); color: var(--danger); font-size: 13px; cursor: pointer; }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+
+  /* ============ 新增提示词弹窗 ============ */
+  .new-prompt-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45); z-index: 1002;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .new-prompt-box {
+    background: var(--card); border-radius: 12px; width: 560px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+  }
+  .new-prompt-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .new-prompt-header h3 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .new-prompt-close { width: 28px; height: 28px; border: none; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 16px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+  .new-prompt-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+  /* 图标选择器 */
+  .icon-picker-area { margin-bottom: 14px; }
+  .icon-picker-area label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+  .icon-picker-grid {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px;
+    background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .icon-picker-item {
+    width: 38px; height: 38px; border-radius: 8px; border: 2px solid transparent;
+    background: var(--card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; transition: all 0.15s;
+  }
+  .icon-picker-item:hover { border-color: var(--border); background: var(--primary-light); }
+  .icon-picker-item.selected { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 2px rgba(74,144,217,0.2); }
+
+  /* 预设模板 */
+  .template-area { margin-bottom: 14px; }
+  .template-area label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+  .template-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .template-chip {
+    padding: 5px 12px; border-radius: 16px; border: 1px solid var(--border);
+    background: var(--card); font-size: 12px; color: var(--text-sec);
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  }
+  .template-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .template-chip.selected { border-color: var(--primary); color: var(--primary); background: var(--primary-light); font-weight: 600; }
+  .template-chip .chip-icon { font-size: 13px; }
+
+  .new-prompt-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+  }
+  .new-prompt-footer .footer-hint { font-size: 11px; color: var(--text-muted); margin-right: auto; }
+
+  /* 模拟编辑弹窗 */
+  .mock-edit-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mock-modal-box {
+    background: var(--card); border-radius: 12px; width: 680px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+  }
+  .mock-modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mock-modal-header h3 { font-size: 15px; }
+  .mock-modal-close { width: 28px; height: 28px; border: none; background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 16px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+  .mock-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .mock-modal-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 4px; }
+  .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+  .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,144,217,0.15); }
+  .form-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; outline: none; min-height: 240px; line-height: 1.7; font-family: inherit; resize: vertical; }
+  .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(74,144,217,0.15); }
+  .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* 提示框 toast */
+  .toast {
+    position: fixed; top: 20px; right: 20px; padding: 10px 18px; border-radius: 8px;
+    background: var(--card); box-shadow: var(--shadow-md); font-size: 13px;
+    z-index: 2000; display: flex; align-items: center; gap: 8px;
+    transform: translateX(120%); transition: transform 0.3s ease;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { border-left: 4px solid var(--success); }
+  .toast.info { border-left: 4px solid var(--primary); }
+  .toast.warn { border-left: 4px solid var(--warning); }
+
+  /* 提示词编辑/更多按钮组 */
+  .prompt-actions-bar {
+    display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+  }
+  .btn-icon-sm {
+    width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; color: var(--text-muted); transition: all 0.15s;
+  }
+  .btn-icon-sm:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  .flow-scroll-hint {
+    text-align: center; padding: 4px 0 8px; font-size: 11px; color: var(--text-muted);
+  }
+
+  /* 空状态：新增提示词后的首次正文区 */
+  .empty-doc-placeholder {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #585b70; gap: 12px;
+  }
+  .empty-doc-placeholder .empty-icon { font-size: 40px; opacity: 0.5; }
+  .empty-doc-placeholder .empty-text { font-size: 14px; }
+  .empty-doc-placeholder .empty-sub { font-size: 12px; color: #45475a; }
+  .empty-doc-placeholder .empty-btn {
+    margin-top: 8px; padding: 8px 20px; border-radius: 6px; border: 1px solid var(--code-border);
+    background: transparent; color: var(--code-text); font-size: 13px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .empty-doc-placeholder .empty-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(74,144,217,0.1); }
+</style>
+</head>
+<body>
+
+<!-- 顶部说明 -->
+<div class="design-header">
+  <h1>📌 后台新增「系统提示词」页签 — 设计稿 v4</h1>
+  <p>v3 → v4 优化：移除启用状态标识（仅作记录）；页签增加 ··· 菜单（重命名/删除）；新增提示词弹窗完善（图标选择 + 预设模板 + 初始正文编辑）；版本状态改为当前/草稿/历史。</p>
+</div>
+
+<div class="design-body">
+  <!-- 左侧设计说明 -->
+  <div class="design-sidebar">
+    <h3>📋 v4 优化要点</h3>
+    <ul>
+      <li><strong>移除启用状态</strong>：提示词仅作记录，不再标注「启用/停用」</li>
+      <li><strong>页签 ··· 菜单</strong>：hover 页签右侧出现 ··· 按钮，支持重命名和删除</li>
+      <li><strong>新增提示词弹窗</strong>：完整表单含名称、图标选择器、预设模板、备注、初始正文</li>
+      <li><strong>版本徽章调整</strong>：「当前」改为蓝色主题（非绿色），与整体配色统一</li>
+    </ul>
+
+    <h3>📐 新增提示词弹窗</h3>
+    <ul>
+      <li><strong>图标选择器</strong>：16 个常用 Emoji 图标网格，点击选中高亮</li>
+      <li><strong>预设模板</strong>：3 个快捷模板 Chip（计分规则/CSV导入/空白），点击自动填充正文</li>
+      <li><strong>名称</strong>：输入提示词类型名称（必填）</li>
+      <li><strong>备注</strong>：简要说明用途（选填）</li>
+      <li><strong>初始正文</strong>：等宽字体 textarea，可粘贴或从模板填充</li>
+      <li><strong>底部</strong>：左侧提示文字 + 取消 + 创建按钮</li>
+    </ul>
+
+    <h3>📐 页签 ··· 菜单</h3>
+    <ul>
+      <li>hover 页签时右侧出现 ··· 按钮</li>
+      <li>点击弹出下拉菜单：✏️ 重命名 / 🗑 删除</li>
+      <li>点击其他区域自动收起</li>
+      <li>删除前需确认（至少保留一个提示词类型）</li>
+    </ul>
+
+    <h3>📊 v4 变更清单</h3>
+    <table class="change-table">
+      <tr><th>类型</th><th>内容</th></tr>
+      <tr><td><span class="tag tag-removed">移除</span></td><td>页签上的「启用」徽章</td></tr>
+      <tr><td><span class="tag tag-changed">修改</span></td><td>版本状态徽章：「当前」改为蓝色主题</td></tr>
+      <tr><td><span class="tag tag-new">新增</span></td><td>页签 ··· 更多菜单（重命名/删除）</td></tr>
+      <tr><td><span class="tag tag-new">新增</span></td><td>新增提示词弹窗（图标选择器 + 预设模板 + 完整表单）</td></tr>
+      <tr><td><span class="tag tag-changed">修改</span></td><td>页签版本计数 badge（替代启用 badge）</td></tr>
+    </table>
+
+    <h3>🎮 交互演示</h3>
+    <ul>
+      <li>🔀 点击顶部页签切换不同提示词类型</li>
+      <li>📋 点击左侧不同版本，右侧正文实时切换</li>
+      <li>✏️ hover 左侧版本项，出现编辑/删除按钮</li>
+      <li>··· hover 页签，出现 ··· 按钮，点击弹出菜单</li>
+      <li>➕ 点击「+ 新增提示词」打开完整弹窗</li>
+      <li>↔️ 左右拖拽/滑动使用流程区域</li>
+    </ul>
+  </div>
+
+  <!-- 右侧模拟真实后台 -->
+  <div class="design-main">
+    <!-- 模拟侧边栏 -->
+    <div class="mock-sidebar">
+      <div class="mock-logo">
+        <div>🧠 星蓝心镜</div>
+        <div>Admin Console</div>
+      </div>
+      <div class="mock-menu-group">概览</div>
+      <div class="mock-menu-item">📊 数据看板</div>
+      <div class="mock-menu-group">内容管理</div>
+      <div class="mock-menu-item">📋 量表管理</div>
+      <div class="mock-menu-item">❓ 题目库</div>
+      <div class="mock-menu-group">用户与记录</div>
+      <div class="mock-menu-item">👥 用户列表</div>
+      <div class="mock-menu-item">📈 测评记录</div>
+      <div class="mock-menu-group">系统</div>
+      <div class="mock-menu-item">🎭 NPC场景配置</div>
+      <div class="mock-menu-item">⚙️ 系统设置</div>
+      <div class="mock-menu-item">🛡️ 系统运维</div>
+      <div class="mock-menu-item new-item active">💡 <span>系统提示词</span></div>
+    </div>
+
+    <!-- 模拟内容区 -->
+    <div class="mock-content">
+      <div class="page-title-bar">
+        <h2>💡 系统提示词管理</h2>
+        <p>记录量表导入、计分提取等场景的系统级提示词模板。支持多版本管理 + 使用流程可视化配置。</p>
+      </div>
+
+      <!-- ============ 顶层页签：提示词类型切换 ============ -->
+      <div class="prompt-type-tabs" id="prompt-type-tabs">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+
+      <!-- ============ 提示词正文（左右分栏） — 由 JS 动态渲染 ============ -->
+      <div id="reading-areas-container">
+        <!-- 由 JS 动态渲染各提示词的 reading area -->
+      </div>
+
+      <!-- ============ 使用流程（横向布局） ============ -->
+      <div class="flow-section">
+        <div class="flow-section-header">
+          <h4>📋 使用流程</h4>
+          <div class="flow-toolbar">
+            <button onclick="addFlowStepH()" title="新增步骤">+ 新增步骤</button>
+            <button class="btn-flow-done" onclick="showToast('✓ 使用流程已保存', 'success')" title="保存">✓ 完成</button>
+          </div>
+        </div>
+        <div class="flow-scroll-wrapper" id="flow-scroll">
+          <div class="flow-steps-h" id="flow-steps-container">
+            <!-- 由 JS 动态渲染 -->
+          </div>
+        </div>
+        <div class="flow-scroll-hint">← 左右滑动查看更多步骤 →</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 版本编辑弹窗 -->
+<div class="version-edit-overlay" id="version-edit-modal" style="display:none">
+  <div class="version-edit-box">
+    <div class="version-edit-header">
+      <h3 id="ver-edit-title">✏️ 编辑版本 — v1.1</h3>
+      <button class="version-edit-close" onclick="closeVersionEdit()">✕</button>
+    </div>
+    <div class="version-edit-body">
+      <div class="v-form-row">
+        <div class="v-form-group">
+          <label>版本号</label>
+          <input class="v-form-input" id="ver-edit-version" value="1.1" />
+        </div>
+        <div class="v-form-group">
+          <label>版本状态</label>
+          <select class="v-form-input" id="ver-edit-status">
+            <option value="active">⭐ 当前版本</option>
+            <option value="draft">📝 草稿</option>
+            <option value="old">📦 历史</option>
+          </select>
+        </div>
+      </div>
+      <div class="v-form-group">
+        <label>版本备注 <span style="font-weight:400;color:var(--text-muted)">（简要说明本次修改内容）</span></label>
+        <input class="v-form-input" id="ver-edit-note" value="" />
+        <div class="v-form-hint">备注会显示在左侧版本列表和右侧元信息栏中</div>
+      </div>
+      <div class="v-form-group">
+        <label>正文内容 <span style="font-weight:400;color:var(--text-muted)">（发送给 AI 的完整内容）</span></label>
+        <textarea class="v-form-textarea" id="ver-edit-content"></textarea>
+      </div>
+    </div>
+    <div class="version-edit-footer">
+      <span class="version-save-hint">修改后点击保存，新版本将覆盖当前版本内容</span>
+      <button class="btn-default" onclick="closeVersionEdit()">取消</button>
+      <button class="btn-primary" onclick="saveVersionEdit()">💾 保存版本</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增提示词弹窗 -->
+<div class="new-prompt-overlay" id="new-prompt-modal" style="display:none">
+  <div class="new-prompt-box">
+    <div class="new-prompt-header">
+      <h3>✨ 新增提示词类型</h3>
+      <button class="new-prompt-close" onclick="closeNewPrompt()">✕</button>
+    </div>
+    <div class="new-prompt-body">
+      <!-- 名称 -->
+      <div class="form-group">
+        <label>提示词名称 <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" id="np-name" placeholder="例如：计分规则提取提示词" />
+        <div class="form-hint">将作为页签名称显示</div>
+      </div>
+
+      <!-- 图标选择 -->
+      <div class="icon-picker-area">
+        <label>选择图标</label>
+        <div class="icon-picker-grid" id="np-icon-grid">
+          <!-- 由 JS 渲染 -->
+        </div>
+      </div>
+
+      <!-- 预设模板 -->
+      <div class="template-area">
+        <label>快捷模板 <span style="font-weight:400;color:var(--text-muted)">（点击自动填充正文）</span></label>
+        <div class="template-chips">
+          <div class="template-chip" data-tpl="scoring" onclick="fillTemplate('scoring')">
+            <span class="chip-icon">🎯</span> 计分规则提取
+          </div>
+          <div class="template-chip" data-tpl="csv" onclick="fillTemplate('csv')">
+            <span class="chip-icon">📊</span> CSV 导入文件生成
+          </div>
+          <div class="template-chip" data-tpl="blank" onclick="fillTemplate('blank')">
+            <span class="chip-icon">📝</span> 空白模板
+          </div>
+        </div>
+      </div>
+
+      <!-- 备注 -->
+      <div class="form-group">
+        <label>备注说明</label>
+        <input class="form-input" id="np-note" placeholder="简要说明用途（选填）" />
+      </div>
+
+      <!-- 初始正文 -->
+      <div class="form-group">
+        <label>初始正文内容</label>
+        <textarea class="form-textarea" id="np-content" placeholder="在此输入提示词正文，或从上方快捷模板填充..." style="min-height:200px; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:12px;"></textarea>
+        <div class="form-hint">保存后可在版本管理中继续编辑</div>
+      </div>
+    </div>
+    <div class="new-prompt-footer">
+      <span class="footer-hint">创建后将自动生成 v1.0 版本</span>
+      <button class="btn-default" onclick="closeNewPrompt()">取消</button>
+      <button class="btn-primary" onclick="createNewPrompt()">✨ 创建提示词</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ Toast ============
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.className = 'toast ' + (type || 'info');
+  t.innerHTML = msg;
+  setTimeout(function(){ t.classList.add('show'); }, 10);
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ============ 图标列表 ============
+var iconOptions = ['🎯','📊','🧪','🔧','📝','💡','🔍','🤖','📋','💬','🧠','📈','⚙️','📝','🎭','✨'];
+
+// ============ 预设模板正文 ============
+var templates = {
+  scoring: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量\n3. 提取维度/因子定义、全局指标、分数解释与划界标准\n4. 按标准格式输出，供直接粘贴导入',
+  csv: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目\n3. 检测是否存在题目异常\n4. 生成一个可直接下载的 .csv 文件\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写',
+  blank: ''
+};
+
+// ============ 提示词数据（核心数据源） ============
+var promptTypes = [
+  {
+    id: 'scoring', name: '计分规则提取提示词', icon: '🎯',
+    note: '用于 AI 生成量表计分规则',
+    versions: [
+      { version: '1.0', status: 'old', note: '初始版本', date: '2026-04-10',
+        content: '你是一位心理测量学专家，精通各类心理评估量表的计分方法。\n\n你的任务是：提取计分规则，按标准格式输出。' },
+      { version: '1.1', status: 'active', note: '增加了 Few-shot 示例，优化输出格式约束', date: '2026-04-20',
+        content: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本（如原版 vs 中文修订版、完整版 vs 简版）。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量，避免将不同版本混淆\n3. 提取维度/因子定义、全局指标、分数解释与划界标准、筛查条件\n4. 记录反向计分题号（仅作参考，不写入计分公式）\n5. 按标准格式输出，供我直接粘贴导入心理评估系统\n\n你的输出分为两部分，按顺序输出：\n- 第一部分：摘要 — 用普通文本简要说明：量表名称、版本、题目数量、维度数量、量表类型（筛查/区分度/混合）、有无筛查条件。\n- 第二部分：计分规则正文 — 紧接着输出标准格式的计分规则。\n\n⭐ 【v1.1 新增】输出格式示例（PHQ-9 Few-shot）：\n---\n## 维度：总分\n- op: SUM\n- desc: PHQ-9 总分，范围 0-27\n- items: Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9\n- levels:\n  - 0-4: 无抑郁症状\n  - 5-9: 轻度抑郁\n  - 10-14: 中度抑郁\n  - 15-19: 中重度抑郁\n  - 20-27: 重度抑郁\n---\n\n请严格按上述格式输出所有维度和全局指标。确保 items 与实际导入的题目数量一致。如有疑问，在摘要中标注。' },
+      { version: '2.0', status: 'draft', note: '测试多量表并发支持，待验证', date: '2026-04-25',
+        content: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系。\n\n【v2.0 草稿 — 多量表并发支持】\n\n你的任务与 v1.1 相同，但增加了以下能力：\n- 当手册包含多张量表时，为每张量表分别输出独立的计分规则块\n- 每个规则块以 ## 量表名称：XXX 开头\n- 最后输出一个汇总表，列出所有识别到的量表\n\n⚠️ 此版本为草稿，正在测试中...' }
+    ],
+    currentVersion: '1.1',
+    flowSteps: [
+      { icon: '1', color: 'primary', title: '📝 复制提示词', desc: '点击「📋 复制正文」，粘贴到 ChatGPT / Claude / 通义千问等 AI 对话中' },
+      { icon: '2', color: 'primary', title: '📄 追加手册原文', desc: '将量表手册全选复制，粘贴到同一对话中。⚠️ 主动告知 AI 实际导入的题目数量' },
+      { icon: '3', color: 'primary', title: '📋 复制 AI 输出', desc: 'AI 输出摘要 + 计分规则正文。核对摘要后，复制第二部分计分规则正文' },
+      { icon: '4', color: 'highlight', title: '🤖 AI 一键配置', desc: '后台量表管理 → AI 一键配置 → 粘贴 → 解析 → 确认导入', highlight: true }
+    ]
+  },
+  {
+    id: 'csv', name: 'CSV 导入文件生成提示词', icon: '📊',
+    note: '用于 AI 生成量表 CSV 导入文件',
+    versions: [
+      { version: '1.0', status: 'old', note: '初始版本，仅支持单量表', date: '2026-04-05',
+        content: '你是一位心理测量学专家。\n\n你的任务是：从手册提取题目，生成 CSV。\n\nCSV 格式：category, q_number, question_text, options...' },
+      { version: '2.0', status: 'active', note: '增加选项 id 字段强制要求，优化异常检测规则', date: '2026-04-18',
+        content: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表，也可能存在题目缺失、编号不连续、选项数量不统一、反向计分等实际情况。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目\n   ⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写\n3. 检测是否存在题目异常（缺失、重复、错乱、残缺等）\n4. ⭐ 生成一个可直接下载的 .csv 文件\n\nCSV 格式要求：\n- 编码：UTF-8 with BOM\n- 分隔符：逗号 ,\n- 第一行为表头：category, q_number, question_text, option_1_id, option_1_text, option_1_score, ...\n- 每个 option 必须包含：id（英文小写+下划线，如 strongly_agree）、text（原文）、score（数字）\n- 反向计分题：在 q_number 后标注 [R]，score 已翻转\n- 输出摘要后再生成文件\n\n⚠️ 关键规则：\n1. 选项 id 缺失会导致计分引擎无法匹配答案，必须为每个选项生成唯一 id\n2. 反向计分在导入时预处理：标记为 [R] 的题目，其选项 score 已翻转（5→1, 4→2, ...）\n3. 如有疑问，在摘要中标注，不要自行猜测' }
+    ],
+    currentVersion: '2.0',
+    flowSteps: [
+      { icon: '1', color: 'success', title: '📝 复制提示词', desc: '点击「📋 复制正文」，粘贴到 AI 对话中' },
+      { icon: '2', color: 'success', title: '📄 追加手册原文', desc: '在「[量表手册原文在下方]」后粘贴手册全文。⚠️ 补充量表数量、题目数、反向计分题号' },
+      { icon: '3', color: 'success', title: '📥 获取 CSV 文件', desc: '核对摘要无误后下载 CSV 文件（或复制代码块另存为 .csv）' },
+      { icon: '4', color: 'highlight-success', title: '📋 后台导入量表', desc: '后台量表管理 → 导入量表 → CSV 格式 → 粘贴 → 解析预览 → 确认导入', highlight: true }
+    ]
+  }
+];
+
+var currentType = 'scoring';
+var selectedNewIcon = '🎯';
+var activeMenuId = null;
+
+// ============ 初始化渲染 ============
+function init() {
+  renderTabs();
+  renderReadingArea(currentType);
+  renderFlowSteps(currentType);
+}
+
+// ============ 渲染页签 ============
+function renderTabs() {
+  var container = document.getElementById('prompt-type-tabs');
+  var html = '';
+  promptTypes.forEach(function(pt) {
+    var isActive = pt.id === currentType;
+    var verCount = pt.versions.length;
+    html += '<button class="prompt-type-tab' + (isActive ? ' active' : '') + '" data-type="' + pt.id + '" onclick="switchPromptType(\'' + pt.id + '\')">' +
+      '<span class="pt-icon">' + pt.icon + '</span>' +
+      '<span>' + pt.name + '</span>' +
+      '<span class="pt-count">' + verCount + ' 版</span>' +
+      '<button class="pt-more-btn" onclick="event.stopPropagation();toggleTabMenu(event,\'' + pt.id + '\')">···</button>' +
+      '<div class="pt-more-menu" id="menu-' + pt.id + '">' +
+        '<button class="pt-more-menu-item" onclick="event.stopPropagation();renamePromptType(\'' + pt.id + '\')">✏️ 重命名</button>' +
+        '<button class="pt-more-menu-item danger-item" onclick="event.stopPropagation();deletePromptType(\'' + pt.id + '\')">🗑 删除提示词</button>' +
+      '</div>' +
+    '</button>';
+  });
+  html += '<button class="prompt-type-add-btn" onclick="openNewPrompt()">+ 新增提示词</button>';
+  container.innerHTML = html;
+}
+
+// ============ 页签 ··· 菜单 ============
+function toggleTabMenu(event, id) {
+  event.stopPropagation();
+  // Close others first
+  document.querySelectorAll('.pt-more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  var menu = document.getElementById('menu-' + id);
+  if (menu.classList.contains('show')) {
+    menu.classList.remove('show');
+    activeMenuId = null;
+  } else {
+    menu.classList.add('show');
+    activeMenuId = id;
+  }
+}
+
+// Close menus on outside click
+document.addEventListener('click', function() {
+  document.querySelectorAll('.pt-more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  activeMenuId = null;
+});
+
+function renamePromptType(id) {
+  var pt = promptTypes.find(function(p) { return p.id === id; });
+  if (!pt) return;
+  // Simple inline rename: use prompt
+  document.querySelectorAll('.pt-more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  var newName = window.prompt ? null : null; // We simulate with toast in design
+  showToast('✏️ 重命名弹窗（设计稿演示：「' + pt.name + '」→ 输入新名称）', 'info');
+}
+
+function deletePromptType(id) {
+  document.querySelectorAll('.pt-more-menu.show').forEach(function(m) { m.classList.remove('show'); });
+  if (promptTypes.length <= 1) {
+    showToast('⚠️ 至少保留一个提示词类型', 'warn');
+    return;
+  }
+  var pt = promptTypes.find(function(p) { return p.id === id; });
+  promptTypes = promptTypes.filter(function(p) { return p.id !== id; });
+  if (currentType === id) {
+    currentType = promptTypes[0].id;
+  }
+  init();
+  showToast('🗑 已删除「' + pt.name + '」', 'info');
+}
+
+// ============ 切换提示词类型 ============
+function switchPromptType(type) {
+  currentType = type;
+  // Update tab active
+  document.querySelectorAll('.prompt-type-tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.type === type);
+  });
+  renderReadingArea(type);
+  renderFlowSteps(type);
+  document.getElementById('flow-scroll').scrollLeft = 0;
+}
+
+// ============ 渲染提示词正文区域 ============
+function renderReadingArea(type) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var container = document.getElementById('reading-areas-container');
+  var curVer = pt.versions.find(function(v) { return v.version === pt.currentVersion; }) || pt.versions[0];
+  var statusLabel = curVer.status === 'active' ? '当前' : curVer.status === 'draft' ? '草稿' : '历史';
+
+  var html = '<div class="prompt-reading-area">' +
+    '<div class="reading-toolbar">' +
+      '<div class="reading-toolbar-left">' +
+        '<span class="section-title">📄 提示词正文（发送给 AI 的完整内容）</span>' +
+      '</div>' +
+      '<div class="prompt-actions-bar">' +
+        '<button class="btn-copy" onclick="copyCurrentVersion(this,\'' + type + '\')">📋 复制正文</button>' +
+        '<div class="btn-icon-sm" title="全屏" onclick="showToast(\'全屏查看（设计稿演示）\',\'info\')">⛶</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="reading-split">' +
+      '<div class="version-panel">' +
+        '<div class="version-panel-header">' +
+          '<span>📊 版本列表</span>' +
+          '<button class="version-add-btn" onclick="addVersion(\'' + type + '\')">+ 新增</button>' +
+        '</div>' +
+        '<div class="version-list" id="version-list-' + type + '">' +
+          renderVersionListHTML(type) +
+        '</div>' +
+      '</div>' +
+      '<div class="document-panel">' +
+        '<div class="version-meta-bar" id="version-meta-' + type + '">' +
+          '<span class="meta-version">v' + curVer.version + ' ' + statusLabel + '</span>' +
+          '<span>📅 ' + curVer.date + '</span>' +
+          '<span>📝 ' + curVer.note + '</span>' +
+          '<span>📏 ' + curVer.content.length.toLocaleString() + ' 字</span>' +
+        '</div>' +
+        '<div class="document-body" id="doc-' + type + '">' + escapeHtml(curVer.content) + '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  container.innerHTML = html;
+}
+
+function renderVersionListHTML(type) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var html = '';
+  pt.versions.forEach(function(v, idx) {
+    var isActive = v.version === pt.currentVersion;
+    var statusLabel = v.status === 'active' ? '当前' : v.status === 'draft' ? '草稿' : '历史';
+    var badgeClass = v.status === 'active' ? 'active-v' : v.status === 'draft' ? 'draft-v' : 'old-v';
+    html += '<div class="version-item' + (isActive ? ' active' : '') + '" data-idx="' + idx + '" onclick="switchVersion(\'' + type + '\',' + idx + ')">' +
+      '<div class="version-item-info">' +
+        '<div class="version-item-ver">v' + v.version + ' <span class="v-badge ' + badgeClass + '">' + statusLabel + '</span></div>' +
+        '<div class="version-item-note">' + v.note + '</div>' +
+        '<div class="version-item-date">📅 ' + v.date + '</div>' +
+      '</div>' +
+      '<div class="version-item-actions">' +
+        '<button title="编辑" onclick="event.stopPropagation();openVersionEdit(\'' + type + '\',' + idx + ')">✏️</button>' +
+        '<button class="btn-del-v" title="删除" onclick="event.stopPropagation();deleteVersion(\'' + type + '\',' + idx + ')">🗑</button>' +
+      '</div>' +
+    '</div>';
+  });
+  return html;
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============ 切换版本 ============
+function switchVersion(type, idx) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var v = pt.versions[idx];
+  pt.currentVersion = v.version;
+
+  // Update list active
+  document.querySelectorAll('#version-list-' + type + ' .version-item').forEach(function(el, i) {
+    el.classList.toggle('active', i === idx);
+  });
+
+  // Update document body
+  document.getElementById('doc-' + type).textContent = v.content;
+
+  // Update meta bar
+  var statusLabel = v.status === 'active' ? '当前' : v.status === 'draft' ? '草稿' : '历史';
+  document.getElementById('version-meta-' + type).innerHTML =
+    '<span class="meta-version">v' + v.version + ' ' + statusLabel + '</span>' +
+    '<span>📅 ' + v.date + '</span>' +
+    '<span>📝 ' + v.note + '</span>' +
+    '<span>📏 ' + v.content.length.toLocaleString() + ' 字</span>';
+}
+
+// ============ 复制正文 ============
+function copyCurrentVersion(btn, type) {
+  var text = document.getElementById('doc-' + type).textContent;
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  navigator.clipboard.writeText(text).then(function() {
+    btn.classList.add('copied');
+    btn.textContent = '✓ 已复制 v' + pt.currentVersion;
+    setTimeout(function() {
+      btn.classList.remove('copied');
+      btn.textContent = '📋 复制正文';
+    }, 2000);
+  });
+}
+
+// ============ 新增版本 ============
+function addVersion(type) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var current = pt.currentVersion;
+  var parts = current.split('.');
+  var newVer = parseInt(parts[0]) + '.' + (parseInt(parts[1]) + 1);
+  var currentObj = pt.versions.find(function(v) { return v.version === current; });
+  pt.versions.push({
+    version: newVer,
+    status: 'draft',
+    note: '基于 v' + current + ' 创建',
+    date: new Date().toISOString().split('T')[0],
+    content: currentObj.content
+  });
+  pt.currentVersion = newVer;
+  renderTabs();
+  renderReadingArea(type);
+  var list = document.getElementById('version-list-' + type);
+  list.scrollTop = list.scrollHeight;
+  showToast('✨ 已创建 v' + newVer + '（基于 v' + current + ' 克隆）', 'success');
+}
+
+// ============ 删除版本 ============
+function deleteVersion(type, idx) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  if (pt.versions.length <= 1) {
+    showToast('⚠️ 至少保留一个版本', 'warn');
+    return;
+  }
+  var deleted = pt.versions[idx];
+  pt.versions.splice(idx, 1);
+  if (pt.currentVersion === deleted.version) {
+    pt.currentVersion = pt.versions[pt.versions.length - 1].version;
+  }
+  renderTabs();
+  renderReadingArea(type);
+  showToast('🗑 已删除 v' + deleted.version, 'info');
+}
+
+// ============ 编辑版本弹窗 ============
+function openVersionEdit(type, idx) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var v = pt.versions[idx];
+  document.getElementById('ver-edit-title').textContent = '✏️ 编辑版本 — v' + v.version;
+  document.getElementById('ver-edit-version').value = v.version;
+  document.getElementById('ver-edit-status').value = v.status;
+  document.getElementById('ver-edit-note').value = v.note;
+  document.getElementById('ver-edit-content').value = v.content;
+  document.getElementById('version-edit-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('version-edit-modal').dataset.type = type;
+  document.getElementById('version-edit-modal').dataset.idx = idx;
+}
+
+function closeVersionEdit() {
+  document.getElementById('version-edit-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function saveVersionEdit() {
+  var type = document.getElementById('version-edit-modal').dataset.type;
+  var idx = parseInt(document.getElementById('version-edit-modal').dataset.idx);
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var v = pt.versions[idx];
+  var oldStatus = v.status;
+  v.version = document.getElementById('ver-edit-version').value;
+  v.status = document.getElementById('ver-edit-status').value;
+  v.note = document.getElementById('ver-edit-note').value;
+  v.content = document.getElementById('ver-edit-content').value;
+  // If set as active, demote others
+  if (v.status === 'active') {
+    pt.versions.forEach(function(ver, i) {
+      if (i !== idx && ver.status === 'active') ver.status = 'old';
+    });
+    pt.currentVersion = v.version;
+  }
+  closeVersionEdit();
+  renderTabs();
+  renderReadingArea(type);
+  showToast('✓ 版本 v' + v.version + ' 已保存', 'success');
+}
+
+// ============ 新增提示词弹窗 ============
+function openNewPrompt() {
+  // Reset form
+  document.getElementById('np-name').value = '';
+  document.getElementById('np-note').value = '';
+  document.getElementById('np-content').value = '';
+  selectedNewIcon = '🎯';
+  // Reset template chips
+  document.querySelectorAll('.template-chip').forEach(function(c) { c.classList.remove('selected'); });
+  // Render icon picker
+  renderIconPicker();
+  // Show modal
+  document.getElementById('new-prompt-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function() { document.getElementById('np-name').focus(); }, 100);
+}
+
+function closeNewPrompt() {
+  document.getElementById('new-prompt-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderIconPicker() {
+  var grid = document.getElementById('np-icon-grid');
+  var html = '';
+  iconOptions.forEach(function(icon) {
+    html += '<div class="icon-picker-item' + (icon === selectedNewIcon ? ' selected' : '') + '" onclick="selectIcon(this,\'' + icon + '\')">' + icon + '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+function selectIcon(el, icon) {
+  selectedNewIcon = icon;
+  document.querySelectorAll('.icon-picker-item').forEach(function(item) { item.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function fillTemplate(tplKey) {
+  document.querySelectorAll('.template-chip').forEach(function(c) {
+    c.classList.toggle('selected', c.dataset.tpl === tplKey);
+  });
+  var content = templates[tplKey] || '';
+  document.getElementById('np-content').value = content;
+  // Auto-fill name if empty
+  var nameInput = document.getElementById('np-name');
+  if (!nameInput.value.trim()) {
+    var names = { scoring: '计分规则提取提示词', csv: 'CSV 导入文件生成提示词', blank: '' };
+    nameInput.value = names[tplKey] || '';
+  }
+  showToast('📄 已填充「' + (tplKey === 'blank' ? '空白' : tplKey === 'scoring' ? '计分规则' : 'CSV 导入') + '」模板', 'info');
+}
+
+function createNewPrompt() {
+  var name = document.getElementById('np-name').value.trim();
+  if (!name) {
+    showToast('⚠️ 请输入提示词名称', 'warn');
+    document.getElementById('np-name').focus();
+    return;
+  }
+  var note = document.getElementById('np-note').value.trim();
+  var content = document.getElementById('np-content').value;
+  var id = 'custom_' + Date.now();
+  var today = new Date().toISOString().split('T')[0];
+
+  promptTypes.push({
+    id: id,
+    name: name,
+    icon: selectedNewIcon,
+    note: note,
+    versions: [
+      {
+        version: '1.0',
+        status: 'active',
+        note: note || '初始版本',
+        date: today,
+        content: content || '（请在版本管理中编辑正文内容）'
+      }
+    ],
+    currentVersion: '1.0',
+    flowSteps: [
+      { icon: '1', color: 'primary', title: '📝 复制提示词', desc: '点击「📋 复制正文」，粘贴到 AI 对话中' },
+      { icon: '2', color: 'primary', title: '📄 追加内容', desc: '在 AI 对话中追加手册原文或其他参考内容' },
+      { icon: '3', color: 'highlight', title: '📋 使用 AI 输出', desc: '获取 AI 输出结果并使用', highlight: true }
+    ]
+  });
+
+  closeNewPrompt();
+  currentType = id;
+  init();
+  showToast('✨ 已创建「' + name + '」', 'success');
+}
+
+// ============ 渲染使用流程 ============
+function renderFlowSteps(type) {
+  var pt = promptTypes.find(function(p) { return p.id === type; });
+  var container = document.getElementById('flow-steps-container');
+  var html = '';
+  pt.flowSteps.forEach(function(step, i) {
+    var numClass = step.color || 'primary';
+    if (step.highlight) numClass = step.color;
+    html += '<div class="flow-item-h" draggable="true" data-step="' + (i+1) + '">' +
+      '<div class="flow-card">' +
+        '<div class="flow-actions-h">' +
+          '<button title="编辑" onclick="editFlowStepH(this)">✏️</button>' +
+          '<button class="btn-del" title="删除" onclick="deleteFlowStepH(this)">🗑</button>' +
+        '</div>' +
+        '<div class="flow-num-h ' + numClass + '">' + step.icon + '</div>' +
+        '<div class="flow-title-h">' + step.title + '</div>' +
+        '<div class="flow-desc-h">' + step.desc + '</div>' +
+      '</div>' +
+    '</div>';
+    if (i < pt.flowSteps.length - 1) {
+      html += '<div class="flow-arrow">→</div>';
+    }
+  });
+  container.innerHTML = html;
+}
+
+// ============ 横向滚动拖拽 ============
+(function() {
+  var wrapper = document.getElementById('flow-scroll');
+  var isDown = false, startX, scrollLeft;
+  wrapper.addEventListener('mousedown', function(e) {
+    if (e.target.closest('.flow-card') && e.target.closest('.flow-item-h[draggable="true"]')) return;
+    isDown = true;
+    startX = e.pageX - wrapper.offsetLeft;
+    scrollLeft = wrapper.scrollLeft;
+  });
+  wrapper.addEventListener('mouseleave', function() { isDown = false; });
+  wrapper.addEventListener('mouseup', function() { isDown = false; });
+  wrapper.addEventListener('mousemove', function(e) {
+    if (!isDown) return;
+    e.preventDefault();
+    var x = e.pageX - wrapper.offsetLeft;
+    wrapper.scrollLeft = scrollLeft - (x - startX) * 1.5;
+  });
+})();
+
+// ============ 横向拖拽排序 ============
+(function initHDrag() {
+  document.addEventListener('dragstart', function(e) {
+    var item = e.target.closest('.flow-item-h');
+    if (!item) return;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+  });
+  document.addEventListener('dragend', function(e) {
+    var item = e.target.closest('.flow-item-h');
+    if (item) item.classList.remove('dragging');
+    document.querySelectorAll('.flow-item-h.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+  });
+  document.addEventListener('dragover', function(e) {
+    var item = e.target.closest('.flow-item-h');
+    if (!item || item.classList.contains('dragging')) return;
+    var list = item.closest('.flow-steps-h');
+    if (!list || !list.querySelector('.flow-item-h.dragging')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    item.classList.add('drag-over');
+  });
+  document.addEventListener('dragleave', function(e) {
+    var item = e.target.closest('.flow-item-h');
+    if (item) item.classList.remove('drag-over');
+  });
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var item = e.target.closest('.flow-item-h');
+    if (!item) return;
+    item.classList.remove('drag-over');
+    var list = item.closest('.flow-steps-h');
+    if (!list) return;
+    var dragging = list.querySelector('.flow-item-h.dragging');
+    if (!dragging || dragging === item) return;
+    var allNodes = Array.from(list.children);
+    var dragIdx = allNodes.indexOf(dragging);
+    var dropIdx = allNodes.indexOf(item);
+    var prevN = dragging.previousElementSibling;
+    var nextN = dragging.nextElementSibling;
+    if (prevN && prevN.classList.contains('flow-arrow')) prevN.remove();
+    if (nextN && nextN.classList.contains('flow-arrow')) nextN.remove();
+    dragging.remove();
+    if (dropIdx < dragIdx) {
+      list.insertBefore(dragging, item);
+      var arrow = document.createElement('div');
+      arrow.className = 'flow-arrow';
+      arrow.textContent = '→';
+      list.insertBefore(arrow, dragging);
+    } else {
+      list.insertBefore(dragging, item.nextElementSibling);
+      var arrow2 = document.createElement('div');
+      arrow2.className = 'flow-arrow';
+      arrow2.textContent = '→';
+      list.insertBefore(arrow2, dragging);
+    }
+    var items = list.querySelectorAll('.flow-item-h');
+    items.forEach(function(it, i) { it.dataset.step = i + 1; });
+    showToast('✓ 步骤顺序已更新', 'success');
+  });
+})();
+
+// ============ 横向流程编辑/删除/新增 ============
+function editFlowStepH(btn) {
+  var item = btn.closest('.flow-item-h');
+  var card = item.querySelector('.flow-card');
+  var titleEl = card.querySelector('.flow-title-h');
+  var descEl = card.querySelector('.flow-desc-h');
+  if (item.dataset.editing === 'true') {
+    titleEl.textContent = card.querySelectorAll('.flow-edit-input')[0].value;
+    descEl.textContent = card.querySelectorAll('.flow-edit-input')[1].value;
+    item.dataset.editing = 'false';
+    btn.textContent = '✏️';
+    showToast('✓ 步骤已更新', 'success');
+  } else {
+    var tt = titleEl.textContent, dd = descEl.textContent;
+    titleEl.innerHTML = '<input class="flow-edit-input" value="' + tt.replace(/"/g, '&quot;') + '" />';
+    descEl.innerHTML = '<input class="flow-edit-input" value="' + dd + '" />';
+    item.dataset.editing = 'true';
+    btn.textContent = '✓';
+    titleEl.querySelector('.flow-edit-input').focus();
+  }
+}
+
+function deleteFlowStepH(btn) {
+  var item = btn.closest('.flow-item-h');
+  var list = item.closest('.flow-steps-h');
+  var prev = item.previousElementSibling;
+  var next = item.nextElementSibling;
+  if (prev && prev.classList.contains('flow-arrow')) prev.remove();
+  if (next && next.classList.contains('flow-arrow')) next.remove();
+  item.remove();
+  showToast('🗑 步骤已删除', 'info');
+}
+
+function addFlowStepH() {
+  var activeSteps = document.getElementById('flow-steps-container');
+  var pt = promptTypes.find(function(p) { return p.id === currentType; });
+  var colorClass = (currentType === 'scoring') ? 'primary' : 'success';
+  // Use the type's flow step color
+  if (pt.flowSteps.length > 0) {
+    var lastStep = pt.flowSteps[pt.flowSteps.length - 1];
+    if (lastStep.highlight) colorClass = lastStep.color;
+  }
+  var arrow = document.createElement('div');
+  arrow.className = 'flow-arrow';
+  arrow.textContent = '→';
+  var stepNum = activeSteps.querySelectorAll('.flow-item-h').length + 1;
+  var item = document.createElement('div');
+  item.className = 'flow-item-h';
+  item.draggable = true;
+  item.dataset.step = stepNum;
+  item.dataset.editing = 'true';
+  item.innerHTML =
+    '<div class="flow-card">' +
+      '<div class="flow-actions-h" style="opacity:1">' +
+        '<button title="保存" onclick="editFlowStepH(this)">✓</button>' +
+        '<button class="btn-del" title="删除" onclick="deleteFlowStepH(this)">🗑</button>' +
+      '</div>' +
+      '<div class="flow-num-h ' + colorClass + '">' + stepNum + '</div>' +
+      '<div class="flow-title-h"><input class="flow-edit-input" value="新步骤" placeholder="步骤标题" /></div>' +
+      '<div class="flow-desc-h"><input class="flow-edit-input" value="" placeholder="步骤说明（可选）" /></div>' +
+    '</div>';
+  activeSteps.appendChild(arrow);
+  activeSteps.appendChild(item);
+  var wrapper = document.getElementById('flow-scroll');
+  setTimeout(function() { wrapper.scrollLeft = wrapper.scrollWidth; }, 50);
+  item.querySelector('.flow-edit-input').focus();
+  showToast('✏️ 请输入新步骤内容，完成后点击 ✓ 保存', 'info');
+}
+
+// ============ 启动 ============
+init();
+</script>
+
+</body>
+</html>

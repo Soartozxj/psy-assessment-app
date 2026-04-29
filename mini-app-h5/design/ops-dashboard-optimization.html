@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统运维页面优化方案</title>
+<style>
+  :root {
+    --primary: #4A90D9; --primary-dark: #3A7BC8; --primary-light: rgba(74,144,217,0.1);
+    --bg: #F3F5F9; --card: #FFFFFF; --text: #1a1a2e; --text-sec: #555; --text-muted: #999;
+    --border: #E2E8F0; --radius: 12px; --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --danger: #E74C3C; --warning: #F39C12; --success: #27AE60;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ===== 页面框架 ===== */
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 32px 40px 24px; color: #fff;
+  }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+  .compare-wrap { display: flex; gap: 24px; padding: 24px; max-width: 1600px; margin: 0 auto; min-height: calc(100vh - 100px); }
+  .compare-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  /* ===== 方案标签 ===== */
+  .scheme-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    margin-bottom: 16px; width: fit-content;
+  }
+  .scheme-label.current { background: rgba(231,76,60,0.12); color: var(--danger); }
+  .scheme-label.proposed-a { background: rgba(39,174,96,0.12); color: var(--success); }
+  .scheme-label.proposed-b { background: rgba(74,144,217,0.12); color: var(--primary); }
+  .scheme-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+
+  /* ===== 模拟外壳 ===== */
+  .mock-shell {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    overflow: hidden; flex: 1; display: flex; flex-direction: column;
+  }
+  .mock-topbar {
+    height: 44px; background: var(--card); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0;
+  }
+  .mock-topbar-title { font-size: 14px; font-weight: 600; flex: 1; color: var(--text); }
+  .mock-topbar-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 12px;
+    background: rgba(39,174,96,0.1); color: var(--success);
+  }
+  .mock-topbar-user {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--primary);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+  }
+  .mock-body {
+    flex: 1; overflow-y: auto; background: var(--bg); position: relative;
+  }
+  .mock-body-inner { padding: 20px; }
+
+  /* ===== 当前方案：全部纵向堆叠 ===== */
+  .ops-card {
+    background: var(--card); border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .ops-card-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .ops-card-icon { font-size: 24px; }
+  .ops-card-title { font-size: 14px; font-weight: 600; }
+  .ops-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .ops-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 12px; color: var(--text-sec);
+  }
+  .ops-btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* 模拟内容 - AI 接口 */
+  .mock-balance-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .mock-balance-item { background: var(--bg); border-radius: 6px; padding: 12px; text-align: center; }
+  .mock-balance-value { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .mock-balance-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* 模拟内容 - 密钥 */
+  .mock-key-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 6px; margin-bottom: 6px; }
+  .mock-key-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mock-key-dot.active { background: var(--success); }
+  .mock-key-dot.backup { background: var(--primary); }
+  .mock-key-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .mock-key-model { font-size: 11px; color: var(--text-muted); }
+
+  /* 模拟内容 - 倒计时 */
+  .mock-countdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mock-countdown-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 6px; padding: 10px 12px; border-left: 3px solid var(--border); }
+  .mock-countdown-item.urgent { border-left-color: var(--danger); }
+  .mock-countdown-item.warning { border-left-color: var(--warning); }
+  .mock-countdown-item.safe { border-left-color: var(--success); }
+  .mock-countdown-emoji { font-size: 18px; }
+  .mock-countdown-name { font-size: 12px; font-weight: 500; }
+  .mock-countdown-days { font-size: 11px; color: var(--text-muted); }
+
+  /* 模拟内容 - 健康检测 */
+  .mock-health-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 6px; margin-bottom: 6px; }
+  .mock-health-status { font-size: 16px; }
+  .mock-health-name { font-size: 12px; font-weight: 500; flex: 1; }
+  .mock-health-detail { font-size: 11px; color: var(--text-muted); }
+
+  /* 模拟内容 - 手册 */
+  .mock-manual-search { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; margin-bottom: 12px; background: var(--bg); }
+  .mock-manual-toc { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mock-manual-chip { padding: 4px 10px; background: var(--bg); border-radius: 4px; font-size: 11px; color: var(--text-sec); }
+  .mock-manual-chip.active { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+  .mock-manual-content { margin-top: 12px; font-size: 12px; color: var(--text-sec); line-height: 1.7; }
+
+  /* ===== 方案 A：Tab 分组 ===== */
+  .scheme-a-tabs {
+    display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px;
+    background: var(--card); border-radius: var(--radius) var(--radius) 0 0; padding: 0 16px;
+  }
+  .scheme-a-tab {
+    padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .scheme-a-tab:hover { color: var(--text-sec); }
+  .scheme-a-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  .scheme-a-panel { display: none; }
+  .scheme-a-panel.active { display: block; }
+  .scheme-a-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ===== 方案 B：分区折叠 ===== */
+  .scheme-b-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .scheme-b-full { grid-column: 1 / -1; }
+  .scheme-b-collapsible-header {
+    display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    cursor: pointer; transition: all 0.2s; margin-bottom: 0;
+  }
+  .scheme-b-collapsible-header:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .scheme-b-collapsible-header.expanded { border-radius: var(--radius) var(--radius) 0 0; margin-bottom: -1px; }
+  .scheme-b-chevron { font-size: 12px; color: var(--text-muted); transition: transform 0.2s; margin-left: auto; }
+  .scheme-b-chevron.open { transform: rotate(180deg); }
+  .scheme-b-body {
+    background: var(--card); padding: 20px;
+    border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow);
+    border-top: 1px solid var(--border);
+  }
+  .scheme-b-collapsed { display: none; }
+
+  /* ===== 滚动提示 ===== */
+  .scroll-hint {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+    background: linear-gradient(transparent, var(--bg));
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
+    font-size: 12px; color: var(--text-muted); pointer-events: none;
+  }
+  .scroll-hint::before { content: '↓ 继续向下滚动'; }
+
+  /* ===== 评估区 ===== */
+  .eval-section { padding: 24px; }
+  .eval-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+  .eval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .eval-table th { text-align: left; padding: 10px 12px; background: var(--bg); font-weight: 600; color: var(--text-sec); border-bottom: 2px solid var(--border); }
+  .eval-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-sec); }
+  .eval-table tr:last-child td { border-bottom: none; }
+  .eval-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .eval-tag.good { background: rgba(39,174,96,0.1); color: var(--success); }
+  .eval-tag.ok { background: rgba(243,156,18,0.1); color: var(--warning); }
+  .eval-tag.bad { background: rgba(231,76,60,0.1); color: var(--danger); }
+
+  @media (max-width: 1200px) {
+    .compare-wrap { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🛡️ 系统运维页面 — 布局优化方案</h1>
+  <p>左侧为当前方案（全部纵向堆叠），右侧为两个优化方案。点击 Tab 可切换查看效果。</p>
+</div>
+
+<div class="compare-wrap">
+
+  <!-- ==================== 左列：当前方案 ==================== -->
+  <div class="compare-col">
+    <div class="scheme-label current">🔴 当前方案</div>
+    <div class="scheme-desc">5 个功能卡片全部纵向排列，页面过长需要大量滚动。每张卡片内容始终展开，信息密度高但缺少层次。</div>
+    <div class="mock-shell">
+      <div class="mock-topbar">
+        <span class="mock-topbar-title">系统运维</span>
+        <span class="mock-topbar-badge">✅ 已同步</span>
+        <div class="mock-topbar-user">A</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-body-inner">
+
+          <!-- 卡片1: AI 接口 -->
+          <div class="ops-card">
+            <div class="ops-card-header">
+              <span class="ops-card-icon">🤖</span>
+              <div><div class="ops-card-title">AI 接口状态</div><div class="ops-card-sub">自动读取后台 AI 配置</div></div>
+              <button class="ops-btn">🔄 刷新</button>
+            </div>
+            <div class="mock-balance-grid">
+              <div class="mock-balance-item"><div class="mock-balance-value">qwen-plus</div><div class="mock-balance-label">当前模型</div></div>
+              <div class="mock-balance-item"><div class="mock-balance-value">¥86.5</div><div class="mock-balance-label">余额</div></div>
+              <div class="mock-balance-item"><div class="mock-balance-value">2.3万</div><div class="mock-balance-label">剩余额度</div></div>
+            </div>
+          </div>
+
+          <!-- 卡片2: 密钥 -->
+          <div class="ops-card">
+            <div class="ops-card-header">
+              <span class="ops-card-icon">🔑</span>
+              <div><div class="ops-card-title">AI 密钥管理</div><div class="ops-card-sub">编辑 ai-config.json</div></div>
+              <button class="ops-btn">📂 读取</button>
+            </div>
+            <div class="mock-key-row"><div class="mock-key-dot active"></div><span class="mock-key-name">主 Key（dashscope）</span><span class="mock-key-model">qwen-plus</span></div>
+            <div class="mock-key-row"><div class="mock-key-dot backup"></div><span class="mock-key-name">备用 Key 1</span><span class="mock-key-model">qwen-plus</span></div>
+            <div class="mock-key-row"><div class="mock-key-dot backup"></div><span class="mock-key-name">备用 Key 2</span><span class="mock-key-model">—</span></div>
+          </div>
+
+          <!-- 卡片3: 倒计时 -->
+          <div class="ops-card">
+            <div class="ops-card-header">
+              <span class="ops-card-icon">⏰</span>
+              <div><div class="ops-card-title">到期监控</div><div class="ops-card-sub">套餐 / 证书 / 域名 / 服务器</div></div>
+              <button class="ops-btn">💾 保存</button>
+            </div>
+            <div class="mock-countdown-grid">
+              <div class="mock-countdown-item urgent"><span class="mock-countdown-emoji">☁️</span><div><div class="mock-countdown-name">CloudBase 标准版</div><div class="mock-countdown-days">剩余 6 天</div></div></div>
+              <div class="mock-countdown-item warning"><span class="mock-countdown-emoji">🔒</span><div><div class="mock-countdown-name">SSL 证书</div><div class="mock-countdown-days">剩余 89 天</div></div></div>
+              <div class="mock-countdown-item safe"><span class="mock-countdown-emoji">🌐</span><div><div class="mock-countdown-name">域名 rich.soarto</div><div class="mock-countdown-days">剩余 426 天</div></div></div>
+              <div class="mock-countdown-item safe"><span class="mock-countdown-emoji">🖥️</span><div><div class="mock-countdown-name">轻量服务器</div><div class="mock-countdown-days">剩余 335 天</div></div></div>
+            </div>
+          </div>
+
+          <!-- 卡片4: 健康检测 -->
+          <div class="ops-card">
+            <div class="ops-card-header">
+              <span class="ops-card-icon">🔍</span>
+              <div><div class="ops-card-title">系统健康快检</div><div class="ops-card-sub">一键检查各系统连通性</div></div>
+              <button class="ops-btn ops-btn-primary">▶ 开始检测</button>
+            </div>
+            <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">前端页面</span><span class="mock-health-detail">200 OK · 0.3s</span></div>
+            <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">后端页面</span><span class="mock-health-detail">200 OK · 0.2s</span></div>
+            <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">API 服务</span><span class="mock-health-detail">200 OK · 0.5s</span></div>
+            <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">AI 接口</span><span class="mock-health-detail">DashScope 可用</span></div>
+            <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">CDN 资源</span><span class="mock-health-detail">正常</span></div>
+          </div>
+
+          <!-- 卡片5: 运维手册 -->
+          <div class="ops-card">
+            <div class="ops-card-header">
+              <span class="ops-card-icon">📖</span>
+              <div><div class="ops-card-title">部署运维手册</div><div class="ops-card-sub">系统架构 · 平台账号 · 部署流程 · 常见问题</div></div>
+            </div>
+            <div style="position:relative">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px">🔍</span>
+              <input class="mock-manual-search" placeholder="搜索手册内容..." />
+            </div>
+            <div class="mock-manual-toc">
+              <span class="mock-manual-chip active">1. 系统架构</span>
+              <span class="mock-manual-chip">2. 平台账号</span>
+              <span class="mock-manual-chip">3. 域名证书</span>
+              <span class="mock-manual-chip">4. 部署流程</span>
+              <span class="mock-manual-chip">5. 常见问题</span>
+              <span class="mock-manual-chip">6. API文档</span>
+              <span class="mock-manual-chip">7. 数据备份</span>
+              <span class="mock-manual-chip">8. 安全规范</span>
+            </div>
+            <div class="mock-manual-content">
+              系统采用前后端分离架构，前端为 H5 单页面，后端为微信云开发云托管服务…<br><br>
+              技术栈：原生 JavaScript + 腾讯云 CloudBase + DashScope AI<br>
+              部署方式：build-deploy.py 构建 → 微信云开发静态托管
+            </div>
+          </div>
+
+        </div>
+        <div class="scroll-hint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 右列：优化方案 ==================== -->
+  <div class="compare-col">
+    <div class="scheme-label proposed-a">🟢 方案 A：Tab 分组</div>
+    <div class="scheme-desc">将 5 个功能模块分为 3 个 Tab（AI 配置 / 系统监控 / 运维手册），同屏只展示一个分组，消除滚动。</div>
+    <div class="mock-shell">
+      <div class="mock-topbar">
+        <span class="mock-topbar-title">系统运维</span>
+        <span class="mock-topbar-badge">✅ 已同步</span>
+        <div class="mock-topbar-user">A</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-body-inner" style="padding-top:0">
+
+          <!-- Tab 栏 -->
+          <div class="scheme-a-tabs" id="schemeATabs">
+            <div class="scheme-a-tab active" onclick="switchSchemeA('ai')">
+              <span>🤖</span> AI 配置
+              <span style="font-size:10px;background:var(--primary-light);color:var(--primary);padding:1px 6px;border-radius:8px">2项</span>
+            </div>
+            <div class="scheme-a-tab" onclick="switchSchemeA('monitor')">
+              <span>📡</span> 系统监控
+              <span style="font-size:10px;background:rgba(39,174,96,0.1);color:var(--success);padding:1px 6px;border-radius:8px">2项</span>
+            </div>
+            <div class="scheme-a-tab" onclick="switchSchemeA('manual')">
+              <span>📖</span> 运维手册
+            </div>
+          </div>
+
+          <!-- Panel: AI 配置 -->
+          <div class="scheme-a-panel active" id="panel-ai">
+            <div class="scheme-a-2col">
+              <div class="ops-card">
+                <div class="ops-card-header">
+                  <span class="ops-card-icon">🤖</span>
+                  <div><div class="ops-card-title">AI 接口状态</div><div class="ops-card-sub">自动读取后台 AI 配置</div></div>
+                  <button class="ops-btn">🔄 刷新</button>
+                </div>
+                <div class="mock-balance-grid">
+                  <div class="mock-balance-item"><div class="mock-balance-value">qwen-plus</div><div class="mock-balance-label">当前模型</div></div>
+                  <div class="mock-balance-item"><div class="mock-balance-value">¥86.5</div><div class="mock-balance-label">余额</div></div>
+                  <div class="mock-balance-item"><div class="mock-balance-value">2.3万</div><div class="mock-balance-label">剩余额度</div></div>
+                </div>
+              </div>
+              <div class="ops-card">
+                <div class="ops-card-header">
+                  <span class="ops-card-icon">🔑</span>
+                  <div><div class="ops-card-title">AI 密钥管理</div><div class="ops-card-sub">编辑 ai-config.json</div></div>
+                  <button class="ops-btn">📂 读取</button>
+                </div>
+                <div class="mock-key-row"><div class="mock-key-dot active"></div><span class="mock-key-name">主 Key（dashscope）</span><span class="mock-key-model">qwen-plus</span></div>
+                <div class="mock-key-row"><div class="mock-key-dot backup"></div><span class="mock-key-name">备用 Key 1</span><span class="mock-key-model">qwen-plus</span></div>
+                <div class="mock-key-row"><div class="mock-key-dot backup"></div><span class="mock-key-name">备用 Key 2</span><span class="mock-key-model">—</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: 系统监控 -->
+          <div class="scheme-a-panel" id="panel-monitor">
+            <div class="scheme-a-2col">
+              <div class="ops-card">
+                <div class="ops-card-header">
+                  <span class="ops-card-icon">⏰</span>
+                  <div><div class="ops-card-title">到期监控</div><div class="ops-card-sub">套餐 / 证书 / 域名 / 服务器</div></div>
+                  <button class="ops-btn">💾 保存</button>
+                </div>
+                <div class="mock-countdown-grid" style="grid-template-columns:1fr">
+                  <div class="mock-countdown-item urgent"><span class="mock-countdown-emoji">☁️</span><div><div class="mock-countdown-name">CloudBase 标准版</div><div class="mock-countdown-days">剩余 6 天</div></div></div>
+                  <div class="mock-countdown-item warning"><span class="mock-countdown-emoji">🔒</span><div><div class="mock-countdown-name">SSL 证书</div><div class="mock-countdown-days">剩余 89 天</div></div></div>
+                  <div class="mock-countdown-item safe"><span class="mock-countdown-emoji">🌐</span><div><div class="mock-countdown-name">域名 rich.soarto</div><div class="mock-countdown-days">剩余 426 天</div></div></div>
+                  <div class="mock-countdown-item safe"><span class="mock-countdown-emoji">🖥️</span><div><div class="mock-countdown-name">轻量服务器</div><div class="mock-countdown-days">剩余 335 天</div></div></div>
+                </div>
+              </div>
+              <div class="ops-card">
+                <div class="ops-card-header">
+                  <span class="ops-card-icon">🔍</span>
+                  <div><div class="ops-card-title">系统健康快检</div><div class="ops-card-sub">一键检查各系统连通性</div></div>
+                  <button class="ops-btn ops-btn-primary">▶ 开始检测</button>
+                </div>
+                <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">前端页面</span><span class="mock-health-detail">200 OK</span></div>
+                <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">后端页面</span><span class="mock-health-detail">200 OK</span></div>
+                <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">API 服务</span><span class="mock-health-detail">200 OK</span></div>
+                <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">AI 接口</span><span class="mock-health-detail">DashScope OK</span></div>
+                <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">CDN 资源</span><span class="mock-health-detail">正常</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel: 运维手册 -->
+          <div class="scheme-a-panel" id="panel-manual">
+            <div class="ops-card">
+              <div class="ops-card-header">
+                <span class="ops-card-icon">📖</span>
+                <div><div class="ops-card-title">部署运维手册</div><div class="ops-card-sub">系统架构 · 平台账号 · 部署流程 · 常见问题</div></div>
+              </div>
+              <div style="position:relative">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px">🔍</span>
+                <input class="mock-manual-search" placeholder="搜索手册内容（如：域名、证书、构建、备案）" />
+              </div>
+              <div class="mock-manual-toc" style="flex-direction:column;gap:4px">
+                <span class="mock-manual-chip active" style="width:100%;text-align:left;padding:8px 12px">1. 系统架构</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">2. 平台账号</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">3. 域名证书</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">4. 部署流程</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">5. 常见问题</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">6. API 文档</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">7. 数据备份</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">8. 安全规范</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">9. 密钥管理</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">10. 版本记录</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">11. 应急预案</span>
+                <span class="mock-manual-chip" style="width:100%;text-align:left;padding:8px 12px">12. 运维检查清单</span>
+              </div>
+              <div class="mock-manual-content">
+                <strong>1. 系统架构</strong><br><br>
+                系统采用前后端分离架构，前端为 H5 单页面应用，后端为微信云开发云托管服务。<br><br>
+                <strong>技术栈：</strong>原生 JavaScript + 腾讯云 CloudBase + DashScope AI<br>
+                <strong>部署方式：</strong>build-deploy.py 构建 → 微信云开发静态托管上传<br>
+                <strong>数据存储：</strong>localStorage（本地）+ 云端 API（线上）双写<br><br>
+                <strong>架构图：</strong><br>
+                前端 H5 → shared-data.js → scoring-engine.js → cloud-data.js → cloud-api.js → 云托管服务<br><br>
+                小程序壳 → web-view → H5 页面（env=cloud 模式）
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案 B -->
+    <div style="margin-top:24px">
+      <div class="scheme-label proposed-b">🔵 方案 B：分区折叠 + 双列</div>
+      <div class="scheme-desc">紧凑型和手册型分区展示，每个分区可折叠。同屏展示所有卡片标题，按需展开详情。</div>
+      <div class="mock-shell">
+        <div class="mock-topbar">
+          <span class="mock-topbar-title">系统运维</span>
+          <span class="mock-topbar-badge">✅ 已同步</span>
+          <div class="mock-topbar-user">A</div>
+        </div>
+        <div class="mock-body">
+          <div class="mock-body-inner">
+
+            <div class="scheme-b-grid">
+              <!-- AI 接口 (展开) -->
+              <div>
+                <div class="scheme-b-collapsible-header expanded" onclick="toggleSchemeB(this)">
+                  <span class="ops-card-icon">🤖</span>
+                  <div><div class="ops-card-title">AI 接口状态</div><div class="ops-card-sub">Provider · 模型 · 余额</div></div>
+                  <button class="ops-btn" onclick="event.stopPropagation()">🔄 刷新</button>
+                  <span class="scheme-b-chevron open">▼</span>
+                </div>
+                <div class="scheme-b-body">
+                  <div class="mock-balance-grid">
+                    <div class="mock-balance-item"><div class="mock-balance-value">qwen-plus</div><div class="mock-balance-label">当前模型</div></div>
+                    <div class="mock-balance-item"><div class="mock-balance-value">¥86.5</div><div class="mock-balance-label">余额</div></div>
+                    <div class="mock-balance-item"><div class="mock-balance-value">2.3万</div><div class="mock-balance-label">剩余额度</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 密钥管理 (展开) -->
+              <div>
+                <div class="scheme-b-collapsible-header expanded" onclick="toggleSchemeB(this)">
+                  <span class="ops-card-icon">🔑</span>
+                  <div><div class="ops-card-title">AI 密钥管理</div><div class="ops-card-sub">构建配置 · 主备 Key</div></div>
+                  <button class="ops-btn" onclick="event.stopPropagation()">📂 读取</button>
+                  <span class="scheme-b-chevron open">▼</span>
+                </div>
+                <div class="scheme-b-body">
+                  <div class="mock-key-row"><div class="mock-key-dot active"></div><span class="mock-key-name">主 Key（dashscope）</span><span class="mock-key-model">qwen-plus</span></div>
+                  <div class="mock-key-row"><div class="mock-key-dot backup"></div><span class="mock-key-name">备用 Key 1</span><span class="mock-key-model">qwen-plus</span></div>
+                </div>
+              </div>
+
+              <!-- 到期监控 (折叠) -->
+              <div>
+                <div class="scheme-b-collapsible-header" onclick="toggleSchemeB(this)">
+                  <span class="ops-card-icon">⏰</span>
+                  <div><div class="ops-card-title">到期监控</div><div class="ops-card-sub">4 项 · 1 项紧急</div></div>
+                  <span class="scheme-b-chevron">▼</span>
+                </div>
+                <div class="scheme-b-body scheme-b-collapsed">
+                  <div class="mock-countdown-grid" style="grid-template-columns:1fr">
+                    <div class="mock-countdown-item urgent"><span class="mock-countdown-emoji">☁️</span><div><div class="mock-countdown-name">CloudBase 标准版</div><div class="mock-countdown-days">剩余 6 天</div></div></div>
+                    <div class="mock-countdown-item warning"><span class="mock-countdown-emoji">🔒</span><div><div class="mock-countdown-name">SSL 证书</div><div class="mock-countdown-days">剩余 89 天</div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 健康检测 (折叠) -->
+              <div>
+                <div class="scheme-b-collapsible-header" onclick="toggleSchemeB(this)">
+                  <span class="ops-card-icon">🔍</span>
+                  <div><div class="ops-card-title">系统健康快检</div><div class="ops-card-sub">5 项检测 · 上次 2 分钟前</div></div>
+                  <button class="ops-btn ops-btn-primary" onclick="event.stopPropagation()">▶ 检测</button>
+                  <span class="scheme-b-chevron">▼</span>
+                </div>
+                <div class="scheme-b-body scheme-b-collapsed">
+                  <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">前端页面</span><span class="mock-health-detail">200 OK</span></div>
+                  <div class="mock-health-item"><span class="mock-health-status">✅</span><span class="mock-health-name">API 服务</span><span class="mock-health-detail">200 OK</span></div>
+                </div>
+              </div>
+
+              <!-- 运维手册 (全宽，折叠) -->
+              <div class="scheme-b-full">
+                <div class="scheme-b-collapsible-header" onclick="toggleSchemeB(this)">
+                  <span class="ops-card-icon">📖</span>
+                  <div><div class="ops-card-title">部署运维手册</div><div class="ops-card-sub">12 章节 · 搜索支持</div></div>
+                  <span class="scheme-b-chevron">▼</span>
+                </div>
+                <div class="scheme-b-body scheme-b-collapsed">
+                  <div style="position:relative">
+                    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px">🔍</span>
+                    <input class="mock-manual-search" placeholder="搜索手册内容..." />
+                  </div>
+                  <div class="mock-manual-toc">
+                    <span class="mock-manual-chip">1. 系统架构</span>
+                    <span class="mock-manual-chip">2. 平台账号</span>
+                    <span class="mock-manual-chip">3. 域名证书</span>
+                    <span class="mock-manual-chip">4. 部署流程</span>
+                    <span class="mock-manual-chip">5. 常见问题</span>
+                    <span class="mock-manual-chip">…</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 方案对比评估 -->
+    <div class="eval-section">
+      <div class="eval-title">📊 方案对比</div>
+      <table class="eval-table">
+        <tr><th style="width:100px">评估维度</th><th>当前方案</th><th>方案 A：Tab 分组</th><th>方案 B：分区折叠</th></tr>
+        <tr>
+          <td style="font-weight:600">页面长度</td>
+          <td><span class="eval-tag bad">过长（5 卡片全展开）</span></td>
+          <td><span class="eval-tag good">一屏展示，零滚动</span></td>
+          <td><span class="eval-tag good">一屏展示标题，按需展开</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">信息可见性</td>
+          <td><span class="eval-tag good">全部内容直接可见</span></td>
+          <td><span class="eval-tag ok">需切换 Tab 才能看到</span></td>
+          <td><span class="eval-tag good">标题+摘要常驻可见</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">操作效率</td>
+          <td><span class="eval-tag ok">无需切换，直接操作</span></td>
+          <td><span class="eval-tag ok">频繁切换 Tab 略繁琐</span></td>
+          <td><span class="eval-tag good">常用项展开，不常用折叠</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">改动量</td>
+          <td>—</td>
+          <td><span class="eval-tag ok">中等（加 Tab 容器 + 分组）</span></td>
+          <td><span class="eval-tag ok">中等（加折叠逻辑 + 双列）</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">推荐场景</td>
+          <td>信息量少时</td>
+          <td>模块独立、不常互操作时</td>
+          <td>频繁查看关键指标、按需查阅时</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // 方案 A Tab 切换
+  function switchSchemeA(tab) {
+    document.querySelectorAll('.scheme-a-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.scheme-a-panel').forEach(p => p.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  // 方案 B 折叠切换
+  function toggleSchemeB(header) {
+    var isExpanded = header.classList.contains('expanded');
+    var body = header.nextElementSibling;
+    var chevron = header.querySelector('.scheme-b-chevron');
+    if (isExpanded) {
+      header.classList.remove('expanded');
+      body.classList.add('scheme-b-collapsed');
+      chevron.classList.remove('open');
+    } else {
+      header.classList.add('expanded');
+      body.classList.remove('scheme-b-collapsed');
+      chevron.classList.add('open');
+    }
+  }
+</script>
+
+</body>
+</html>

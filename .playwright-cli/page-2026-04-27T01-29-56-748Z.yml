@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 15:04
+      - generic [ref=e5]:
+        - generic [ref=e6]: 📶
+        - generic [ref=e7]: 📡
+        - generic [ref=e8]: 🔋
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47] [cursor=pointer]: ‹
+          - generic [ref=e48]: 心理健康与精神病态量表
+        - generic [ref=e50]:
+          - generic [ref=e51]: 🔍
+          - textbox "搜索量表名称" [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]: 📂
+            - generic [ref=e57]: 心理健康与精神病态量表
+            - generic [ref=e58]: ▼
+          - generic [ref=e59]:
+            - generic [ref=e60] [cursor=pointer]:
+              - generic [ref=e61]: 题数
+              - generic [ref=e62]: ↑
+            - generic [ref=e63] [cursor=pointer]:
+              - generic [ref=e64]: 时长
+              - generic [ref=e65]: ↑
+            - generic [ref=e66] [cursor=pointer]:
+              - generic [ref=e67]: 次数
+              - generic [ref=e68]: ↑
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: 评分
+              - generic [ref=e71]: ↑
+        - generic [ref=e74]:
+          - generic [ref=e75] [cursor=pointer]: 全部
+          - generic [ref=e76] [cursor=pointer]: 家庭与人际关系量表
+          - generic [ref=e77] [cursor=pointer]: 人格特质量表
+          - generic [ref=e78] [cursor=pointer]: 心理健康与精神病态量表
+      - generic [ref=e79]: 心理健康与精神病态量表 · 共 3 个量表
+      - generic [ref=e80]:
+        - generic [ref=e83] [cursor=pointer]:
+          - generic [ref=e85]: 90项症状清单
+          - generic [ref=e86]: 90 项症状清单（SCL-90）由心理学家 Derogatis 于 1973 年编制，20 世纪 80 年代引入我国并建立了国人常模，是国内应用最广泛的心理健康...
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e89]: 📝 90题
+              - generic [ref=e90]: ⏱️ 15分钟
+              - generic [ref=e91]: ⭐ 5
+            - generic [ref=e92]: 心理健康与精神病态量表
+        - generic [ref=e95] [cursor=pointer]:
+          - generic [ref=e97]: 儿童问题特质问卷
+          - generic [ref=e98]: 儿童问题特质问卷（CPTI）由荷兰、瑞典学者联合开发，专为3~12 岁儿童设计，填补了 3~6 岁学前儿童问题特质评估的工具空白。量表基于精神病态三因子模型编制...
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: 📝 28题
+              - generic [ref=e102]: ⏱️ 4分钟
+              - generic [ref=e103]: ⭐ 5
+            - generic [ref=e104]: 心理健康与精神病态量表
+        - generic [ref=e107] [cursor=pointer]:
+          - generic [ref=e109]: 反应性-主动性攻击量表（简式中文版）
+          - generic [ref=e110]: 反应性 - 主动性攻击量表（简式中文版）由原版简化编制，共 11 题，分两维度自评攻击行为，信效度佳、作答快，适配多类测评场景。
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - generic [ref=e113]: 📝 11题
+              - generic [ref=e114]: ⏱️ 10分钟
+              - generic [ref=e115]: ⭐ 5
+            - generic [ref=e116]: 心理健康与精神病态量表
+  - generic:
+    - generic:
+      - generic: 🗑
+      - generic: 删除测评记录
+      - generic: 确定删除这条记录吗？删除后无法恢复。
+      - generic:
+        - button "取消"
+        - button "删除"

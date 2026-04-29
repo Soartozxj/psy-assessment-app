@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "miniprogram-automator": "^0.12.1",
+    "playwright": "^1.59.1"
+  }
+}

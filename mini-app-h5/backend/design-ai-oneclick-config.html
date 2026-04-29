@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星蓝心镜 · 后台管理 — AI 一键配置设计稿 v2</title>
+  <style>
+    :root {
+      --primary: #4A90D9;
+      --primary-dark: #3A7BC8;
+      --primary-light: #EBF4FF;
+      --success: #52C41A;
+      --warning: #FAAD14;
+      --danger: #FF4D4F;
+      --bg: #F0F2F5;
+      --card: #FFFFFF;
+      --sidebar: #001529;
+      --sidebar-hover: #1A2F45;
+      --text: #333;
+      --text-sec: #666;
+      --text-muted: #999;
+      --border: #E8E8E8;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      width: 220px; min-height: 100vh; background: var(--sidebar);
+      display: flex; flex-direction: column; flex-shrink: 0;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 20px 20px 16px; color: #fff; font-size: 16px; font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-logo .logo-icon { font-size: 26px; }
+    .sidebar-logo .logo-sub { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 2px; }
+    .sidebar-menu { padding: 12px 0; flex: 1; }
+    .menu-group-title { padding: 8px 20px 4px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; }
+    .menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; cursor: pointer; font-size: 14px;
+      color: rgba(255,255,255,0.65); transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .menu-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .menu-item.active { background: var(--primary); color: #fff; border-left-color: #69c0ff; }
+    .menu-item .icon { font-size: 17px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: rgba(255,255,255,0.3); }
+
+    /* ===== 主内容区 ===== */
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ===== 顶部导航 ===== */
+    .topbar {
+      height: 56px; background: var(--card); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 16px;
+      position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+    .topbar-nav { display: flex; align-items: center; gap: 10px; }
+    .topbar-nav-link {
+      width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      background: rgba(74,144,217,0.1); color: var(--primary); text-decoration: none; font-size: 16px;
+      transition: all 0.2s; border: 1px solid transparent;
+    }
+    .topbar-nav-link:hover { background: rgba(74,144,217,0.2); border-color: rgba(74,144,217,0.3); }
+    .topbar-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+    .sync-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+      background: rgba(82,196,26,0.1); color: var(--success); border: 1px solid rgba(82,196,26,0.3);
+    }
+
+    .content { padding: 24px; flex: 1; }
+
+    .tab-container {
+      background: var(--card); border-radius: var(--radius); margin-bottom: 24px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+    }
+    .tab-header { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .tab-item {
+      padding: 12px 20px; font-size: 14px; font-weight: 500;
+      color: var(--text-sec); cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .tab-item:hover { color: var(--primary); }
+    .tab-item.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(74,144,217,0.05); }
+
+    .table-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #FAFAFA; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-sec); text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 16px; font-size: 14px; border-bottom: 1px solid #F5F5F5; vertical-align: middle; }
+    tr:hover td { background: #FAFBFF; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-success { background: rgba(82,196,26,0.1); color: var(--success); }
+    .badge-primary { background: rgba(74,144,217,0.1); color: var(--primary); }
+
+    /* ===== 按钮通用 ===== */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 36px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-default { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+    .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+    /* ===== 操作下拉菜单 ===== */
+    .action-dropdown { position: relative; display: inline-block; }
+    .action-trigger {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px;
+      background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 500; cursor: pointer; border: none;
+      transition: all 0.2s;
+    }
+    .action-trigger:hover { background: var(--primary-dark); }
+    .action-trigger .arrow { font-size: 10px; opacity: 0.7; transition: transform 0.2s; }
+    .action-dropdown.open .action-trigger .arrow { transform: rotate(180deg); }
+    .action-menu {
+      position: absolute; right: 0; top: calc(100% + 4px);
+      min-width: 180px; background: #fff;
+      border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100; display: none; overflow: hidden;
+    }
+    .action-dropdown.open .action-menu { display: block; }
+    .action-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; font-size: 13px; color: var(--text);
+      cursor: pointer; transition: background 0.15s; border: none;
+      background: none; width: 100%; text-align: left;
+    }
+    .action-menu-item:hover { background: #F5F7FF; }
+    .action-menu-item .item-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+    .action-menu-item .item-label { flex: 1; }
+    .action-menu-item .item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .action-menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .action-menu-item.danger { color: var(--danger); }
+    .action-menu-item.danger:hover { background: #FFF1F0; }
+
+    /* ============================================ */
+    /*  🆕 AI 一键配置弹窗样式                       */
+    /* ============================================ */
+
+    /* 外层遮罩 */
+    .ai-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1001;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .ai-modal-overlay.open { display: flex; }
+
+    /* 弹窗容器 */
+    .ai-modal {
+      background: var(--card); border-radius: 12px;
+      width: 1100px; max-width: 96vw; height: 88vh; max-height: 900px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    /* 弹窗头部 */
+    .ai-modal-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #f5f7ff 0%, #faf0ff 100%);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ai-modal-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; flex-shrink: 0;
+    }
+    .ai-modal-title { font-size: 16px; font-weight: 600; color: var(--text); flex: 1; }
+    .ai-modal-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+    .ai-modal-close {
+      width: 32px; height: 32px; border-radius: 8px; border: none;
+      background: transparent; cursor: pointer; font-size: 18px;
+      color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .ai-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+
+    /* 弹窗左侧 iframe 容器 */
+    .ai-modal-body {
+      flex: 1; display: flex; overflow: hidden;
+    }
+
+    /* 侧边信息栏 */
+    .ai-sidebar {
+      width: 280px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      background: #FAFBFD;
+    }
+    .ai-sidebar-section {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-sidebar-section:last-child { border-bottom: none; }
+    .ai-sidebar-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    /* 量表选择 */
+    .ai-scale-select {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 13px; background: #fff;
+      cursor: pointer;
+    }
+    .ai-scale-select:focus { outline: none; border-color: var(--primary); }
+
+    /* AI 状态 */
+    .ai-status-card {
+      padding: 12px 14px; border-radius: 8px;
+      background: #fff; border: 1px solid var(--border);
+    }
+    .ai-status-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text);
+    }
+    .ai-status-row + .ai-status-row { margin-top: 8px; }
+    .ai-status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success); flex-shrink: 0;
+    }
+    .ai-status-dot.err { background: var(--danger); }
+    .ai-status-key { color: var(--text-muted); font-size: 12px; }
+
+    /* 导入按钮 */
+    .ai-import-section { margin-top: auto; padding: 16px 18px; }
+    .btn-ai-import {
+      width: 100%; padding: 12px 20px;
+      border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-size: 14px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 14px rgba(102,126,234,0.3);
+      transition: all 0.2s;
+    }
+    .btn-ai-import:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    }
+    .btn-ai-import:disabled {
+      opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none;
+    }
+    .ai-import-hint {
+      font-size: 11px; color: var(--text-muted); text-align: center;
+      margin-top: 8px; line-height: 1.5;
+    }
+
+    /* iframe 容器 */
+    .ai-iframe-wrap {
+      flex: 1; position: relative; background: #fff;
+    }
+    .ai-iframe-wrap iframe {
+      width: 100%; height: 100%; border: none;
+    }
+
+    /* 底部操作栏 */
+    .ai-modal-footer {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px;
+      background: #FAFAFA; border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ai-footer-hint {
+      flex: 1; font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ai-footer-actions {
+      display: flex; gap: 10px;
+    }
+
+    /* ===== 计分规则弹窗（保留展示） ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card); border-radius: 12px; width: 900px; max-width: 100%;
+      max-height: 90vh; display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
+    .modal-title { font-size: 16px; font-weight: 600; flex: 1; }
+    .modal-close { font-size: 20px; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 4px 8px; border-radius: 4px; }
+    .modal-close:hover { background: var(--bg); }
+    .modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+
+    .sc-tab-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .sc-tab {
+      padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
+      cursor: pointer; font-size: 13px; transition: all 0.2s;
+    }
+    .sc-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .sc-tab:not(.active) { background: #fff; color: var(--text); }
+    .sc-tab:not(.active):hover { border-color: var(--primary); color: var(--primary); }
+
+    .sc-save-bar {
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 12px; justify-content: space-between; align-items: center;
+    }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; top: 20px; right: 24px; z-index: 10000;
+      padding: 14px 20px; border-radius: 10px;
+      background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      font-size: 14px; border-left: 4px solid var(--success);
+      animation: toastSlide 0.3s ease;
+      display: none;
+    }
+    .toast.show { display: flex; align-items: center; gap: 8px; }
+
+    /* ===== 设计稿标注 ===== */
+    .design-badge {
+      position: fixed; top: 12px; right: 12px; z-index: 9999;
+      padding: 8px 16px; border-radius: 20px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: #fff; font-size: 12px; font-weight: 600;
+      box-shadow: 0 4px 12px rgba(238,90,36,0.3);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .design-tooltip {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 9999;
+      padding: 10px 20px; border-radius: 10px;
+      background: rgba(0,0,0,0.75); color: #fff;
+      font-size: 13px; backdrop-filter: blur(8px);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .design-tooltip .key {
+      padding: 2px 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.2); font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .new-feature-highlight { position: relative; }
+    .new-feature-highlight::before {
+      content: '🆕 新功能'; position: absolute; top: -10px; right: 16px;
+      padding: 2px 10px; border-radius: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-size: 10px; font-weight: 600; z-index: 10;
+    }
+
+    /* 流程标注 */
+    .flow-annotation {
+      position: absolute; z-index: 10;
+      padding: 6px 12px; border-radius: 8px;
+      background: rgba(102,126,234,0.95); color: #fff;
+      font-size: 11px; font-weight: 500;
+      box-shadow: 0 2px 12px rgba(102,126,234,0.4);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .flow-annotation::after {
+      content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 6px solid rgba(102,126,234,0.95);
+    }
+
+    @keyframes toastSlide { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+<!-- 设计稿标注 -->
+<div class="design-badge">🎨 设计稿 v2 · 仅预览</div>
+<div class="design-tooltip" id="designTooltip">
+  <span class="key">交互演示</span> 
+  <span id="tooltipText">点击量表列表的「🤖 AI 一键配置」按钮查看完整弹窗</span>
+</div>
+
+<!-- ========== 侧边栏 ========== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🧠</span>
+    <div>
+      <div>星蓝心镜</div>
+      <div class="logo-sub">Admin Console</div>
+    </div>
+  </div>
+  <nav class="sidebar-menu">
+    <div class="menu-group-title">概览</div>
+    <div class="menu-item"><span class="icon">📊</span> 数据看板</div>
+    <div class="menu-group-title">内容管理</div>
+    <div class="menu-item active"><span class="icon">📋</span> 量表管理</div>
+    <div class="menu-item"><span class="icon">❓</span> 题目库</div>
+    <div class="menu-group-title">用户与记录</div>
+    <div class="menu-item"><span class="icon">👥</span> 用户列表</div>
+    <div class="menu-item"><span class="icon">📈</span> 测评记录</div>
+    <div class="menu-group-title">系统</div>
+    <div class="menu-item"><span class="icon">🎭</span> NPC场景配置</div>
+    <div class="menu-item"><span class="icon">⚙️</span> 系统设置</div>
+    <div class="menu-item"><span class="icon">🛡️</span> 系统运维</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div>v10.12 · 星蓝心镜</div>
+  </div>
+</aside>
+
+<!-- ========== 主内容区 ========== -->
+<main class="main">
+  <header class="topbar">
+    <span class="topbar-title">量表管理</span>
+    <div class="topbar-nav">
+      <a href="javascript:void(0)" class="topbar-nav-link" title="首页">🏠</a>
+      <a href="javascript:void(0)" class="topbar-nav-link" title="数据看板">📈</a>
+    </div>
+    <span class="sync-badge"><span>✅</span> 已同步前端</span>
+    <div class="topbar-user">
+      <div class="topbar-avatar">A</div>
+      <span style="font-size:14px">管理员</span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="tab-container">
+      <div class="tab-header">
+        <div class="tab-item"><span>📋</span> 量表列表</div>
+        <div class="tab-item"><span>📊</span> 量表类型</div>
+        <div class="tab-item active"><span>🧮</span> 计分规则</div>
+        <div class="tab-item"><span>🩺</span> 测评详情</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>量表名称</th>
+            <th>编码</th>
+            <th>分类</th>
+            <th>题目数</th>
+            <th>计分规则</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:500">😊 患者健康问卷（PHQ-9）</td>
+            <td style="color:var(--text-muted)">PHQ-9</td>
+            <td><span class="badge badge-primary">情绪筛查</span></td>
+            <td>9</td>
+            <td><span class="badge badge-success">✅ 已配置</span></td>
+            <td><span class="badge badge-success">已上架</span></td>
+            <td>
+              <div class="action-dropdown" onclick="toggleDropdown(event,this)">
+                <button class="action-trigger">操作 <span class="arrow">▼</span></button>
+                <div class="action-menu">
+                  <button class="action-menu-item" onclick="event.stopPropagation();showScoringModal()">
+                    <span class="item-icon">👁</span>
+                    <div>
+                      <div class="item-label">查看计分规则</div>
+                      <div class="item-desc">查看当前维度、指标、解释规则</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();openAiOneClick('PHQ-9','患者健康问卷（PHQ-9）')">
+                    <span class="item-icon">🤖</span>
+                    <div>
+                      <div class="item-label">AI 重新配置</div>
+                      <div class="item-desc">用 AI 重新生成，将覆盖现有规则</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📝</span>
+                    <div>
+                      <div class="item-label">编辑量表信息</div>
+                      <div class="item-desc">修改名称、分类、题目等</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📊</span>
+                    <div>
+                      <div class="item-label">查看测评数据</div>
+                      <div class="item-desc">该量表的测评记录统计</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item danger" onclick="event.stopPropagation();">
+                    <span class="item-icon">🗑</span>
+                    <div>
+                      <div class="item-label">删除计分规则</div>
+                      <div class="item-desc">清除配置，恢复待配置状态</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">😰 广泛性焦虑量表（GAD-7）</td>
+            <td style="color:var(--text-muted)">GAD-7</td>
+            <td><span class="badge badge-primary">情绪筛查</span></td>
+            <td>7</td>
+            <td><span class="badge badge-success">✅ 已配置</span></td>
+            <td><span class="badge badge-success">已上架</span></td>
+            <td>
+              <div class="action-dropdown" onclick="toggleDropdown(event,this)">
+                <button class="action-trigger">操作 <span class="arrow">▼</span></button>
+                <div class="action-menu">
+                  <button class="action-menu-item" onclick="event.stopPropagation();showScoringModal()">
+                    <span class="item-icon">👁</span>
+                    <div>
+                      <div class="item-label">查看计分规则</div>
+                      <div class="item-desc">查看当前维度、指标、解释规则</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();openAiOneClick('GAD-7','广泛性焦虑量表（GAD-7）')">
+                    <span class="item-icon">🤖</span>
+                    <div>
+                      <div class="item-label">AI 重新配置</div>
+                      <div class="item-desc">用 AI 重新生成，将覆盖现有规则</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📝</span>
+                    <div>
+                      <div class="item-label">编辑量表信息</div>
+                      <div class="item-desc">修改名称、分类、题目等</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📊</span>
+                    <div>
+                      <div class="item-label">查看测评数据</div>
+                      <div class="item-desc">该量表的测评记录统计</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item danger" onclick="event.stopPropagation();">
+                    <span class="item-icon">🗑</span>
+                    <div>
+                      <div class="item-label">删除计分规则</div>
+                      <div class="item-desc">清除配置，恢复待配置状态</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">🧠 症状自评量表（SCL-90）</td>
+            <td style="color:var(--text-muted)">SCL-90</td>
+            <td><span class="badge badge-primary">综合评估</span></td>
+            <td>90</td>
+            <td><span class="badge" style="background:rgba(250,173,20,0.1);color:var(--warning)">⏳ 待配置</span></td>
+            <td><span class="badge badge-success">已上架</span></td>
+            <td>
+              <div class="action-dropdown" onclick="toggleDropdown(event,this)">
+                <button class="action-trigger">操作 <span class="arrow">▼</span></button>
+                <div class="action-menu">
+                  <button class="action-menu-item" onclick="event.stopPropagation();openAiOneClick('SCL-90','症状自评量表（SCL-90）')">
+                    <span class="item-icon">🤖</span>
+                    <div>
+                      <div class="item-label">🆕 AI 一键配置</div>
+                      <div class="item-desc">粘贴计分说明，AI 自动生成规则</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();showScoringModal()">
+                    <span class="item-icon">✋</span>
+                    <div>
+                      <div class="item-label">手动配置</div>
+                      <div class="item-desc">逐项添加维度、指标、解释规则</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📝</span>
+                    <div>
+                      <div class="item-label">编辑量表信息</div>
+                      <div class="item-desc">修改名称、分类、题目等</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📊</span>
+                    <div>
+                      <div class="item-label">查看测评数据</div>
+                      <div class="item-desc">该量表的测评记录统计</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:500">🎭 大五人格测验（CBF-PI-B）</td>
+            <td style="color:var(--text-muted)">CBF-PI-B</td>
+            <td><span class="badge badge-primary">人格特质</span></td>
+            <td>240</td>
+            <td><span class="badge" style="background:rgba(250,173,20,0.1);color:var(--warning)">⏳ 待配置</span></td>
+            <td><span class="badge badge-success">已上架</span></td>
+            <td>
+              <div class="action-dropdown" onclick="toggleDropdown(event,this)">
+                <button class="action-trigger">操作 <span class="arrow">▼</span></button>
+                <div class="action-menu">
+                  <button class="action-menu-item" onclick="event.stopPropagation();openAiOneClick('CBF-PI-B','大五人格测验（CBF-PI-B）')">
+                    <span class="item-icon">🤖</span>
+                    <div>
+                      <div class="item-label">🆕 AI 一键配置</div>
+                      <div class="item-desc">粘贴计分说明，AI 自动生成规则</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();showScoringModal()">
+                    <span class="item-icon">✋</span>
+                    <div>
+                      <div class="item-label">手动配置</div>
+                      <div class="item-desc">逐项添加维度、指标、解释规则</div>
+                    </div>
+                  </button>
+                  <div class="action-menu-divider"></div>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📝</span>
+                    <div>
+                      <div class="item-label">编辑量表信息</div>
+                      <div class="item-desc">修改名称、分类、题目等</div>
+                    </div>
+                  </button>
+                  <button class="action-menu-item" onclick="event.stopPropagation();">
+                    <span class="item-icon">📊</span>
+                    <div>
+                      <div class="item-label">查看测评数据</div>
+                      <div class="item-desc">该量表的测评记录统计</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+
+<!-- ============================================ -->
+<!--  🆕 AI 一键配置弹窗（iframe 内嵌完整测试页）  -->
+<!-- ============================================ -->
+<div class="ai-modal-overlay" id="aiOneClickModal">
+  <div class="ai-modal">
+
+    <!-- 弹窗头部 -->
+    <div class="ai-modal-header">
+      <div class="ai-modal-icon">🤖</div>
+      <div>
+        <div class="ai-modal-title">AI 一键配置</div>
+        <div class="ai-modal-subtitle" id="aiModalSubtitle">正在为「症状自评量表（SCL-90）」生成计分规则</div>
+      </div>
+      <button class="ai-modal-close" onclick="closeAiOneClick()">✕</button>
+    </div>
+
+    <!-- 弹窗主体 -->
+    <div class="ai-modal-body">
+
+      <!-- 左侧信息栏 -->
+      <div class="ai-sidebar">
+        <!-- 目标量表 -->
+        <div class="ai-sidebar-section">
+          <div class="ai-sidebar-label">📋 目标量表</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;" id="aiTargetScale">症状自评量表（SCL-90）</div>
+          <div style="font-size:12px;color:var(--text-muted);">解析完成后，计分规则将直接写入此量表</div>
+        </div>
+
+        <!-- AI 配置状态 -->
+        <div class="ai-sidebar-section">
+          <div class="ai-sidebar-label">⚡ AI 模型状态</div>
+          <div class="ai-status-card">
+            <div class="ai-status-row">
+              <span class="ai-status-dot"></span>
+              <span style="flex:1;">DashScope</span>
+              <span style="font-size:12px;color:var(--text-muted);">通义千问</span>
+            </div>
+            <div class="ai-status-row">
+              <span class="ai-status-dot"></span>
+              <span style="flex:1;">模型</span>
+              <span style="font-size:12px;font-weight:600;color:var(--primary);">qwen-plus</span>
+            </div>
+            <div class="ai-status-row">
+              <span class="ai-status-dot"></span>
+              <span style="flex:1;">API Key</span>
+              <span style="font-size:12px;color:var(--success);">✅ 已配置</span>
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <a href="javascript:void(0)" style="font-size:12px;color:var(--primary);text-decoration:none;">⚙️ 修改 AI 配置</a>
+          </div>
+        </div>
+
+        <!-- 操作指引 -->
+        <div class="ai-sidebar-section">
+          <div class="ai-sidebar-label">📝 操作步骤</div>
+          <div id="aiSteps" style="font-size:13px;line-height:2;">
+            <div id="step1" style="display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:600;flex-shrink:0;">1</span>
+              <span>粘贴量表计分说明</span>
+            </div>
+            <div id="step2" style="display:flex;align-items:center;gap:8px;color:var(--text-muted);">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:600;flex-shrink:0;border:1px solid var(--border);">2</span>
+              <span>点击「✨ 开始解析」</span>
+            </div>
+            <div id="step3" style="display:flex;align-items:center;gap:8px;color:var(--text-muted);">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:600;flex-shrink:0;border:1px solid var(--border);">3</span>
+              <span>检查解析结果</span>
+            </div>
+            <div id="step4" style="display:flex;align-items:center;gap:8px;color:var(--text-muted);">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:600;flex-shrink:0;border:1px solid var(--border);">4</span>
+              <span>点击下方「导入到量表」</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 功能说明 -->
+        <div class="ai-sidebar-section" style="flex:1;">
+          <div class="ai-sidebar-label">💡 右侧页面功能</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;">
+            <div>• <strong style="color:var(--text-sec);">4 个示例</strong>（SCL-90/PHQ-9/SAS/BFI）</div>
+            <div>• <strong style="color:var(--text-sec);">Prompt 模板预览</strong>（可展开查看）</div>
+            <div>• <strong style="color:var(--text-sec);">标准化 + 验证</strong>（公式类型/派生指标）</div>
+            <div>• <strong style="color:var(--text-sec);">调试面板</strong>（完整 Prompt + AI 原始回复）</div>
+            <div>• <strong style="color:var(--text-sec);">JSON 预览</strong>（原始/标准化双版本）</div>
+          </div>
+        </div>
+
+        <!-- 导入按钮 -->
+        <div class="ai-import-section">
+          <button class="btn-ai-import" id="aiImportBtn" disabled onclick="simulateImport()">
+            📥 导入到量表
+          </button>
+          <div class="ai-import-hint">
+            解析完成并检查无误后，点击此按钮将计分规则写入量表
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧 iframe 内容区 -->
+      <div class="ai-iframe-wrap">
+        <iframe id="aiTestIframe" src="about:blank"></iframe>
+      </div>
+
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="ai-modal-footer">
+      <div class="ai-footer-hint">
+        💡 提示：右侧为完整的 AI 计分规则解析工具，包含调试面板和验证报告
+      </div>
+      <div class="ai-footer-actions">
+        <button class="btn btn-default" onclick="closeAiOneClick()">取消</button>
+        <button class="btn btn-default" onclick="openAiTestPageNewTab()">🔗 新窗口打开</button>
+        <button class="btn btn-primary" id="aiFooterImportBtn" disabled onclick="simulateImport()">
+          📥 导入到量表
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ========== 计分规则配置弹窗（手动配置，保留展示） ========== -->
+<div class="modal-overlay" id="scoring-modal">
+  <div class="modal" style="width: 920px;">
+    <div class="modal-header" style="flex-shrink:0;">
+      <span class="modal-title">
+        <span>🧮</span> 计分规则配置
+        <span style="font-size:12px;color:var(--text-muted);font-weight:400;margin-left:8px;">— 症状自评量表（SCL-90）</span>
+      </span>
+      <button class="modal-close" onclick="closeScoringModal()">✕</button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto; flex:1; padding:20px;">
+      <div class="sc-tab-row">
+        <button class="sc-tab active">① 维度配置</button>
+        <button class="sc-tab">② 指标配置</button>
+        <button class="sc-tab">③ 解释规则</button>
+        <button class="sc-tab">④ 筛查规则</button>
+        <button class="sc-tab">⑤ 模拟测试</button>
+      </div>
+      <div style="text-align:center;padding:40px;color:var(--text-muted);">
+        <div style="font-size:40px;margin-bottom:12px;">📋</div>
+        <div style="font-size:14px;margin-bottom:8px;">手动配置模式</div>
+        <div style="font-size:12px;margin-bottom:16px;">逐项添加维度、指标、解释规则和筛查条件</div>
+        <div style="padding:12px 16px;background:#EBF4FF;border:1px solid #90CAF9;border-radius:8px;font-size:12px;color:#1565C0;display:inline-block;">
+          💡 也可以关闭此弹窗，使用量表列表的「🤖 AI 一键配置」按钮自动生成
+        </div>
+      </div>
+      <div class="sc-save-bar">
+        <div style="font-size:12px;color:var(--text-muted);">💡 手动配置后请保存</div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-default" onclick="closeScoringModal()">↻ 重置</button>
+          <button class="btn btn-primary">💾 保存计分规则</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ===== 操作下拉菜单 =====
+function toggleDropdown(event, el) {
+  event.stopPropagation();
+  const wasOpen = el.classList.contains('open');
+  // 关闭所有已打开的下拉
+  document.querySelectorAll('.action-dropdown.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+// 点击外部关闭下拉
+document.addEventListener('click', () => {
+  document.querySelectorAll('.action-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+// ===== 弹窗控制 =====
+function showScoringModal() {
+  document.getElementById('scoring-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeScoringModal() {
+  document.getElementById('scoring-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ===== AI 一键配置弹窗 =====
+let aiTargetScaleCode = '';
+let aiTargetScaleName = '';
+
+function openAiOneClick(code, name) {
+  aiTargetScaleCode = code;
+  aiTargetScaleName = name;
+  document.getElementById('aiTargetScale').textContent = name;
+  document.getElementById('aiModalSubtitle').textContent = '正在为「' + name + '」生成计分规则';
+
+  // 重置状态
+  document.getElementById('aiImportBtn').disabled = true;
+  document.getElementById('aiFooterImportBtn').disabled = true;
+  resetSteps();
+
+  // 打开弹窗
+  document.getElementById('aiOneClickModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // 更新 tooltip
+  document.getElementById('tooltipText').textContent = '在 AI 弹窗中：选示例 → 开始解析 → 标准化验证 → 导入到量表';
+
+  // 加载 iframe
+  const iframe = document.getElementById('aiTestIframe');
+  iframe.src = './ai-scoring-test.html';
+
+  // 监听 iframe 消息（postMessage 通信）
+  window.addEventListener('message', handleIframeMessage);
+}
+
+function closeAiOneClick() {
+  document.getElementById('aiOneClickModal').classList.remove('open');
+  document.body.style.overflow = '';
+  const iframe = document.getElementById('aiTestIframe');
+  iframe.src = 'about:blank';
+  window.removeEventListener('message', handleIframeMessage);
+  document.getElementById('tooltipText').textContent = '点击量表列表的「🤖 AI 一键配置」按钮查看完整弹窗';
+}
+
+function openAiTestPageNewTab() {
+  window.open('./ai-scoring-test.html', '_blank');
+}
+
+// ===== iframe 通信 =====
+function handleIframeMessage(event) {
+  // 接收来自 ai-scoring-test.html 的数据
+  if (event.data && event.data.type === 'ai-parse-complete') {
+    // AI 解析完成，启用导入按钮
+    document.getElementById('aiImportBtn').disabled = false;
+    document.getElementById('aiFooterImportBtn').disabled = false;
+    activateStep(3);
+    activateStep(4);
+  }
+  if (event.data && event.data.type === 'ai-parse-start') {
+    activateStep(2);
+  }
+}
+
+// ===== 步骤状态 =====
+function resetSteps() {
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('step' + i);
+    const circle = step.querySelector('span:first-child');
+    if (i === 1) {
+      circle.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:600;flex-shrink:0;';
+      step.style.color = 'var(--text)';
+    } else {
+      circle.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:600;flex-shrink:0;border:1px solid var(--border);';
+      step.style.color = 'var(--text-muted)';
+    }
+  }
+}
+
+function activateStep(num) {
+  const step = document.getElementById('step' + num);
+  const circle = step.querySelector('span:first-child');
+  circle.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:600;flex-shrink:0;';
+  step.style.color = 'var(--text)';
+}
+
+// ===== 模拟导入 =====
+function simulateImport() {
+  const btn = document.getElementById('aiImportBtn');
+  const footerBtn = document.getElementById('aiFooterImportBtn');
+  btn.disabled = true;
+  footerBtn.disabled = true;
+  btn.innerHTML = '⏳ 导入中...';
+  footerBtn.innerHTML = '⏳ 导入中...';
+
+  setTimeout(() => {
+    btn.innerHTML = '✅ 导入成功';
+    btn.style.background = 'var(--success)';
+    footerBtn.innerHTML = '✅ 导入成功';
+    footerBtn.style.background = 'var(--success)';
+    
+    // 激活所有步骤
+    for (let i = 1; i <= 4; i++) activateStep(i);
+
+    showToast('✅ 计分规则已成功写入「' + aiTargetScaleName + '」');
+
+    // 2秒后关闭弹窗
+    setTimeout(() => {
+      closeAiOneClick();
+      // 模拟更新量表状态
+      showToast('💡 已自动打开计分规则配置，可检查并微调');
+      showScoringModal();
+    }, 2000);
+  }, 1200);
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = msg;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+// ===== 初始化 =====
+window.addEventListener('DOMContentLoaded', () => {
+  // 默认展示弹窗说明
+});
+</script>
+
+</body>
+</html>

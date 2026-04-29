@@ -1,0 +1,9 @@
+{
+  "name": "data-init-force",
+  "version": "1.0.0",
+  "description": "强制初始化量表数据（无需权限验证）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

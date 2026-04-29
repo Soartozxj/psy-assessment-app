@@ -1,0 +1,171 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14]: 🧠
+      - generic [ref=e15]:
+        - generic [ref=e16]: 知我心灵测评
+        - generic [ref=e17]: Admin Console
+    - navigation [ref=e18]:
+      - generic [ref=e19]: 概览
+      - generic [ref=e20] [cursor=pointer]:
+        - generic [ref=e21]: 📊
+        - text: 数据看板
+      - generic [ref=e22]: 内容管理
+      - generic [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: 📋
+        - text: 量表管理
+      - generic [ref=e25] [cursor=pointer]:
+        - generic [ref=e26]: ❓
+        - text: 题目库
+      - generic [ref=e27]: 用户与记录
+      - generic [ref=e28] [cursor=pointer]:
+        - generic [ref=e29]: 👥
+        - text: 用户列表
+      - generic [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 📈
+        - text: 测评记录
+      - generic [ref=e32] [cursor=pointer]:
+        - generic [ref=e33]: 💬
+        - text: 用户评价
+        - generic [ref=e34]: NEW
+      - generic [ref=e35]: 系统
+      - generic [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 🎭
+        - text: NPC场景配置
+      - generic [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: ⚙️
+        - text: 系统设置
+      - generic [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🛡️
+        - text: 系统运维
+      - generic [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: 💡
+        - text: 系统提示词
+    - generic [ref=e45]:
+      - generic [ref=e46]: v1.0.0 · 知我心灵测评
+      - generic [ref=e47]:
+        - link "🔑" [ref=e48] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link "🚪" [ref=e49] [cursor=pointer]:
+          - /url: javascript:void(0)
+  - main [ref=e50]:
+    - generic [ref=e51]:
+      - generic [ref=e52]: 用户评价
+      - generic [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: ✅
+        - text: 已同步前端
+      - generic [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]: A
+        - generic [ref=e57]: 管理员
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]: 💬
+        - generic [ref=e144]:
+          - heading "用户评价管理" [level=3] [ref=e145]
+          - paragraph [ref=e146]: 查看和管理用户提交的测评评价反馈，数据来源为前端 localStorage（psy_feedback_list）
+      - generic [ref=e147]:
+        - generic [ref=e148] [cursor=pointer]: 📊 评价数据
+        - generic [ref=e149] [cursor=pointer]: 🏷️ 标签管理
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - heading "📊 测评结果收集设置" [level=4] [ref=e152]
+          - generic [ref=e153]: 配置哪些星级的评价需要附带收集测评结果数据
+        - generic [ref=e154]:
+          - generic [ref=e155] [cursor=pointer]:
+            - radio "全部收集" [checked] [ref=e156]
+            - generic [ref=e157]: 全部收集
+          - generic [ref=e158] [cursor=pointer]:
+            - radio "不收集" [ref=e159]
+            - generic [ref=e160]: 不收集
+          - generic [ref=e161] [cursor=pointer]:
+            - radio "自定义星级" [ref=e162]
+            - generic [ref=e163]: 自定义星级
+        - generic [ref=e164]: 当前：所有星级评价都将附带收集测评结果数据
+      - generic [ref=e165]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]: "1"
+            - generic [ref=e169]: 总评价数
+          - generic [ref=e170]:
+            - generic [ref=e171]: 3.0⭐
+            - generic [ref=e172]: 平均星级
+          - generic [ref=e173]:
+            - generic [ref=e174]: "1"
+            - generic [ref=e175]: 本月新增
+          - generic [ref=e176]:
+            - generic [ref=e177]: "0"
+            - generic [ref=e178]: 差评(≤2星)
+            - generic [ref=e179]: 👍 无差评
+        - generic [ref=e180]:
+          - textbox "搜索评价内容、用户名..." [ref=e182]
+          - generic [ref=e183]:
+            - combobox [ref=e184]:
+              - option "全部量表" [selected]
+              - option "90项症状清单"
+            - combobox [ref=e185]:
+              - option "全部来源" [selected]
+              - option "我的页面"
+              - option "测评简报"
+              - option "测评详情报告"
+            - generic [ref=e186]:
+              - generic [ref=e187] [cursor=pointer]: 全部
+              - generic [ref=e188] [cursor=pointer]: ⭐5
+              - generic [ref=e189] [cursor=pointer]: ⭐4
+              - generic [ref=e190] [cursor=pointer]: ⭐3
+              - generic [ref=e191] [cursor=pointer]: ≤2星
+            - combobox [ref=e192]:
+              - option "最新优先" [selected]
+              - option "最早优先"
+              - option "评分最高"
+              - option "评分最低"
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - heading "⭐ 星级分布" [level=4] [ref=e195]
+            - generic [ref=e196]:
+              - generic [ref=e197]:
+                - generic [ref=e198]: "0"
+                - generic [ref=e200]: 5星
+              - generic [ref=e201]:
+                - generic [ref=e202]: "0"
+                - generic [ref=e204]: 4星
+              - generic [ref=e205]:
+                - generic [ref=e206]: "1"
+                - generic [ref=e208]: 3星
+              - generic [ref=e209]:
+                - generic [ref=e210]: "0"
+                - generic [ref=e212]: 2星
+              - generic [ref=e213]:
+                - generic [ref=e214]: "0"
+                - generic [ref=e216]: 1星
+            - generic [ref=e217]: 平均 3.0 星
+          - generic [ref=e218]:
+            - heading "🏷️ 热门标签" [level=4] [ref=e219]
+            - generic [ref=e221]: 暂无标签数据
+        - table [ref=e223]:
+          - rowgroup [ref=e224]:
+            - row "用户 评分 关联量表 标签 内容 时间 操作" [ref=e225]:
+              - columnheader "用户" [ref=e226]
+              - columnheader "评分" [ref=e227]
+              - columnheader "关联量表" [ref=e228]
+              - columnheader "标签" [ref=e229]
+              - columnheader "内容" [ref=e230]
+              - columnheader "时间" [ref=e231]
+              - columnheader "操作" [ref=e232]
+          - rowgroup [ref=e233]:
+            - row "👤 用户*** 1777253706950 ⭐⭐⭐☆☆3星 90项症状清单 测评详情报告 AI诊断报告内容详实，维度分析全面，改善建议具有实操性。综合评估部分对常模对照的说明很清晰，温馨提醒也体现了专业的人文关怀。 4/27 09:35 📋 详情🗑️ 删除" [ref=e234]:
+              - cell "👤 用户*** 1777253706950" [ref=e235]:
+                - generic [ref=e236]:
+                  - generic [ref=e237]: 👤
+                  - generic [ref=e238]:
+                    - generic [ref=e239]: 用户***
+                    - generic [ref=e240]: "1777253706950"
+              - cell "⭐⭐⭐☆☆3星" [ref=e241]
+              - cell "90项症状清单 测评详情报告" [ref=e242]:
+                - generic [ref=e243]: 90项症状清单
+                - generic [ref=e244]: 测评详情报告
+              - cell [ref=e245]
+              - cell "AI诊断报告内容详实，维度分析全面，改善建议具有实操性。综合评估部分对常模对照的说明很清晰，温馨提醒也体现了专业的人文关怀。" [ref=e246]:
+                - generic [ref=e247]: AI诊断报告内容详实，维度分析全面，改善建议具有实操性。综合评估部分对常模对照的说明很清晰，温馨提醒也体现了专业的人文关怀。
+              - cell "4/27 09:35" [ref=e248]:
+                - generic [ref=e249]: 4/27 09:35
+              - cell "📋 详情🗑️ 删除" [ref=e250]

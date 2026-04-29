@@ -1,0 +1,33 @@
+# 构建产物
+deploy/
+
+# 依赖
+node_modules/
+
+# 环境变量和密钥
+.env
+*.env
+
+# 部署包
+psy-service-deploy.zip
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# WorkBuddy 工作目录（保留 memory）
+.workbuddy/
+
+# 生成的图片
+generated-images/
+
+# 测试截图
+test-screenshots/
+
+# 临时文件
+*.tmp
+*.log

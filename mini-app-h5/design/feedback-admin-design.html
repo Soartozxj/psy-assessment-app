@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台 · 用户评价管理 — 设计稿 v1</title>
+<style>
+  :root {
+    --primary: #4A90D9; --primary-dark: #3A7BC8; --primary-light: rgba(74,144,217,0.1);
+    --bg: #F3F5F9; --card: #FFFFFF; --text: #1a1a2e; --text-sec: #555; --text-muted: #999;
+    --border: #E2E8F0; --radius: 12px; --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --danger: #E74C3C; --danger-light: rgba(231,76,60,0.08);
+    --warning: #F39C12; --warning-light: rgba(243,156,18,0.08);
+    --success: #27AE60; --success-light: rgba(39,174,96,0.08);
+    --sidebar: #001529; --sidebar-hover: #1A2F45;
+    --star-gold: #F5A623;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ========== 顶部说明栏 ========== */
+  .design-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff; padding: 24px 40px;
+  }
+  .design-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .design-header p { font-size: 13px; opacity: 0.85; line-height: 1.6; }
+
+  .design-body { display: flex; min-height: calc(100vh - 90px); }
+
+  /* ========== 左侧设计说明 ========== */
+  .design-sidebar {
+    width: 320px; background: var(--card); border-right: 1px solid var(--border);
+    padding: 20px; overflow-y: auto; flex-shrink: 0;
+  }
+  .design-sidebar h3 {
+    font-size: 13px; color: var(--primary); margin: 20px 0 8px;
+    padding-bottom: 4px; border-bottom: 2px solid var(--primary);
+  }
+  .design-sidebar h3:first-child { margin-top: 0; }
+  .design-sidebar p, .design-sidebar li {
+    font-size: 12px; color: var(--text-sec); line-height: 1.7;
+  }
+  .design-sidebar ul { padding-left: 16px; }
+  .design-sidebar li { margin-bottom: 3px; }
+
+  .spec-table {
+    width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px;
+  }
+  .spec-table th {
+    background: var(--bg); padding: 6px 8px; text-align: left;
+    font-weight: 600; color: var(--text-sec); border-bottom: 1px solid var(--border);
+  }
+  .spec-table td {
+    padding: 6px 8px; border-bottom: 1px solid #f5f5f5;
+    color: var(--text-sec); vertical-align: top;
+  }
+
+  .tag-new { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; background: #e6f7ff; color: #1890ff; margin-right: 4px; }
+  .tag-changed { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; background: #fff7e6; color: #d48806; margin-right: 4px; }
+
+  /* ========== 右侧模拟后台 ========== */
+  .design-main { flex: 1; display: flex; overflow: hidden; }
+
+  /* 模拟侧边栏 */
+  .mock-sidebar {
+    width: 220px; background: var(--sidebar); color: rgba(255,255,255,0.8);
+    padding: 16px 0; flex-shrink: 0; font-size: 13px;
+  }
+  .mock-sidebar .logo { padding: 0 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+  .mock-sidebar .logo div:first-child { font-size: 15px; font-weight: 700; color: #fff; }
+  .mock-sidebar .logo div:last-child { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .menu-group { padding: 8px 16px 4px; font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; }
+  .menu-item {
+    padding: 10px 16px; cursor: default; display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s;
+  }
+  .menu-item:hover { background: var(--sidebar-hover); }
+  .menu-item.active { background: rgba(74,144,217,0.25); color: #fff; border-right: 3px solid var(--primary); }
+  .menu-item .new-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #52c41a; margin-left: auto;
+  }
+
+  /* 模拟顶栏 */
+  .mock-topbar {
+    height: 52px; background: var(--card); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0;
+  }
+  .mock-topbar-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .mock-topbar-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 12px;
+    background: var(--success-light); color: var(--success); font-weight: 500;
+  }
+  .mock-topbar-user {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--primary);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* 模拟内容区 */
+  .mock-body {
+    flex: 1; overflow-y: auto; background: var(--bg); padding: 20px 24px;
+  }
+  .mock-body::-webkit-scrollbar { width: 6px; }
+  .mock-body::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+
+  /* ========== 统计卡片行 ========== */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--card); border-radius: var(--radius); padding: 18px 20px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .stat-card::after {
+    content: ''; position: absolute; top: -20px; right: -20px;
+    width: 80px; height: 80px; border-radius: 50%; opacity: 0.08;
+  }
+  .stat-card.blue::after { background: var(--primary); }
+  .stat-card.green::after { background: var(--success); }
+  .stat-card.gold::after { background: var(--star-gold); }
+  .stat-card.red::after { background: var(--danger); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-value.blue { color: var(--primary); }
+  .stat-value.green { color: var(--success); }
+  .stat-value.gold { color: var(--star-gold); }
+  .stat-value.red { color: var(--danger); }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .stat-sub .up { color: var(--success); font-weight: 600; }
+  .stat-sub .down { color: var(--danger); font-weight: 600; }
+
+  /* ========== 筛选排序栏 ========== */
+  .filter-bar {
+    background: var(--card); border-radius: var(--radius); padding: 14px 18px;
+    box-shadow: var(--shadow); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .filter-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; flex: 1; min-width: 200px;
+  }
+  .filter-search-icon { color: var(--text-muted); font-size: 14px; }
+  .filter-search input {
+    border: none; background: none; outline: none; font-size: 13px;
+    font-family: inherit; color: var(--text); width: 100%;
+  }
+  .filter-search input::placeholder { color: var(--text-muted); }
+  .filter-select {
+    padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 12px; color: var(--text-sec); background: var(--card);
+    cursor: pointer; outline: none; font-family: inherit;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border); color: var(--text-sec); background: var(--card);
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    white-space: nowrap;
+  }
+  .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-chip.active {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+  }
+  .filter-chip .count {
+    font-size: 10px; padding: 1px 5px; border-radius: 8px;
+    background: rgba(255,255,255,0.2);
+  }
+  .filter-chip:not(.active) .count {
+    background: var(--bg); color: var(--text-muted);
+  }
+  .filter-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .filter-sort {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .filter-sort select {
+    padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 12px; color: var(--text-sec); background: var(--card);
+    outline: none; font-family: inherit;
+  }
+  .filter-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+  /* ========== 评价列表 ========== */
+  .review-table-wrap {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .review-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .review-table thead th {
+    background: var(--bg); padding: 12px 16px; text-align: left;
+    font-weight: 600; color: var(--text-sec); border-bottom: 2px solid var(--border);
+    white-space: nowrap; position: sticky; top: 0; z-index: 1;
+  }
+  .review-table tbody tr {
+    border-bottom: 1px solid #f5f5f5; transition: background 0.15s;
+  }
+  .review-table tbody tr:hover { background: #fafbfc; }
+  .review-table tbody tr:last-child { border-bottom: none; }
+  .review-table td {
+    padding: 14px 16px; color: var(--text-sec); vertical-align: top;
+  }
+
+  .rv-user {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rv-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; color: #999;
+  }
+  .rv-name { font-weight: 600; color: var(--text); font-size: 13px; }
+  .rv-id { font-size: 11px; color: var(--text-muted); }
+
+  .rv-stars { font-size: 14px; letter-spacing: 1px; }
+  .rv-star-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .rv-scale {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; background: var(--primary-light); color: var(--primary);
+  }
+  .rv-scale-none {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; background: #f5f5f5; color: var(--text-muted);
+  }
+
+  .rv-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .rv-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    background: var(--primary-light); color: var(--primary);
+  }
+  .rv-tag.warn { background: var(--warning-light); color: var(--warning); }
+  .rv-tag.danger { background: var(--danger-light); color: var(--danger); }
+
+  .rv-text {
+    max-width: 280px; font-size: 12px; color: var(--text-sec); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .rv-text-full { -webkit-line-clamp: unset; }
+
+  .rv-time { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .rv-source {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; margin-top: 4px;
+  }
+  .rv-source.mine { background: #e6f7ff; color: #1890ff; }
+  .rv-source.record { background: #f6ffed; color: #52c41a; }
+  .rv-source.detail { background: #fff7e6; color: #d48806; }
+
+  .rv-actions { display: flex; gap: 4px; }
+  .rv-action-btn {
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 11px; color: var(--text-sec);
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .rv-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .rv-action-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ========== 分页 ========== */
+  .pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-top: 1px solid var(--border);
+  }
+  .pagination-info { font-size: 12px; color: var(--text-muted); }
+  .pagination-btns { display: flex; gap: 4px; }
+  .page-btn {
+    min-width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 12px; color: var(--text-sec);
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    padding: 0 8px;
+  }
+  .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ========== 星级分布图 ========== */
+  .rating-dist {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .rating-dist-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+  .rating-dist-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .rating-dist-avg {
+    text-align: center; padding: 12px 20px; background: var(--bg); border-radius: 10px;
+  }
+  .rating-dist-avg .avg-number { font-size: 36px; font-weight: 700; color: var(--star-gold); }
+  .rating-dist-avg .avg-stars { font-size: 16px; margin: 4px 0; }
+  .rating-dist-avg .avg-label { font-size: 11px; color: var(--text-muted); }
+  .rating-bars { flex: 1; margin-left: 24px; }
+  .rating-bar-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .rating-bar-label { font-size: 12px; color: var(--text-sec); width: 28px; text-align: right; }
+  .rating-bar-track {
+    flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;
+  }
+  .rating-bar-fill {
+    height: 100%; border-radius: 4px; transition: width 0.6s ease;
+    background: linear-gradient(90deg, var(--star-gold), #FFCC02);
+  }
+  .rating-bar-count { font-size: 11px; color: var(--text-muted); width: 36px; }
+
+  /* ========== 标签词云 ========== */
+  .tag-cloud {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .tag-cloud-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .tag-cloud-items { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag-cloud-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border); color: var(--text-sec);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tag-cloud-item:hover { border-color: var(--primary); color: var(--primary); }
+  .tag-cloud-item .tc-count {
+    font-size: 10px; padding: 1px 5px; border-radius: 8px;
+    background: var(--bg); color: var(--text-muted); font-weight: 600;
+  }
+  .tag-cloud-item:hover .tc-count { background: var(--primary-light); color: var(--primary); }
+
+  /* ========== 双栏布局 ========== */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  /* ========== 趋势图（模拟） ========== */
+  .trend-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .trend-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .trend-title { font-size: 14px; font-weight: 600; }
+  .trend-tabs { display: flex; gap: 0; }
+  .trend-tab {
+    padding: 5px 14px; font-size: 11px; color: var(--text-muted);
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+  }
+  .trend-tab:first-child { border-radius: 6px 0 0 6px; }
+  .trend-tab:last-child { border-radius: 0 6px 6px 0; }
+  .trend-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .trend-chart {
+    height: 140px; background: var(--bg); border-radius: 8px; position: relative; overflow: hidden;
+  }
+  /* 模拟折线图 */
+  .trend-line {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: flex-end; gap: 8px; padding: 16px 12px 12px;
+  }
+  .trend-bar {
+    flex: 1; background: linear-gradient(180deg, var(--primary) 0%, rgba(74,144,217,0.3) 100%);
+    border-radius: 4px 4px 0 0; min-height: 8px; position: relative;
+    transition: height 0.3s;
+  }
+  .trend-bar-label {
+    position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; color: var(--text-muted); white-space: nowrap;
+  }
+
+  /* ========== 详情弹窗（模拟） ========== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    display: none;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--card); border-radius: 16px; width: 560px; max-width: 90vw;
+    max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header-title { font-size: 16px; font-weight: 600; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: var(--bg); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--danger-light); color: var(--danger); }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+  .modal-btn {
+    padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: var(--card);
+    color: var(--text-sec); transition: all 0.15s;
+  }
+  .modal-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .modal-btn-primary {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+  }
+  .modal-btn-primary:hover { background: var(--primary-dark); }
+  .modal-btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .detail-row {
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;
+  }
+  .detail-label {
+    font-size: 12px; color: var(--text-muted); width: 70px; flex-shrink: 0; padding-top: 2px;
+  }
+  .detail-value { font-size: 13px; color: var(--text); flex: 1; }
+  .detail-quote {
+    background: var(--bg); border-radius: 10px; padding: 14px 16px;
+    font-size: 13px; color: var(--text-sec); line-height: 1.7;
+    border-left: 3px solid var(--primary); margin-top: 8px;
+  }
+
+  /* ========== 空状态提示 ========== */
+  .empty-tip {
+    text-align: center; padding: 40px 20px; color: var(--text-muted);
+  }
+  .empty-tip .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-tip .empty-text { font-size: 13px; }
+
+  /* ========== 滚动提示 ========== */
+  .scroll-hint {
+    position: sticky; bottom: 0; left: 0; right: 0; height: 40px;
+    background: linear-gradient(transparent, var(--bg));
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px;
+    font-size: 11px; color: var(--text-muted); pointer-events: none; z-index: 5;
+  }
+</style>
+</head>
+<body>
+
+<div class="design-header">
+  <h1>💬 后台 · 用户评价管理 — 设计稿 v1</h1>
+  <p>侧边栏新增「用户评价」菜单项，支持全部评价查看、筛选排序、详情弹窗、删除管理。数据来源：localStorage 前端评价。</p>
+</div>
+
+<div class="design-body">
+  <!-- ========== 左侧设计说明 ========== -->
+  <div class="design-sidebar">
+    <h3>📍 页面位置</h3>
+    <p>后台侧边栏「数据管理」分组下新增菜单项：</p>
+    <ul>
+      <li><span class="tag-new">NEW</span> 💬 用户评价</li>
+    </ul>
+    <p>与「用户管理」「测评记录」同级。</p>
+
+    <h3>📊 页面结构（从上到下）</h3>
+    <table class="spec-table">
+      <tr><th>区域</th><th>内容</th></tr>
+      <tr><td>统计卡</td><td>4 个指标：总评价数、平均星级、本月新增、待处理差评</td></tr>
+      <tr><td>筛选栏</td><td>搜索 + 量表筛选 + 来源筛选 + 星级筛选 + 排序</td></tr>
+      <tr><td>双栏图表</td><td>左：星级分布 + 均分<br>右：热门标签词云</td></tr>
+      <tr><td>趋势图</td><td>近 7 天 / 30 天评价数量趋势</td></tr>
+      <tr><td>评价列表</td><td>表格形式，含用户/星级/量表/标签/内容/时间/操作</td></tr>
+      <tr><td>分页</td><td>每页 20 条，支持翻页</td></tr>
+    </table>
+
+    <h3>🔍 筛选能力</h3>
+    <ul>
+      <li><strong>关键词搜索</strong>：模糊匹配评价内容、用户名</li>
+      <li><strong>量表筛选</strong>：下拉选择具体量表或「全部」</li>
+      <li><strong>来源筛选</strong>：我的页面 / 测评记录 / 测评详情</li>
+      <li><strong>星级筛选</strong>：快捷 Chip（1-5 星 + 全部）</li>
+      <li><strong>排序方式</strong>：最新优先 / 最早优先 / 星级最高 / 星级最低</li>
+    </ul>
+
+    <h3>📋 表格列说明</h3>
+    <table class="spec-table">
+      <tr><th>列</th><th>说明</th></tr>
+      <tr><td>用户</td><td>头像 + 匿名名 + ID</td></tr>
+      <tr><td>评分</td><td>星级 + 文字标签</td></tr>
+      <tr><td>关联量表</td><td>量表名（整体评价显示「--」）</td></tr>
+      <tr><td>标签</td><td>用户选择的标签 Chips</td></tr>
+      <tr><td>评价内容</td><td>文字评价，超2行折叠</td></tr>
+      <tr><td>时间</td><td>提交时间 + 来源标签</td></tr>
+      <tr><td>操作</td><td>查看详情 / 删除</td></tr>
+    </table>
+
+    <h3>🎭 详情弹窗</h3>
+    <ul>
+      <li>点击「查看详情」打开模态框</li>
+      <li>展示完整评价信息</li>
+      <li>含「删除」和「关闭」操作</li>
+    </ul>
+
+    <h3>💾 数据存储</h3>
+    <ul>
+      <li>localStorage 键：<code>psy_feedback_list</code></li>
+      <li>数组结构，每条含 id/userId/nickname/stars/tags/text/scaleId/scaleName/source/createdAt</li>
+      <li>后台可读取、筛选、删除，不可编辑用户评价</li>
+    </ul>
+  </div>
+
+  <!-- ========== 右侧模拟后台 ========== -->
+  <div class="design-main">
+    <div class="mock-sidebar">
+      <div class="logo">
+        <div>🧠 星蓝心镜</div>
+        <div>后台管理系统 v10.15</div>
+      </div>
+      <div class="menu-group">仪表盘</div>
+      <div class="menu-item">📊 数据概览</div>
+      <div class="menu-group">数据管理</div>
+      <div class="menu-item">📝 量表管理</div>
+      <div class="menu-item">❓ 题目管理</div>
+      <div class="menu-item">👥 用户管理</div>
+      <div class="menu-item active">💬 用户评价 <span class="new-dot"></span></div>
+      <div class="menu-item">📋 测评记录</div>
+      <div class="menu-group">功能配置</div>
+      <div class="menu-item">🎭 NPC 场景</div>
+      <div class="menu-item">⚙️ 系统设置</div>
+      <div class="menu-item">🛡️ 系统运维</div>
+      <div class="menu-item">💡 系统提示词</div>
+    </div>
+
+    <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <div class="mock-topbar">
+        <span class="mock-topbar-title">💬 用户评价</span>
+        <span class="mock-topbar-badge">48 条评价</span>
+        <div class="mock-topbar-user">管</div>
+      </div>
+
+      <div class="mock-body">
+        <!-- ===== 1. 统计卡片 ===== -->
+        <div class="stat-row">
+          <div class="stat-card blue">
+            <div class="stat-label">📋 总评价数</div>
+            <div class="stat-value blue">48</div>
+            <div class="stat-sub">较上月 <span class="up">↑ 23%</span></div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">⭐ 平均星级</div>
+            <div class="stat-value gold">4.2</div>
+            <div class="stat-sub">满分 5.0</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">📈 本月新增</div>
+            <div class="stat-value green">12</div>
+            <div class="stat-sub">日均 <span style="color:var(--text-muted);">0.4 条</span></div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">⚠️ 差评（≤2星）</div>
+            <div class="stat-value red">3</div>
+            <div class="stat-sub">占比 <span style="color:var(--text-muted);">6.3%</span></div>
+          </div>
+        </div>
+
+        <!-- ===== 2. 筛选排序栏 ===== -->
+        <div class="filter-bar">
+          <div class="filter-search">
+            <span class="filter-search-icon">🔍</span>
+            <input type="text" placeholder="搜索评价内容、用户名...">
+          </div>
+          <select class="filter-select">
+            <option>全部量表</option>
+            <option>PPCRS 家长压力</option>
+            <option>FACES 家庭亲密度</option>
+            <option>CBF-PI-B 大五人格</option>
+            <option>SCL-90 症状自评</option>
+            <option>CPTI 创伤后成长</option>
+            <option>RPQ-SC 冲动人格</option>
+          </select>
+          <select class="filter-select">
+            <option>全部来源</option>
+            <option>我的页面</option>
+            <option>测评记录</option>
+            <option>测评详情</option>
+          </select>
+          <div class="filter-chip active">全部 <span class="count">48</span></div>
+          <div class="filter-chip">5星 <span class="count">24</span></div>
+          <div class="filter-chip">4星 <span class="count">14</span></div>
+          <div class="filter-chip">3星 <span class="count">7</span></div>
+          <div class="filter-chip" style="color:var(--warning);">≤2星 <span class="count">3</span></div>
+          <div class="filter-right">
+            <div class="filter-sort">
+              排序：
+              <select>
+                <option>最新优先</option>
+                <option>最早优先</option>
+                <option>星级最高</option>
+                <option>星级最低</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 3. 双栏图表 ===== -->
+        <div class="two-col">
+          <!-- 星级分布 -->
+          <div class="rating-dist">
+            <div class="rating-dist-header">
+              <div class="rating-dist-title">📊 星级分布</div>
+            </div>
+            <div style="display:flex; align-items:center;">
+              <div class="rating-dist-avg">
+                <div class="avg-number">4.2</div>
+                <div class="avg-stars">⭐⭐⭐⭐⭐</div>
+                <div class="avg-label">基于 48 条评价</div>
+              </div>
+              <div class="rating-bars">
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">5星</span>
+                  <div class="rating-bar-track"><div class="rating-bar-fill" style="width:50%;"></div></div>
+                  <span class="rating-bar-count">24</span>
+                </div>
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">4星</span>
+                  <div class="rating-bar-track"><div class="rating-bar-fill" style="width:29%;"></div></div>
+                  <span class="rating-bar-count">14</span>
+                </div>
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">3星</span>
+                  <div class="rating-bar-track"><div class="rating-bar-fill" style="width:15%;"></div></div>
+                  <span class="rating-bar-count">7</span>
+                </div>
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">2星</span>
+                  <div class="rating-bar-track"><div class="rating-bar-fill" style="width:4%;"></div></div>
+                  <span class="rating-bar-count">2</span>
+                </div>
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">1星</span>
+                  <div class="rating-bar-track"><div class="rating-bar-fill" style="width:2%;"></div></div>
+                  <span class="rating-bar-count">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 热门标签 -->
+          <div class="tag-cloud">
+            <div class="tag-cloud-title">🏷️ 热门评价标签</div>
+            <div class="tag-cloud-items">
+              <div class="tag-cloud-item">专业靠谱 <span class="tc-count">18</span></div>
+              <div class="tag-cloud-item">界面美观 <span class="tc-count">15</span></div>
+              <div class="tag-cloud-item">AI报告好 <span class="tc-count">14</span></div>
+              <div class="tag-cloud-item">方便快捷 <span class="tc-count">12</span></div>
+              <div class="tag-cloud-item">内容专业 <span class="tc-count">10</span></div>
+              <div class="tag-cloud-item">咨询师亲切 <span class="tc-count">9</span></div>
+              <div class="tag-cloud-item">题目清晰 <span class="tc-count">8</span></div>
+              <div class="tag-cloud-item">报告详细 <span class="tc-count">7</span></div>
+              <div class="tag-cloud-item">有帮助 <span class="tc-count">7</span></div>
+              <div class="tag-cloud-item">值得推荐 <span class="tc-count">6</span></div>
+              <div class="tag-cloud-item">AI分析准 <span class="tc-count">5</span></div>
+              <div class="tag-cloud-item">建议实用 <span class="tc-count">4</span></div>
+              <div class="tag-cloud-item">内容丰富 <span class="tc-count">3</span></div>
+              <div class="tag-cloud-item" style="color:var(--warning); border-color:var(--warning);">需要改进 <span class="tc-count" style="background:var(--warning-light); color:var(--warning);">2</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 4. 趋势图 ===== -->
+        <div class="trend-card">
+          <div class="trend-header">
+            <div class="trend-title">📈 评价趋势</div>
+            <div class="trend-tabs">
+              <div class="trend-tab active">近 7 天</div>
+              <div class="trend-tab">近 30 天</div>
+            </div>
+          </div>
+          <div class="trend-chart">
+            <div class="trend-line">
+              <div class="trend-bar" style="height:35%;"><span class="trend-bar-label">4/20</span></div>
+              <div class="trend-bar" style="height:55%;"><span class="trend-bar-label">4/21</span></div>
+              <div class="trend-bar" style="height:25%;"><span class="trend-bar-label">4/22</span></div>
+              <div class="trend-bar" style="height:70%;"><span class="trend-bar-label">4/23</span></div>
+              <div class="trend-bar" style="height:45%;"><span class="trend-bar-label">4/24</span></div>
+              <div class="trend-bar" style="height:85%;"><span class="trend-bar-label">4/25</span></div>
+              <div class="trend-bar" style="height:60%;"><span class="trend-bar-label">4/26</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 5. 评价列表 ===== -->
+        <div class="review-table-wrap">
+          <table class="review-table">
+            <thead>
+              <tr>
+                <th style="width:160px;">用户</th>
+                <th style="width:120px;">评分</th>
+                <th style="width:130px;">关联量表</th>
+                <th style="width:150px;">标签</th>
+                <th>评价内容</th>
+                <th style="width:130px;">时间</th>
+                <th style="width:120px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 行1：整体评价 5星 -->
+              <tr>
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar">张</div>
+                    <div><div class="rv-name">用户张*</div><div class="rv-id">ID: oyORU3...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐⭐⭐⭐</div>
+                  <div class="rv-star-label">非常满意</div>
+                </td>
+                <td><span class="rv-scale-none">整体评价</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag">专业靠谱</span>
+                    <span class="rv-tag">界面美观</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">测评结果很详细，AI诊断报告也很专业，希望增加更多量表。咨询师的形象很亲切，感觉被理解了。</div></td>
+                <td>
+                  <div class="rv-time">2026-04-26 14:30</div>
+                  <span class="rv-source mine">我的页面</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn" onclick="document.getElementById('modal1').classList.add('show')">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 行2：单次评价 4星 -->
+              <tr>
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar">李</div>
+                    <div><div class="rv-name">用户李*</div><div class="rv-id">ID: a7xKp2...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐⭐⭐</div>
+                  <div class="rv-star-label">满意</div>
+                </td>
+                <td><span class="rv-scale">PPCRS 家长压力</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag">题目清晰</span>
+                    <span class="rv-tag">报告详细</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">题目设计比较合理，但有些题目不太确定怎么回答，希望能在题目旁边加一些解释说明。</div></td>
+                <td>
+                  <div class="rv-time">2026-04-25 16:12</div>
+                  <span class="rv-source detail">测评详情</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 行3：3星 -->
+              <tr>
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar">王</div>
+                    <div><div class="rv-name">用户王*</div><div class="rv-id">ID: bM9qR3...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐⭐</div>
+                  <div class="rv-star-label">一般</div>
+                </td>
+                <td><span class="rv-scale">SCL-90 症状自评</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag warn">需要改进</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">题目太多了做到后面有点累，能不能缩短一些？或者做个中途保存功能？</div></td>
+                <td>
+                  <div class="rv-time">2026-04-25 10:05</div>
+                  <span class="rv-source record">测评记录</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 行4：2星差评 -->
+              <tr style="background:var(--danger-light);">
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar" style="color:var(--danger);">赵</div>
+                    <div><div class="rv-name">用户赵*</div><div class="rv-id">ID: cN4wT7...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐</div>
+                  <div class="rv-star-label" style="color:var(--danger);">不满意</div>
+                </td>
+                <td><span class="rv-scale">CBF-PI-B 大五人格</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag danger">需要改进</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">做完测评等了好久才出结果，中间转圈圈太久体验不好。</div></td>
+                <td>
+                  <div class="rv-time">2026-04-24 22:18</div>
+                  <span class="rv-source detail">测评详情</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 行5：5星 -->
+              <tr>
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar">陈</div>
+                    <div><div class="rv-name">用户陈*</div><div class="rv-id">ID: dY6uV9...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐⭐⭐⭐</div>
+                  <div class="rv-star-label">非常满意</div>
+                </td>
+                <td><span class="rv-scale-none">整体评价</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag">方便快捷</span>
+                    <span class="rv-tag">值得推荐</span>
+                    <span class="rv-tag">AI报告好</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">非常方便，不用注册就能用，已经推荐给身边的朋友了！AI报告特别专业。</div></td>
+                <td>
+                  <div class="rv-time">2026-04-24 15:33</div>
+                  <span class="rv-source mine">我的页面</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 行6：4星 -->
+              <tr>
+                <td>
+                  <div class="rv-user">
+                    <div class="rv-avatar">刘</div>
+                    <div><div class="rv-name">用户刘*</div><div class="rv-id">ID: eZ8hW1...</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="rv-stars">⭐⭐⭐⭐</div>
+                  <div class="rv-star-label">满意</div>
+                </td>
+                <td><span class="rv-scale">FACES 家庭亲密度</span></td>
+                <td>
+                  <div class="rv-tags">
+                    <span class="rv-tag">内容专业</span>
+                    <span class="rv-tag">AI分析准</span>
+                  </div>
+                </td>
+                <td><div class="rv-text">对家庭关系的分析很到位，让我重新审视了自己的家庭沟通方式。</div></td>
+                <td>
+                  <div class="rv-time">2026-04-23 19:47</div>
+                  <span class="rv-source detail">测评详情</span>
+                </td>
+                <td>
+                  <div class="rv-actions">
+                    <button class="rv-action-btn">📋 详情</button>
+                    <button class="rv-action-btn danger">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 分页 -->
+          <div class="pagination">
+            <div class="pagination-info">共 48 条，当前第 1/3 页</div>
+            <div class="pagination-btns">
+              <button class="page-btn" disabled>‹</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <button class="page-btn">›</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height: 20px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 详情弹窗 ========== -->
+<div class="modal-overlay" id="modal1">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-title">📋 评价详情</div>
+      <button class="modal-close" onclick="document.getElementById('modal1').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row">
+        <div class="detail-label">用户</div>
+        <div class="detail-value">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="rv-avatar" style="width:36px;height:36px;">张</div>
+            <div>
+              <div style="font-weight:600;">用户张*</div>
+              <div style="font-size:11px;color:var(--text-muted);">OpenID: oyORU3XImvO_...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">评分</div>
+        <div class="detail-value">
+          <div style="font-size:24px;letter-spacing:2px;">⭐⭐⭐⭐⭐</div>
+          <div style="font-size:13px;color:var(--star-gold);font-weight:600;margin-top:2px;">非常满意</div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">关联量表</div>
+        <div class="detail-value"><span class="rv-scale-none" style="font-size:12px;">整体评价（非特定量表）</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">来源</div>
+        <div class="detail-value"><span class="rv-source mine" style="font-size:11px;">我的页面</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">标签</div>
+        <div class="detail-value">
+          <div class="rv-tags" style="margin-top:2px;">
+            <span class="rv-tag">专业靠谱</span>
+            <span class="rv-tag">界面美观</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">评价内容</div>
+        <div class="detail-value">
+          <div class="detail-quote">
+            测评结果很详细，AI诊断报告也很专业，希望增加更多量表。咨询师的形象很亲切，感觉被理解了。
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">提交时间</div>
+        <div class="detail-value" style="color:var(--text-muted);">2026-04-26 14:30:22</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-danger">🗑️ 删除评价</button>
+      <button class="modal-btn modal-btn-primary" onclick="document.getElementById('modal1').classList.remove('show')">关闭</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

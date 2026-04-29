@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新手引导 — 模拟展示</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #f0f2f5; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 30px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif; }
+
+/* ===== 手机外壳 ===== */
+.phone-shell {
+  width: 390px; height: 844px;
+  background: #f5f7f5;
+  border-radius: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), inset 0 0 0 2px #d0d0d0;
+  overflow: hidden; position: relative;
+  display: flex; flex-direction: column;
+}
+.status-bar {
+  height: 44px; background: transparent;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 20px; font-size: 12px; color: #fff; z-index: 1;
+  flex-shrink: 0;
+}
+.status-time { font-weight: 600; font-size: 14px; }
+.status-icons { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.phone-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.page { position: absolute; inset: 0; overflow-y: auto; background: #f5f7f5; display: flex; flex-direction: column; }
+
+/* ===== 首页内容 ===== */
+.home-greeting {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff; padding: 0 16px 18px;
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+.home-greeting::before { content: ''; position: absolute; width: 100px; height: 100px; background: rgba(255,255,255,0.08); border-radius: 50%; top: -25px; right: -15px; }
+.home-greeting::after { content: ''; position: absolute; width: 60px; height: 60px; background: rgba(255,255,255,0.05); border-radius: 50%; bottom: -10px; left: 20px; }
+.greeting-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; z-index: 1; padding-top: 4px; }
+.greeting-text h2 { font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+.greeting-text p { font-size: 11px; opacity: 0.85; }
+.greeting-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; position: relative; z-index: 1; }
+.greeting-stats { display: flex; gap: 10px; position: relative; z-index: 1; }
+.stat-chip { background: rgba(255,255,255,0.18); border-radius: 16px; padding: 5px 14px; font-size: 11px; display: flex; align-items: center; gap: 4px; color: #fff; font-weight: 500; }
+
+.home-search { padding: 10px 16px; flex-shrink: 0; }
+.home-search-input { background: #fff; border-radius: 20px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; color: #bbb; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.home-cat-area { padding: 4px 16px 16px; }
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cat-card {
+  border-radius: 16px; padding: 20px 12px 16px;
+  color: #fff; display: flex; flex-direction: column; align-items: center; text-align: center;
+  position: relative; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+.cat-card::before { content: ''; position: absolute; width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.12); top: -18px; right: -12px; }
+.cat-card::after { content: ''; position: absolute; width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.08); bottom: -8px; left: -6px; }
+.cat-emoji { font-size: 34px; margin-bottom: 8px; position: relative; z-index: 1; }
+.cat-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; position: relative; z-index: 1; }
+.cat-count { font-size: 10px; opacity: 0.8; position: relative; z-index: 1; }
+
+.cat-card-wide {
+  grid-column: span 2;
+  border-radius: 16px; padding: 14px 20px;
+  color: #fff; display: flex; flex-direction: row; align-items: center; gap: 14px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+.cat-card-wide::before { content: ''; position: absolute; width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.12); top: -20px; right: 15px; }
+.cat-card-wide::after { content: ''; position: absolute; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.08); bottom: -12px; left: 25px; }
+.cat-card-wide .cat-emoji { font-size: 34px; position: relative; z-index: 1; flex-shrink: 0; }
+.cat-card-wide .cat-info { position: relative; z-index: 1; flex: 1; text-align: left; }
+.cat-card-wide .cat-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.cat-card-wide .cat-count { font-size: 11px; opacity: 0.8; }
+.cat-card-wide .cat-arrow { font-size: 18px; opacity: 0.6; position: relative; z-index: 1; flex-shrink: 0; }
+
+/* ===== 固定底部TabBar ===== */
+.fixed-tab-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: 60px; background: #fff;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 11px; color: #999; gap: 3px; cursor: pointer;
+}
+.tab-item.active { color: #667eea; }
+.tab-icon { font-size: 22px; }
+
+/* ===== 新手引导蒙层 ===== */
+.guide-overlay {
+  position: absolute; inset: 0; z-index: 200;
+  display: none;
+}
+.guide-overlay.show { display: block; }
+
+/* 高亮框 — box-shadow 大范围遮罩，中间镂空 */
+.guide-highlight {
+  position: absolute;
+  z-index: 201;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  /* 添加微弱的高亮边框提示 */
+  border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+/* 引导气泡 */
+.guide-bubble {
+  position: absolute;
+  z-index: 202;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 14px 16px 12px;
+  width: 220px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.8);
+  text-align: center;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+}
+.guide-bubble-step {
+  font-size: 10px; color: #bbb;
+  margin-bottom: 6px; letter-spacing: 1px;
+}
+.guide-bubble-title {
+  font-size: 14px; font-weight: 700;
+  color: #333; margin-bottom: 4px;
+}
+.guide-bubble-desc {
+  font-size: 12px; color: #666;
+  line-height: 1.6; margin-bottom: 12px;
+}
+.guide-bubble-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* SVG 箭头 — 由 JS 动态设置尺寸和位置 */
+.guide-arrow-svg {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 201;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  /* left/top/width/height 由 JS 设置 */
+}
+.guide-arrow-svg line {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.guide-arrow-svg polygon {
+  fill: rgba(255, 255, 255, 0.75);
+}
+
+/* 引导按钮 */
+.guide-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 18px; border-radius: 16px;
+  border: none; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  transition: all 0.2s;
+}
+.guide-btn:active { transform: scale(0.96); }
+.guide-btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
+}
+.guide-btn-skip {
+  background: transparent;
+  color: #bbb; font-size: 11px;
+  border: none; cursor: pointer;
+  padding: 6px 8px;
+}
+
+/* ===== 页面顶部说明 ===== */
+.page-header {
+  text-align: center; padding: 20px 0 28px; width: 100%; max-width: 500px;
+}
+.page-header h1 { font-size: 22px; color: #333; margin-bottom: 8px; font-weight: 700; }
+.page-header p { font-size: 14px; color: #888; line-height: 1.6; }
+.step-indicator { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
+.step-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ddd; transition: all 0.3s;
+}
+.step-dot.active {
+  width: 24px; border-radius: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.control-bar {
+  display: flex; justify-content: center; gap: 12px; margin-top: 18px; flex-wrap: wrap;
+}
+.ctrl-btn {
+  padding: 8px 18px; border-radius: 10px;
+  border: 1px solid #ddd; background: #fff;
+  font-size: 13px; color: #666; cursor: pointer;
+  transition: all 0.2s;
+}
+.ctrl-btn:hover { border-color: #667eea; color: #667eea; }
+.ctrl-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-color: transparent; }
+
+/* 高亮目标呼吸动画 */
+@keyframes highlight-pulse {
+  0%, 100% { border-color: rgba(255,255,255,0.35); }
+  50% { border-color: rgba(255,255,255,0.7); }
+}
+.guide-highlight {
+  animation: highlight-pulse 1.5s ease-in-out infinite;
+}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="page-header">
+    <h1>新手引导模拟展示</h1>
+    <p>模拟首次进入系统时，首页的操作引导效果<br>点击下方按钮切换引导步骤</p>
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="control-bar">
+      <button class="ctrl-btn active" onclick="showGuideStep(0)">步骤 1：分类卡片</button>
+      <button class="ctrl-btn" onclick="showGuideStep(1)">步骤 2：搜索量表</button>
+      <button class="ctrl-btn" onclick="showGuideStep(2)">步骤 3：测评记录</button>
+      <button class="ctrl-btn" onclick="showGuideStep(3)">步骤 4：个人中心</button>
+    </div>
+  </div>
+
+  <!-- 手机外壳 -->
+  <div class="phone-shell">
+    <div class="status-bar">
+      <span class="status-time">18:09</span>
+      <span class="status-icons">📶 📡 🔋</span>
+    </div>
+    <div class="phone-body" id="app">
+      <div class="page" style="display:flex">
+        <!-- 渐变问候区 -->
+        <div class="home-greeting">
+          <div class="greeting-top">
+            <div class="greeting-text">
+              <h2>🌿 今天感觉怎么样？</h2>
+              <p>每一种感受，都值得被温柔以待</p>
+            </div>
+            <div class="greeting-avatar" id="targetAvatar" title="我的">👤</div>
+          </div>
+          <div class="greeting-stats">
+            <div class="stat-chip">📒 情绪日记</div>
+            <div class="stat-chip" id="targetHistory">📊 测评记录</div>
+          </div>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="home-search">
+          <div class="home-search-input" id="targetSearch"><span>🔍</span><span>搜索量表名称...</span></div>
+        </div>
+
+        <!-- 分类网格 -->
+        <div class="home-cat-area">
+          <div class="cat-grid" id="targetCatGrid">
+            <div class="cat-card" id="targetCat1" style="background:linear-gradient(135deg,#5C6BC0,#7986CB)">
+              <div class="cat-emoji">😰</div>
+              <div class="cat-name">焦虑状态</div>
+              <div class="cat-count">3 个量表</div>
+            </div>
+            <div class="cat-card" style="background:linear-gradient(135deg,#5C8A6E,#81C784)">
+              <div class="cat-emoji">😔</div>
+              <div class="cat-name">抑郁状态</div>
+              <div class="cat-count">2 个量表</div>
+            </div>
+            <div class="cat-card" style="background:linear-gradient(135deg,#EF6C00,#FFB74D)">
+              <div class="cat-emoji">😣</div>
+              <div class="cat-name">压力感知</div>
+              <div class="cat-count">2 个量表</div>
+            </div>
+            <div class="cat-card" style="background:linear-gradient(135deg,#c62828,#ef5350)">
+              <div class="cat-emoji">🧠</div>
+              <div class="cat-name">人格特质</div>
+              <div class="cat-count">1 个量表</div>
+            </div>
+            <div class="cat-card-wide" style="background:linear-gradient(135deg,#00897B,#4DB6AC)">
+              <div class="cat-emoji">🏠</div>
+              <div class="cat-info"><div class="cat-name">家庭与人际关系</div><div class="cat-count">1 个量表</div></div>
+              <div class="cat-arrow">→</div>
+            </div>
+            <div class="cat-card" style="background:linear-gradient(135deg,#6A1B9A,#BA68C8)">
+              <div class="cat-emoji">📊</div>
+              <div class="cat-name">综合评估</div>
+              <div class="cat-count">1 个量表</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 引导蒙层 -->
+      <div class="guide-overlay" id="guideOverlay"></div>
+      <div class="guide-highlight" id="guideHighlight"></div>
+      <!-- SVG 指向箭头 -->
+      <svg class="guide-arrow-svg" id="guideArrow" xmlns="http://www.w3.org/2000/svg">
+        <line id="arrowLine" x1="0" y1="0" x2="0" y2="0"/>
+        <polygon id="arrowTip" points="0,0 0,0 0,0"/>
+      </svg>
+      <div class="guide-bubble" id="guideBubble">
+        <div class="guide-bubble-step" id="bubbleStep"></div>
+        <div class="guide-bubble-title" id="bubbleTitle"></div>
+        <div class="guide-bubble-desc" id="bubbleDesc"></div>
+        <div class="guide-bubble-footer">
+          <button class="guide-btn-skip" onclick="skipGuide()">跳过</button>
+          <button class="guide-btn guide-btn-primary" id="bubbleBtn" onclick="nextStep()">知道了</button>
+        </div>
+      </div>
+
+      <!-- 固定TabBar -->
+      <div class="fixed-tab-bar">
+        <div class="tab-item active"><div class="tab-icon">🏠</div><span>首页</span></div>
+        <div class="tab-item"><div class="tab-icon">📋</div><span>量表</span></div>
+        <div class="tab-item"><div class="tab-icon">📊</div><span>记录</span></div>
+        <div class="tab-item"><div class="tab-icon">👤</div><span>我的</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentStep = -1;
+var phoneBody = document.getElementById('app');
+var overlay = document.getElementById('guideOverlay');
+var highlight = document.getElementById('guideHighlight');
+var bubble = document.getElementById('guideBubble');
+var arrowSvg = document.getElementById('guideArrow');
+var arrowLine = document.getElementById('arrowLine');
+var arrowTip = document.getElementById('arrowTip');
+
+// phone-body 的可用宽高（像素）
+var BODY_W = 390;
+var BODY_H = 800; // phone-body 实际高度（844 - 44 statusbar）
+var TABBAR_H = 60;
+var SAFE_EDGE = 8; // 距边缘最小间距
+
+// 引导步骤
+var steps = [
+  {
+    targetId: 'targetCat1',
+    position: 'below',
+    icon: '📋',
+    title: '探索专业测评量表',
+    desc: '选择您关注的分类，即可浏览该类别下的专业心理测评量表，找到适合您的测评工具',
+    btnText: '知道了'
+  },
+  {
+    targetId: 'targetSearch',
+    position: 'below',
+    icon: '🔍',
+    title: '快速搜索量表',
+    desc: '如果已知量表名称，可以直接搜索，快速找到目标量表开始测评',
+    btnText: '知道了'
+  },
+  {
+    targetId: 'targetHistory',
+    position: 'below',
+    icon: '📊',
+    title: '查看测评记录',
+    desc: '在这里可以查看您历次的测评记录与结果详情',
+    btnText: '知道了'
+  },
+  {
+    targetId: 'targetAvatar',
+    position: 'below',
+    icon: '👤',
+    title: '个人中心',
+    desc: '在这里查看个人信息、收藏的报告以及系统设置',
+    btnText: '开始使用'
+  }
+];
+
+function showGuideStep(stepIndex) {
+  currentStep = stepIndex;
+  var step = steps[stepIndex];
+  var target = document.getElementById(step.targetId);
+
+  // 更新步骤指示器和控制按钮
+  document.querySelectorAll('.step-dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === stepIndex);
+  });
+  document.querySelectorAll('.ctrl-btn').forEach(function(b, i) {
+    b.classList.toggle('active', i === stepIndex);
+  });
+
+  // 获取目标元素相对于 phone-body 的位置
+  var bodyRect = phoneBody.getBoundingClientRect();
+  var targetRect = target.getBoundingClientRect();
+  var tTop = targetRect.top - bodyRect.top;
+  var tLeft = targetRect.left - bodyRect.left;
+  var tW = targetRect.width;
+  var tH = targetRect.height;
+  var tCenterX = tLeft + tW / 2;
+  var tCenterY = tTop + tH / 2;
+
+  // 设置高亮框
+  var pad = 4;
+  highlight.style.top = (tTop - pad) + 'px';
+  highlight.style.left = (tLeft - pad) + 'px';
+  highlight.style.width = (tW + pad * 2) + 'px';
+  highlight.style.height = (tH + pad * 2) + 'px';
+
+  // --- 气泡定位 ---
+  var bubbleW = 220;
+  var gap = 10;           // 气泡与高亮框的最小间距
+  var tipSize = 6;        // 箭头尖端三角的大小
+
+  // 清除旧 class
+  bubble.className = 'guide-bubble';
+
+  // 水平居中于目标
+  var bLeft = tCenterX - bubbleW / 2;
+  bLeft = Math.max(SAFE_EDGE, Math.min(bLeft, BODY_W - bubbleW - SAFE_EDGE));
+
+  // 计算理想垂直位置
+  var bTop;
+  if (step.position === 'below') {
+    // 气泡在高亮框下方
+    bTop = tTop + tH + pad + gap;
+  } else {
+    // 气泡在高亮框上方（需要先知道气泡高度）
+    bTop = tTop - pad - gap; // 临时值，下面获取高度后修正
+  }
+
+  // 获取气泡实际高度来修正上方定位
+  bubble.style.left = bLeft + 'px';
+  bubble.style.top = bTop + 'px';
+  bubble.style.transform = 'none';
+  overlay.classList.add('show');
+  highlight.style.display = '';
+  bubble.style.display = '';
+  highlight.style.opacity = '';
+  bubble.style.opacity = '';
+
+  // 获取气泡渲染后的实际高度
+  var bH = bubble.offsetHeight;
+
+  if (step.position !== 'below') {
+    // 修正上方定位
+    bTop = tTop - pad - gap - bH;
+    bubble.style.top = bTop + 'px';
+  }
+
+  // 底部防溢出：如果气泡底部超出可用区域（TabBar 上方）
+  var maxBottom = BODY_H - TABBAR_H - SAFE_EDGE;
+  if (bTop + bH > maxBottom) {
+    bTop = maxBottom - bH;
+    bubble.style.top = bTop + 'px';
+  }
+
+  // 顶部防溢出
+  if (bTop < SAFE_EDGE) {
+    bTop = SAFE_EDGE;
+    bubble.style.top = bTop + 'px';
+  }
+
+  // --- SVG 箭头 ---
+  // 箭头从气泡边缘出发，仅画到高亮框边缘（元素边缘）
+  var hlCenterX = tCenterX;
+  var hlBottom = tTop + tH + pad;
+  var hlTop = tTop - pad;
+  var bubbleLeft = bLeft;
+  var bubbleRight = bLeft + bubbleW;
+  var bubbleBottomEdge = bTop;       // 气泡上边缘
+  var bubbleTopEdge = bTop + bH;     // 气泡下边缘
+
+  // 箭头起点（气泡侧）和终点（高亮框侧）
+  var arrowStartX, arrowStartY;
+  var arrowEndX, arrowEndY;
+  var arrowDir;
+
+  if (step.position === 'below') {
+    // 气泡在高亮框下方 → 箭头从气泡顶部出发，尖端朝上指向高亮框底部
+    arrowDir = 'up';
+    arrowStartY = bubbleBottomEdge;
+    arrowEndY = hlBottom;
+  } else {
+    // 气泡在高亮框上方 → 箭头从气泡底部出发，尖端朝下指向高亮框顶部
+    arrowDir = 'down';
+    arrowStartY = bubbleTopEdge;
+    arrowEndY = hlTop;
+  }
+
+  // X：起点和终点都指向高亮框中心（clamp 到气泡范围内）
+  arrowStartX = Math.max(bubbleLeft + 20, Math.min(hlCenterX, bubbleRight - 20));
+  arrowEndX = hlCenterX;
+
+  // SVG 容器尺寸 — 覆盖整个 phone-body 区域
+  arrowSvg.setAttribute('width', BODY_W);
+  arrowSvg.setAttribute('height', BODY_H);
+  arrowSvg.style.left = '0';
+  arrowSvg.style.top = '0';
+  arrowSvg.style.width = BODY_W + 'px';
+  arrowSvg.style.height = BODY_H + 'px';
+
+  // 绘制虚线
+  arrowLine.setAttribute('x1', arrowStartX);
+  arrowLine.setAttribute('y1', arrowStartY);
+  arrowLine.setAttribute('x2', arrowEndX);
+  arrowLine.setAttribute('y2', arrowEndY);
+
+  // 绘制箭头尖端三角
+  if (arrowDir === 'up') {
+    // 箭头朝上 → 尖端在 (arrowEndX, arrowEndY)
+    var pts = (arrowEndX) + ',' + arrowEndY + ' '
+            + (arrowEndX - tipSize) + ',' + (arrowEndY + tipSize * 1.5) + ' '
+            + (arrowEndX + tipSize) + ',' + (arrowEndY + tipSize * 1.5);
+    arrowTip.setAttribute('points', pts);
+  } else {
+    // 箭头朝下 → 尖端在 (arrowEndX, arrowEndY)
+    var pts = (arrowEndX) + ',' + arrowEndY + ' '
+            + (arrowEndX - tipSize) + ',' + (arrowEndY - tipSize * 1.5) + ' '
+            + (arrowEndX + tipSize) + ',' + (arrowEndY - tipSize * 1.5);
+    arrowTip.setAttribute('points', pts);
+  }
+
+  arrowSvg.style.display = '';
+
+  // 更新气泡内容
+  document.getElementById('bubbleStep').textContent = '步骤 ' + (stepIndex + 1) + ' / ' + steps.length;
+  document.getElementById('bubbleTitle').textContent = step.title;
+  document.getElementById('bubbleDesc').textContent = step.desc;
+  document.getElementById('bubbleBtn').textContent = step.btnText;
+}
+
+function nextStep() {
+  if (currentStep < steps.length - 1) {
+    showGuideStep(currentStep + 1);
+  } else {
+    closeGuide();
+  }
+}
+
+function skipGuide() { closeGuide(); }
+
+function closeGuide() {
+  overlay.classList.remove('show');
+  highlight.style.opacity = '0';
+  bubble.style.opacity = '0';
+  arrowSvg.style.opacity = '0';
+  setTimeout(function() {
+    overlay.style.display = 'none';
+    highlight.style.display = 'none';
+    bubble.style.display = 'none';
+    arrowSvg.style.display = 'none';
+  }, 350);
+}
+
+// 初始化
+showGuideStep(0);
+</script>
+</body>
+</html>

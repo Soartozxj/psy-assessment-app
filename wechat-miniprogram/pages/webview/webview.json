@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "加载中...",
+  "usingComponents": {},
+  "enablePullDownRefresh": true,
+  "navigationStyle": "default"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "psy-api",
+  "version": "1.0.0",
+  "description": "星蓝心镜 - 云托管 API 服务",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@cloudbase/node-sdk": "^2.6.3"
+  }
+}

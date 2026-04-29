@@ -1,0 +1,122 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e12]:
+    - generic [ref=e13]:
+      - generic [ref=e14]: 🧠
+      - generic [ref=e15]:
+        - generic [ref=e16]: 知我心灵测评
+        - generic [ref=e17]: Admin Console
+    - navigation [ref=e18]:
+      - generic [ref=e19]: 概览
+      - generic [ref=e20] [cursor=pointer]:
+        - generic [ref=e21]: 📊
+        - text: 数据看板
+      - generic [ref=e22]: 内容管理
+      - generic [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: 📋
+        - text: 量表管理
+      - generic [ref=e25] [cursor=pointer]:
+        - generic [ref=e26]: ❓
+        - text: 题目库
+      - generic [ref=e27]: 用户与记录
+      - generic [ref=e28] [cursor=pointer]:
+        - generic [ref=e29]: 👥
+        - text: 用户列表
+      - generic [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 📈
+        - text: 测评记录
+      - generic [ref=e32] [cursor=pointer]:
+        - generic [ref=e33]: 💬
+        - text: 用户评价
+        - generic [ref=e34]: NEW
+      - generic [ref=e35]: 系统
+      - generic [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 🎭
+        - text: NPC场景配置
+      - generic [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: ⚙️
+        - text: 系统设置
+      - generic [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🛡️
+        - text: 系统运维
+      - generic [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: 💡
+        - text: 系统提示词
+    - generic [ref=e45]:
+      - generic [ref=e46]: v1.0.0 · 知我心灵测评
+      - generic [ref=e47]:
+        - link "🔑" [ref=e48] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link "🚪" [ref=e49] [cursor=pointer]:
+          - /url: javascript:void(0)
+  - main [ref=e50]:
+    - generic [ref=e51]:
+      - generic [ref=e52]: 测评记录
+      - generic [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: ✅
+        - text: 已同步前端
+      - generic [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]: A
+        - generic [ref=e57]: 管理员
+    - generic [ref=e263]:
+      - generic [ref=e264]:
+        - generic [ref=e265]:
+          - generic [ref=e266]: 🔍
+          - textbox "搜索用户或量表" [ref=e267]
+        - button "📥 导出记录" [ref=e268] [cursor=pointer]:
+          - generic [ref=e269]: 📥
+          - text: 导出记录
+      - table [ref=e271]:
+        - rowgroup [ref=e272]:
+          - row "测评编号 量表名称 用户 总分 等级 完成时间" [ref=e273]:
+            - columnheader "测评编号" [ref=e274]
+            - columnheader "量表名称" [ref=e275]
+            - columnheader "用户" [ref=e276]
+            - columnheader "总分" [ref=e277]
+            - columnheader "等级" [ref=e278]
+            - columnheader "完成时间" [ref=e279]
+        - rowgroup [ref=e280]:
+          - row "ASM001 SCL-90 症状自评量表 用户A 125 正常 2026-04-11 10:30" [ref=e281]:
+            - cell "ASM001" [ref=e282]
+            - cell "SCL-90 症状自评量表" [ref=e283]
+            - cell "用户A" [ref=e284]
+            - cell "125" [ref=e285]:
+              - strong [ref=e286]: "125"
+            - cell "正常" [ref=e287]:
+              - generic [ref=e288]: 正常
+            - cell "2026-04-11 10:30" [ref=e289]
+          - row "ASM002 SDS 抑郁自评量表 用户B 38 无抑郁 2026-04-11 11:15" [ref=e290]:
+            - cell "ASM002" [ref=e291]
+            - cell "SDS 抑郁自评量表" [ref=e292]
+            - cell "用户B" [ref=e293]
+            - cell "38" [ref=e294]:
+              - strong [ref=e295]: "38"
+            - cell "无抑郁" [ref=e296]:
+              - generic [ref=e297]: 无抑郁
+            - cell "2026-04-11 11:15" [ref=e298]
+          - row "ASM003 SAS 焦虑自评量表 用户C 52 轻度焦虑 2026-04-10 14:20" [ref=e299]:
+            - cell "ASM003" [ref=e300]
+            - cell "SAS 焦虑自评量表" [ref=e301]
+            - cell "用户C" [ref=e302]
+            - cell "52" [ref=e303]:
+              - strong [ref=e304]: "52"
+            - cell "轻度焦虑" [ref=e305]:
+              - generic [ref=e306]: 轻度焦虑
+            - cell "2026-04-10 14:20" [ref=e307]
+          - row "ASM004 EPQ 艾森克人格问卷 用户A 67 人格正常 2026-04-09 09:00" [ref=e308]:
+            - cell "ASM004" [ref=e309]
+            - cell "EPQ 艾森克人格问卷" [ref=e310]
+            - cell "用户A" [ref=e311]
+            - cell "67" [ref=e312]:
+              - strong [ref=e313]: "67"
+            - cell "人格正常" [ref=e314]:
+              - generic [ref=e315]: 人格正常
+            - cell "2026-04-09 09:00" [ref=e316]
+          - row "ASM005 SDS 抑郁自评量表 用户D 61 中度抑郁 2026-04-09 16:45" [ref=e317]:
+            - cell "ASM005" [ref=e318]
+            - cell "SDS 抑郁自评量表" [ref=e319]
+            - cell "用户D" [ref=e320]
+            - cell "61" [ref=e321]:
+              - strong [ref=e322]: "61"
+            - cell "中度抑郁" [ref=e323]:
+              - generic [ref=e324]: 中度抑郁
+            - cell "2026-04-09 16:45" [ref=e325]

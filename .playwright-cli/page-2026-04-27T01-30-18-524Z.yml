@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 15:04
+      - generic [ref=e5]:
+        - generic [ref=e6]: 📶
+        - generic [ref=e7]: 📡
+        - generic [ref=e8]: 🔋
+    - generic [ref=e163]:
+      - generic [ref=e165]: 0 / 90
+      - generic [ref=e166]:
+        - button "沉浸" [ref=e167] [cursor=pointer]
+        - button "普通" [ref=e168] [cursor=pointer]
+      - generic [ref=e169]:
+        - img "心理咨询师" [ref=e180] [cursor=pointer]
+        - generic [ref=e181] [cursor=pointer]: 咨询师「每一种感受，都值得被温柔以待」
+        - generic [ref=e183]:
+          - generic [ref=e184]: 咨询师
+          - generic [ref=e185]: 【第 1 题】 头痛
+          - generic [ref=e188]:
+            - generic [ref=e193]:
+              - generic [ref=e194] [cursor=pointer]:
+                - generic [ref=e195]: A
+                - generic [ref=e196]: 没有
+              - generic [ref=e197] [cursor=pointer]:
+                - generic [ref=e198]: B
+                - generic [ref=e199]: 很轻
+              - generic [ref=e200] [cursor=pointer]:
+                - generic [ref=e201]: C
+                - generic [ref=e202]: 中等
+              - generic [ref=e203] [cursor=pointer]:
+                - generic [ref=e204]: D
+                - generic [ref=e205]: 偏重
+              - generic [ref=e206] [cursor=pointer]:
+                - generic [ref=e207]: E
+                - generic [ref=e208]: 严重
+            - generic [ref=e209]: 👆 请先选择一个选项
+            - generic [ref=e189]:
+              - button "确认并继续 →" [disabled]:
+                - generic: 确认并继续
+                - generic: →
+  - generic:
+    - generic:
+      - generic: 🗑
+      - generic: 删除测评记录
+      - generic: 确定删除这条记录吗？删除后无法恢复。
+      - generic:
+        - button "取消"
+        - button "删除"

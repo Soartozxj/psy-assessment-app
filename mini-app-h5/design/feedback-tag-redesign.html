@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>评价标签电商模式 - 交互设计稿 v1</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+
+  .page-title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+  .page-subtitle { text-align: center; font-size: 13px; color: #888; margin-bottom: 24px; }
+
+  .design-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 900px) { .design-grid { grid-template-columns: 1fr; } }
+
+  .design-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+  .design-card-header { padding: 14px 18px; background: linear-gradient(135deg, #4A90D9, #357ABD); color: #fff; display: flex; align-items: center; gap: 8px; }
+  .design-card-header h3 { font-size: 14px; font-weight: 600; }
+  .design-card-header .badge { font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.25); border-radius: 10px; }
+  .design-card-body { padding: 16px; }
+
+  /* ===== 手机外壳 ===== */
+  .phone { width: 375px; margin: 0 auto; background: #f5f5f5; border-radius: 32px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .phone-header { padding: 12px 20px; background: linear-gradient(135deg, #4A90D9, #3A7BC8); color: #fff; font-size: 16px; font-weight: 600; text-align: center; }
+  .phone-body { padding: 16px; min-height: 200px; }
+
+  /* ===== 通用评价组件样式（新） ===== */
+  .fb-section { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .fb-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .fb-title { font-size: 15px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+  .fb-star-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .fb-stars { display: flex; gap: 4px; }
+  .fb-star { font-size: 28px; cursor: pointer; transition: transform 0.15s; }
+  .fb-star:active { transform: scale(1.15); }
+  .fb-star.inactive { filter: grayscale(1); opacity: 0.3; }
+  .fb-star-label { font-size: 13px; font-weight: 600; color: #F5A623; min-width: 56px; }
+
+  /* ★ 新增：评价类型选择按钮组 */
+  .fb-type-group { display: flex; gap: 8px; margin-bottom: 12px; }
+  .fb-type-btn { flex: 1; padding: 9px 0; border-radius: 10px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; border: 1.5px solid #e8e8e8; background: #fafafa; color: #888; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .fb-type-btn .type-icon { font-size: 15px; }
+  .fb-type-btn.good.active { border-color: #52C41A; background: #f6ffed; color: #52C41A; }
+  .fb-type-btn.neutral.active { border-color: #FAAD14; background: #fffbe6; color: #d48806; }
+  .fb-type-btn.bad.active { border-color: #FF4D4F; background: #fff2f0; color: #FF4D4F; }
+  .fb-type-btn.good:not(.active):hover { border-color: #b7eb8f; }
+  .fb-type-btn.neutral:not(.active):hover { border-color: #ffe58f; }
+  .fb-type-btn.bad:not(.active):hover { border-color: #ffa39e; }
+
+  /* ★ 标签 chips — 带类型颜色 */
+  .fb-tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 38px; }
+  .fb-tag-chip { padding: 6px 13px; border-radius: 20px; font-size: 12px; border: 1.5px solid #e8e8e8; color: #666; background: #fafafa; cursor: pointer; transition: all 0.2s; user-select: none; }
+  .fb-tag-chip:active { transform: scale(0.96); }
+  .fb-tag-chip.selected.good { border-color: #52C41A; background: #f6ffed; color: #389e0d; }
+  .fb-tag-chip.selected.neutral { border-color: #FAAD14; background: #fffbe6; color: #d48806; }
+  .fb-tag-chip.selected.bad { border-color: #FF4D4F; background: #fff2f0; color: #cf1322; }
+
+  .fb-tag-placeholder { font-size: 12px; color: #ccc; padding: 8px 0; }
+  .fb-tag-placeholder .ph-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+  .fb-textarea { width: 100%; border: 1.5px solid #e8e8e8; border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.6; resize: none; outline: none; font-family: inherit; color: #333; background: #fafafa; transition: border-color 0.2s; }
+  .fb-textarea:focus { border-color: #4A90D9; background: #fff; }
+  .fb-textarea::placeholder { color: #bbb; }
+  .fb-char-count { text-align: right; font-size: 11px; color: #bbb; margin-top: 3px; }
+  .fb-submit-btn { width: 100%; padding: 11px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #4A90D9, #3A7BC8); cursor: pointer; margin-top: 12px; }
+  .fb-submit-btn:active { opacity: 0.85; }
+
+  /* ===== 测评记录紧凑版 ===== */
+  .h-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; border: 1px solid #eee; }
+  .h-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .h-card-name { font-size: 14px; font-weight: 600; }
+  .h-card-score { font-size: 12px; color: #4A90D9; font-weight: 600; }
+  .h-card-fb-form { background: #f8f9fb; border-radius: 10px; padding: 12px; }
+  .h-card-fb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .h-card-fb-title { font-size: 12px; font-weight: 600; }
+  .h-card-fb-stars { display: flex; gap: 3px; }
+  .h-card-fb-star { font-size: 18px; cursor: pointer; }
+  .h-card-fb-star.inactive { filter: grayscale(1); opacity: 0.3; }
+  .h-card-fb-type-group { display: flex; gap: 6px; margin-bottom: 8px; }
+  .h-card-fb-type-btn { flex: 1; padding: 6px 0; border-radius: 8px; font-size: 11px; text-align: center; cursor: pointer; border: 1px solid #e8e8e8; background: #fff; color: #aaa; transition: all 0.2s; }
+  .h-card-fb-type-btn.good.active { border-color: #52C41A; background: #f6ffed; color: #52C41A; }
+  .h-card-fb-type-btn.neutral.active { border-color: #FAAD14; background: #fffbe6; color: #d48806; }
+  .h-card-fb-type-btn.bad.active { border-color: #FF4D4F; background: #fff2f0; color: #FF4D4F; }
+  .h-card-fb-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; min-height: 28px; }
+  .h-card-fb-tag { padding: 3px 9px; border-radius: 12px; font-size: 11px; border: 1px solid #e8e8e8; color: #888; background: #fff; cursor: pointer; transition: all 0.2s; }
+  .h-card-fb-tag.selected.good { border-color: #52C41A; background: #f6ffed; color: #389e0d; }
+  .h-card-fb-tag.selected.neutral { border-color: #FAAD14; background: #fffbe6; color: #d48806; }
+  .h-card-fb-tag.selected.bad { border-color: #FF4D4F; background: #fff2f0; color: #cf1322; }
+  .h-card-fb-input { width: 100%; border: 1px solid #e8e8e8; border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none; font-family: inherit; line-height: 1.5; background: #fff; }
+  .h-card-fb-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .h-card-fb-count { font-size: 10px; color: #ccc; }
+  .h-card-fb-submit { padding: 6px 16px; border: none; border-radius: 8px; font-size: 12px; color: #fff; background: #4A90D9; cursor: pointer; }
+
+  /* ===== 已评价态 ===== */
+  .fb-done { text-align: center; padding: 12px 0 6px; }
+  .fb-done-icon { font-size: 28px; }
+  .fb-done-stars { font-size: 20px; margin: 4px 0; letter-spacing: 2px; }
+  .fb-done-label { font-size: 12px; font-weight: 600; color: #F5A623; }
+  .fb-done-tags { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 6px; }
+  .fb-done-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .fb-done-tag.good { background: #f6ffed; color: #389e0d; }
+  .fb-done-tag.neutral { background: #fffbe6; color: #d48806; }
+  .fb-done-tag.bad { background: #fff2f0; color: #cf1322; }
+  .fb-done-content { font-size: 12px; color: #666; line-height: 1.6; padding: 10px 12px; background: #f8f9fb; border-radius: 8px; border-left: 3px solid #4A90D9; margin-top: 8px; text-align: left; }
+
+  /* ===== 后台标签管理 ===== */
+  .admin-panel { font-size: 13px; }
+  .admin-panel h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .admin-scene-tabs { display: flex; gap: 0; border-bottom: 2px solid #eee; margin-bottom: 14px; }
+  .admin-scene-tab { padding: 8px 16px; font-size: 12px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .admin-scene-tab.active { color: #4A90D9; border-bottom-color: #4A90D9; font-weight: 600; }
+
+  .admin-type-section { margin-bottom: 14px; }
+  .admin-type-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .admin-type-badge { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .admin-type-badge.good { background: #f6ffed; color: #389e0d; }
+  .admin-type-badge.neutral { background: #fffbe6; color: #d48806; }
+  .admin-type-badge.bad { background: #fff2f0; color: #cf1322; }
+  .admin-type-count { font-size: 11px; color: #bbb; }
+
+  .admin-tag-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8f9fb; border-radius: 10px; min-height: 36px; }
+  .admin-tag-cell { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 16px; font-size: 12px; background: #fff; border: 1px solid #e8e8e8; color: #555; }
+  .admin-tag-cell .tag-len { font-size: 10px; color: #ccc; }
+  .admin-tag-cell .tag-del { cursor: pointer; font-size: 12px; color: #ccc; margin-left: 2px; }
+  .admin-tag-cell .tag-del:hover { color: #e74c3c; }
+
+  .admin-add-row { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+  .admin-add-row select { padding: 7px 10px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 12px; outline: none; background: #fff; }
+  .admin-add-row input { flex: 1; padding: 7px 10px; border: 1px solid #e8e8e8; border-radius: 8px; font-size: 12px; outline: none; }
+  .admin-add-row input:focus, .admin-add-row select:focus { border-color: #4A90D9; }
+  .admin-add-btn { padding: 7px 14px; border: none; border-radius: 8px; font-size: 12px; color: #fff; background: #4A90D9; cursor: pointer; }
+
+  /* ===== 数据结构说明 ===== */
+  .data-spec { background: #1a1a2e; border-radius: 12px; padding: 18px; color: #e0e0e0; font-family: 'SF Mono', 'Menlo', monospace; font-size: 12px; line-height: 1.7; }
+  .data-spec .key { color: #7ec8e3; }
+  .data-spec .str { color: #98c379; }
+  .data-spec .comment { color: #666; }
+
+  /* ===== 交互说明标注 ===== */
+  .note { font-size: 11px; color: #e74c3c; font-weight: 500; margin-top: 4px; }
+  .note-blue { color: #4A90D9; }
+  .note-green { color: #52C41A; }
+
+  /* ===== 状态切换演示 ===== */
+  .demo-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
+  .demo-toggle-btn { padding: 5px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; border: 1px solid #e8e8e8; background: #fafafa; color: #888; }
+  .demo-toggle-btn.active { border-color: #4A90D9; background: #f0f7ff; color: #4A90D9; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="page-title">🏷️ 评价标签电商模式 — 交互设计稿</div>
+<div class="page-subtitle">好评/一般/差评分区选择 · 设计稿 v2 · 2026-04-26</div>
+<div style="max-width:1200px;margin:0 auto 20px;background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.8;color:#856404">
+  <b>⚠️ v2 核心变更：评价不自动弹出，不打扰用户查阅结果</b><br>
+  <span style="color:#664d03">
+  • <b>测评详情页（result）</b>：取消内嵌评价区，改为底部「💬 写评价」按钮入口，点击跳转到独立评价页<br>
+  • <b>测评记录页（history）</b>：取消卡片内嵌评价表单，改为卡片右下角「💬」图标入口<br>
+  • <b>"我的"页面（mine）</b>：评价区保留内嵌展示（用户主动进入"我的"页面即视为主动评价意图）<br>
+  • 原则：用户查阅测评结果和详情时，界面只展示结果内容，不主动请求评价
+  </span>
+</div>
+
+<div class="design-grid">
+
+  <!-- ========== 1. 我的页面评价（标准版） ========== -->
+  <div class="design-card">
+    <div class="design-card-header">
+      <span>📱</span>
+      <h3>我的页面 · 整体评价</h3>
+      <span class="badge">场景 mine</span>
+    </div>
+    <div class="design-card-body">
+      <div class="demo-toggle">
+        <div class="demo-toggle-btn active" onclick="switchDemo('mine', 'form', this)">📝 未评价态</div>
+        <div class="demo-toggle-btn" onclick="switchDemo('mine', 'good', this)">👍 选了好评</div>
+        <div class="demo-toggle-btn" onclick="switchDemo('mine', 'bad', this)">👎 选了差评</div>
+        <div class="demo-toggle-btn" onclick="switchDemo('mine', 'done', this)">✅ 已评价</div>
+      </div>
+      <div class="phone">
+        <div class="phone-header">我的</div>
+        <div class="phone-body">
+
+          <!-- 未评价态 -->
+          <div id="mine-form" class="fb-section">
+            <div class="fb-title-row">
+              <div class="fb-title"><span class="fb-title-icon">💬</span> 评价</div>
+            </div>
+            <div class="fb-star-row">
+              <div class="fb-stars">
+                <span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star inactive">⭐</span>
+              </div>
+              <div class="fb-star-label">满意</div>
+            </div>
+            <!-- ★ 新增：评价类型选择 -->
+            <div class="fb-type-group">
+              <div class="fb-type-btn good"><span class="type-icon">👍</span> 好评</div>
+              <div class="fb-type-btn neutral"><span class="type-icon">😐</span> 一般</div>
+              <div class="fb-type-btn bad"><span class="type-icon">👎</span> 差评</div>
+            </div>
+            <div class="note">↑ 第一步：选择评价类型，展开对应标签</div>
+            <div class="fb-tag-group">
+              <div class="fb-tag-placeholder">
+                <span class="ph-icon">👆</span>
+                请先选择评价类型
+              </div>
+            </div>
+            <textarea class="fb-textarea" rows="3" placeholder="说说你的使用感受吧（选填）" maxlength="200"></textarea>
+            <div class="fb-char-count">0 / 200</div>
+            <button class="fb-submit-btn">提交评价</button>
+          </div>
+
+          <!-- 选了好评 -->
+          <div id="mine-good" class="fb-section hidden">
+            <div class="fb-title-row">
+              <div class="fb-title"><span class="fb-title-icon">💬</span> 评价</div>
+            </div>
+            <div class="fb-star-row">
+              <div class="fb-stars">
+                <span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span>
+              </div>
+              <div class="fb-star-label">非常满意</div>
+            </div>
+            <div class="fb-type-group">
+              <div class="fb-type-btn good active"><span class="type-icon">👍</span> 好评</div>
+              <div class="fb-type-btn neutral"><span class="type-icon">😐</span> 一般</div>
+              <div class="fb-type-btn bad"><span class="type-icon">👎</span> 差评</div>
+            </div>
+            <div class="note note-green">↓ 好评标签展开，绿色系</div>
+            <div class="fb-tag-group">
+              <div class="fb-tag-chip selected good">界面美观</div>
+              <div class="fb-tag-chip">方便快捷</div>
+              <div class="fb-tag-chip selected good">专业靠谱</div>
+              <div class="fb-tag-chip">内容丰富</div>
+              <div class="fb-tag-chip">操作流畅</div>
+              <div class="fb-tag-chip">值得推荐</div>
+            </div>
+            <textarea class="fb-textarea" rows="3" placeholder="说说你的使用感受吧（选填）" maxlength="200"></textarea>
+            <div class="fb-char-count">0 / 200</div>
+            <button class="fb-submit-btn">提交评价</button>
+          </div>
+
+          <!-- 选了差评 -->
+          <div id="mine-bad" class="fb-section hidden">
+            <div class="fb-title-row">
+              <div class="fb-title"><span class="fb-title-icon">💬</span> 评价</div>
+            </div>
+            <div class="fb-star-row">
+              <div class="fb-stars">
+                <span class="fb-star">⭐</span><span class="fb-star inactive">⭐</span><span class="fb-star inactive">⭐</span><span class="fb-star inactive">⭐</span><span class="fb-star inactive">⭐</span>
+              </div>
+              <div class="fb-star-label">很差</div>
+            </div>
+            <div class="fb-type-group">
+              <div class="fb-type-btn good"><span class="type-icon">👍</span> 好评</div>
+              <div class="fb-type-btn neutral"><span class="type-icon">😐</span> 一般</div>
+              <div class="fb-type-btn bad active"><span class="type-icon">👎</span> 差评</div>
+            </div>
+            <div class="note">↓ 差评标签展开，红色系</div>
+            <div class="fb-tag-group">
+              <div class="fb-tag-chip selected bad">加载较慢</div>
+              <div class="fb-tag-chip">功能不足</div>
+              <div class="fb-tag-chip">界面难看</div>
+              <div class="fb-tag-chip">操作复杂</div>
+            </div>
+            <textarea class="fb-textarea" rows="3" placeholder="说说你的使用感受吧（选填）" maxlength="200"></textarea>
+            <div class="fb-char-count">0 / 200</div>
+            <button class="fb-submit-btn">提交评价</button>
+          </div>
+
+          <!-- 已评价态 -->
+          <div id="mine-done" class="fb-section hidden">
+            <div class="fb-done">
+              <div class="fb-done-icon">✅</div>
+              <div class="fb-done-stars">⭐⭐⭐⭐⭐</div>
+              <div class="fb-done-label">非常满意</div>
+              <div class="fb-done-tags">
+                <span class="fb-done-tag good">界面美观</span>
+                <span class="fb-done-tag good">专业靠谱</span>
+              </div>
+              <div class="fb-done-content">测评结果很准，AI分析也有参考价值，会推荐给朋友。</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 2. 测评详情页评价（v2：改为按钮入口） ========== -->
+  <div class="design-card">
+    <div class="design-card-header">
+      <span>📊</span>
+      <h3>测评详情 · 评价入口</h3>
+      <span class="badge">场景 result · v2</span>
+    </div>
+    <div class="design-card-body">
+      <div class="demo-toggle">
+        <div class="demo-toggle-btn active" onclick="switchDemo('result', 'form', this)">📊 查看详情（无评价区）</div>
+        <div class="demo-toggle-btn" onclick="switchDemo('result', 'neutral', this)">💬 独立评价页</div>
+      </div>
+      <div class="phone">
+        <div class="phone-header" id="result-phone-header">测评详情</div>
+        <div class="phone-body">
+
+          <!-- 查看详情态：只展示结果，底部有评价入口按钮 -->
+          <div id="result-form" class="fb-section">
+            <div style="text-align:center;margin-bottom:14px">
+              <div style="font-size:18px;font-weight:700;color:#333">抑郁筛查 (PHQ-9)</div>
+              <div style="font-size:42px;font-weight:800;color:#4A90D9;margin:8px 0">8<span style="font-size:16px;font-weight:400;color:#999">/27分</span></div>
+              <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:#fffbe6;color:#d48806;font-size:12px;font-weight:600">轻度抑郁</div>
+            </div>
+            <div style="font-size:12px;color:#888;line-height:1.7;margin-bottom:12px">
+              根据你的测评结果，你目前可能存在轻度抑郁症状。建议关注自身情绪变化，必要时寻求专业帮助。
+            </div>
+            <div style="border-top:1px dashed #eee;padding-top:12px;text-align:center">
+              <div style="font-size:11px;color:#bbb;margin-bottom:8px">觉得本次测评有帮助吗？</div>
+              <button style="padding:10px 32px;border:none;border-radius:12px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4A90D9,#3A7BC8);cursor:pointer;box-shadow:0 2px 8px rgba(74,144,217,0.3)">
+                💬 写评价
+              </button>
+              <div class="note note-green" style="margin-top:6px">↑ 点击后跳转到独立评价页（新页面），不在此处展开</div>
+            </div>
+          </div>
+
+          <!-- 独立评价页态（用户主动进入后） -->
+          <div id="result-neutral" class="fb-section hidden">
+            <div style="font-size:13px;color:#999;margin-bottom:14px;text-align:center">← 返回测评详情</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:12px;text-align:center">📋 对 PHQ-9 的评价</div>
+            <div class="fb-star-row" style="justify-content:center">
+              <div class="fb-stars">
+                <span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star">⭐</span><span class="fb-star inactive">⭐</span><span class="fb-star inactive">⭐</span>
+              </div>
+              <div class="fb-star-label">一般</div>
+            </div>
+            <div class="fb-type-group">
+              <div class="fb-type-btn good"><span class="type-icon">👍</span> 好评</div>
+              <div class="fb-type-btn neutral active"><span class="type-icon">😐</span> 一般</div>
+              <div class="fb-type-btn bad"><span class="type-icon">👎</span> 差评</div>
+            </div>
+            <div class="note note-blue">↓ 一般标签展开，黄色系</div>
+            <div class="fb-tag-group">
+              <div class="fb-tag-chip selected neutral">中规中矩</div>
+              <div class="fb-tag-chip">题目偏多</div>
+              <div class="fb-tag-chip">有待改善</div>
+            </div>
+            <textarea class="fb-textarea" rows="2" placeholder="本次测评对你有什么帮助？（选填）" maxlength="200"></textarea>
+            <div class="fb-char-count">0 / 200</div>
+            <button class="fb-submit-btn">提交评价</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 3. 测评记录评价（v2：改为图标入口） ========== -->
+  <div class="design-card">
+    <div class="design-card-header">
+      <span>📋</span>
+      <h3>测评记录 · 评价入口</h3>
+      <span class="badge">场景 history · v2</span>
+    </div>
+    <div class="design-card-body">
+      <div class="demo-toggle">
+        <div class="demo-toggle-btn active" onclick="switchDemo('history', 'form', this)">📝 未评价</div>
+        <div class="demo-toggle-btn" onclick="switchDemo('history', 'done', this)">✅ 已评价</div>
+      </div>
+      <div class="phone">
+        <div class="phone-header">测评记录</div>
+        <div class="phone-body">
+
+          <!-- 未评价：卡片底部只有💬图标入口 -->
+          <div id="history-form" class="h-card">
+            <div class="h-card-top">
+              <div class="h-card-name">📋 抑郁症筛查 (PHQ-9)</div>
+              <div class="h-card-score">8分 · 轻度</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <span style="font-size:11px;color:#bbb">2026-04-26</span>
+              <span style="font-size:18px;cursor:pointer;opacity:0.4" title="写评价">💬</span>
+            </div>
+            <div class="note" style="margin-top:6px">↑ 底部💬图标，点击后跳转到独立评价页（或在当前页展开评价表单），<b>不在卡片内直接内嵌表单</b></div>
+          </div>
+
+          <!-- 已评价 -->
+          <div id="history-done" class="h-card hidden">
+            <div class="h-card-top">
+              <div class="h-card-name">📋 抑郁症筛查 (PHQ-9)</div>
+              <div class="h-card-score">8分 · 轻度</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <span style="font-size:11px;color:#bbb">2026-04-26</span>
+              <div style="display:flex;align-items:center;gap:4px">
+                <span style="font-size:14px">⭐⭐⭐⭐</span>
+                <span style="font-size:10px;color:#F5A623;font-weight:600">满意</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+              <span class="fb-done-tag good">题目清晰</span>
+              <span class="fb-done-tag good">报告详细</span>
+            </div>
+            <div style="font-size:11px;color:#888;margin-top:4px">AI分析很有帮助</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 4. 后台标签管理面板 ========== -->
+  <div class="design-card">
+    <div class="design-card-header">
+      <span>⚙️</span>
+      <h3>后台 · 标签管理</h3>
+      <span class="badge">admin</span>
+    </div>
+    <div class="design-card-body admin-panel">
+      <h4>🏷️ 评价标签管理</h4>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button style="padding:6px 14px;font-size:12px;background:#f0f7ff;color:#4A90D9;border:1px solid #b3d7ff;border-radius:6px;cursor:pointer">📋 批量导入</button>
+        <button style="padding:6px 14px;font-size:12px;background:#fff3f3;color:#e74c3c;border:1px solid #f5b7b1;border-radius:6px;cursor:pointer">🔄 恢复默认</button>
+      </div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px">单标签最长 <b>8</b> 字符，每组（类型）最多 <b>15</b> 个。</div>
+
+      <!-- 场景 Tab -->
+      <div class="admin-scene-tabs">
+        <div class="admin-scene-tab active">我的页面</div>
+        <div class="admin-scene-tab">测评详情</div>
+        <div class="admin-scene-tab">测评记录</div>
+      </div>
+
+      <!-- ★ 好评标签 -->
+      <div class="admin-type-section">
+        <div class="admin-type-header">
+          <span class="admin-type-badge good">👍 好评</span>
+          <span class="admin-type-count">6 个标签</span>
+        </div>
+        <div class="admin-tag-list">
+          <div class="admin-tag-cell"><span>界面美观</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>方便快捷</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>专业靠谱</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>内容丰富</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>操作流畅</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>值得推荐</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+        </div>
+      </div>
+
+      <!-- ★ 一般标签 -->
+      <div class="admin-type-section">
+        <div class="admin-type-header">
+          <span class="admin-type-badge neutral">😐 一般</span>
+          <span class="admin-type-count">3 个标签</span>
+        </div>
+        <div class="admin-tag-list">
+          <div class="admin-tag-cell"><span>中规中矩</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>有待改善</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span">体验一般</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+        </div>
+      </div>
+
+      <!-- ★ 差评标签 -->
+      <div class="admin-type-section">
+        <div class="admin-type-header">
+          <span class="admin-type-badge bad">👎 差评</span>
+          <span class="admin-type-count">4 个标签</span>
+        </div>
+        <div class="admin-tag-list">
+          <div class="admin-tag-cell"><span>加载较慢</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>功能不足</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>界面难看</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+          <div class="admin-tag-cell"><span>操作复杂</span><span class="tag-len">4/8</span><span class="tag-del">✕</span></div>
+        </div>
+      </div>
+
+      <!-- ★ 添加标签 -->
+      <div class="admin-add-row">
+        <select>
+          <option value="good">👍 好评</option>
+          <option value="neutral">😐 一般</option>
+          <option value="bad">👎 差评</option>
+        </select>
+        <input type="text" placeholder="输入新标签（回车添加）" maxlength="8">
+        <button class="admin-add-btn">＋添加</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== 5. 数据结构说明 ========== -->
+  <div class="design-card">
+    <div class="design-card-header">
+      <span>📐</span>
+      <h3>数据结构 & 交互规则</h3>
+      <span class="badge">技术说明</span>
+    </div>
+    <div class="design-card-body">
+      <div class="data-spec">
+        <div style="margin-bottom:12px;color:#7ec8e3;font-weight:600">/* localStorage('psy_feedback_tag_config') */</div>
+        {<br>
+        &nbsp;&nbsp;<span class="comment">// 我的页面</span><br>
+        &nbsp;&nbsp;<span class="key">"mine"</span>: {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"good"</span>: [<span class="str">"界面美观"</span>, <span class="str">"方便快捷"</span>, ...],<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"neutral"</span>: [<span class="str">"中规中矩"</span>, <span class="str">"有待改善"</span>, ...],<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"bad"</span>: [<span class="str">"加载较慢"</span>, <span class="str">"功能不足"</span>, ...]<br>
+        &nbsp;&nbsp;},<br>
+        &nbsp;&nbsp;<span class="comment">// 测评详情</span><br>
+        &nbsp;&nbsp;<span class="key">"result"</span>: { <span class="key">"good"</span>: [...], <span class="key">"neutral"</span>: [...], <span class="key">"bad"</span>: [...] },<br>
+        &nbsp;&nbsp;<span class="comment">// 测评记录</span><br>
+        &nbsp;&nbsp;<span class="key">"history"</span>: { <span class="key">"good"</span>: [...], <span class="key">"neutral"</span>: [...], <span class="key">"bad"</span>: [...] }<br>
+        }
+      </div>
+
+      <div style="margin-top:16px;font-size:12px;line-height:1.8;color:#555">
+        <div style="font-weight:600;color:#333;margin-bottom:6px">📌 交互规则</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <tr style="background:#f8f9fb">
+            <td style="padding:8px;border:1px solid #eee;font-weight:600;width:140px">规则</td>
+            <td style="padding:8px;border:1px solid #eee;font-weight:600">说明</td>
+          </tr>
+          <tr>
+            <td style="padding:8px;border:1px solid #eee">类型锁定</td>
+            <td style="padding:8px;border:1px solid #eee">选了好评就不能同时选差评，点击其他类型自动取消已选标签</td>
+          </tr>
+          <tr style="background:#f8f9fb">
+            <td style="padding:8px;border:1px solid #eee">星级独立</td>
+            <td style="padding:8px;border:1px solid #eee">星级评分和标签类型不联动，用户可以 5 星 + 选差评标签</td>
+          </tr>
+          <tr>
+            <td style="padding:8px;border:1px solid #eee">标签最多选 3 个</td>
+            <td style="padding:8px;border:1px solid #eee">单个类型的标签最多选 3 个（不变）</td>
+          </tr>
+          <tr style="background:#f8f9fb">
+            <td style="padding:8px;border:1px solid #eee">已评价展示</td>
+            <td style="padding:8px;border:1px solid #eee">已评价标签按类型着色（好=绿/中=黄/差=红）</td>
+          </tr>
+          <tr>
+            <td style="padding:8px;border:1px solid #eee">提交数据</td>
+            <td style="padding:8px;border:1px solid #eee">tags 数组不变，额外存 tagType 字段（good/neutral/bad）</td>
+          </tr>
+          <tr style="background:#f8f9fb">
+            <td style="padding:8px;border:1px solid #eee">向后兼容</td>
+            <td style="padding:8px;border:1px solid #eee">旧评价无 tagType 字段时，默认按 neutral 展示</td>
+          </tr>
+          <tr style="background:#fffbe6">
+            <td style="padding:8px;border:1px solid #ffe58f;font-weight:600;color:#d48806">⚠️ 不打扰原则</td>
+            <td style="padding:8px;border:1px solid #ffe58f;color:#856404">
+              <b>测评详情页</b>：取消内嵌评价区，底部仅展示「💬 写评价」按钮入口<br>
+              <b>测评记录页</b>：卡片内取消评价表单，改为右下角💬图标入口<br>
+              <b>"我的"页面</b>：保留内嵌评价（进入此页视为主动评价意图）<br>
+              核心：<b>用户查阅结果时只看结果，不被评价打扰</b>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchDemo(scene, state, btn) {
+  // 隐藏同场景所有状态
+  var container = btn.closest('.design-card-body');
+  var phone = container.querySelector('.phone');
+  if (!phone) return;
+  
+  var allStates = phone.querySelectorAll('.fb-section, .h-card');
+  allStates.forEach(function(el) {
+    var id = el.id;
+    if (id && id.startsWith(scene)) {
+      el.classList.add('hidden');
+    }
+  });
+  
+  // 显示目标状态
+  var target = document.getElementById(scene + '-' + state);
+  if (target) target.classList.remove('hidden');
+  
+  // 切换按钮样式
+  var toggle = btn.closest('.demo-toggle');
+  toggle.querySelectorAll('.demo-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

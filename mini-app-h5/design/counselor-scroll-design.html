@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>立绘展示区 - 设计方案模拟</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #ffffff; --primary: #4A90D9; --primary-light: rgba(74,144,217,0.06);
+    --border: #e2e8f0; --text: #1a202c; --text-muted: #718096; --success: #52c41a;
+    --danger: #ff4d4f; --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); padding: 40px; }
+
+  .design-page { max-width: 900px; margin: 0 auto; }
+
+  .section-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.8; }
+
+  .npc-config-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; border: 1px solid var(--border); }
+  .npc-config-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .npc-config-card h3 span { font-size: 20px; }
+
+  /* ========== 新设计：横向滚动条 ========== */
+  .counselor-scroll-row {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-behavior: smooth;
+  }
+  .counselor-scroll-row::-webkit-scrollbar { height: 6px; }
+  .counselor-scroll-row::-webkit-scrollbar-track { background: var(--bg); border-radius: 3px; }
+  .counselor-scroll-row::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+
+  /* 立绘块 + 上传块 统一尺寸 */
+  .counselor-cell {
+    flex-shrink: 0;
+    width: 120px;
+    height: 160px;
+    border-radius: var(--radius);
+    border: 2px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--card);
+  }
+  .counselor-cell:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(74,144,217,0.15); }
+  .counselor-cell.is-default { border-color: var(--success); }
+
+  /* 立绘图片 - 填满整个块 */
+  .counselor-cell .cell-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 人物立绘用 contain，完整展示不裁切 */
+    display: block;
+  }
+
+  /* 底部信息条 - 半透明渐变 */
+  .cell-bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.65));
+    padding: 20px 6px 6px;
+    text-align: center;
+  }
+  .cell-bottom-bar .cell-name {
+    font-size: 11px;
+    color: #fff;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 默认标记 */
+  .cell-default-tag {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(82,196,26,0.9);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* "..." 操作菜单按钮 */
+  .cell-menu-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.85);
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .counselor-cell:hover .cell-menu-btn { opacity: 1; }
+  .cell-menu-btn:hover { background: #fff; color: var(--text); }
+
+  /* 上传块（+号占位） */
+  .counselor-cell.upload-cell {
+    border-style: dashed;
+    border-color: #cbd5e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--bg);
+    cursor: pointer;
+  }
+  .counselor-cell.upload-cell:hover { border-color: var(--primary); background: var(--primary-light); }
+  .upload-cell .upload-icon { font-size: 28px; color: var(--text-muted); }
+  .upload-cell .upload-text { font-size: 11px; color: var(--text-muted); }
+
+  /* ========== 模拟弹窗 ========== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    width: 420px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .modal-header .preview-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .modal-header .preview-thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .modal-title-area { flex: 1; }
+  .modal-title-area .title-name { font-size: 16px; font-weight: 600; }
+  .modal-title-area .title-sub { font-size: 12px; color: var(--text-muted); }
+  .modal-close { font-size: 20px; cursor: pointer; color: var(--text-muted); background: none; border: none; padding: 4px 8px; border-radius: 4px; }
+  .modal-close:hover { background: var(--bg); }
+  .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+  .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+  .detail-row { margin-bottom: 14px; }
+  .detail-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .detail-value { font-size: 14px; line-height: 1.6; }
+
+  .btn { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-default { background: #f0fdf4; color: var(--success); border-color: #bbf7d0; }
+  .btn-danger { background: #fff; color: var(--danger); border-color: #fecaca; }
+
+  /* ========== 设计说明对比 ========== */
+  .change-list { margin-top: 32px; }
+  .change-item { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
+  .change-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .change-text { font-size: 14px; line-height: 1.7; }
+  .change-text strong { color: var(--primary); }
+  .change-text del { color: var(--text-muted); }
+
+  /* 模拟的 "..." 下拉菜单 */
+  .cell-dropdown {
+    position: absolute;
+    top: 32px;
+    right: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    min-width: 110px;
+    padding: 4px 0;
+    z-index: 10;
+    display: none;
+  }
+  .cell-dropdown.open { display: block; }
+  .cell-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .cell-dropdown .dropdown-item:hover { background: var(--bg); }
+  .cell-dropdown .dropdown-item.danger { color: var(--danger); }
+  .cell-dropdown .dropdown-item.danger:hover { background: rgba(255,77,79,0.06); }
+</style>
+</head>
+<body>
+<div class="design-page">
+
+  <div class="section-title">🎭 立绘展示区 - 设计方案</div>
+  <div class="section-desc">
+    以下是对你需求的理解，点击任意立绘块可查看详情弹窗效果，点击「...」可查看操作菜单。
+  </div>
+
+  <div class="npc-config-card">
+    <h3><span>🎭</span> 咨询师立绘 <small style="font-weight:400;color:var(--text-muted);font-size:12px">(3个)</small></h3>
+
+    <!-- ========== 横向滚动立绘行 ========== -->
+    <div class="counselor-scroll-row">
+      <!-- 立绘块 1 - 默认 -->
+      <div class="counselor-cell is-default" onclick="openDetail('林晓雯')" title="点击查看详情">
+        <span class="cell-default-tag">⭐ 默认</span>
+        <button class="cell-menu-btn" onclick="event.stopPropagation();toggleMenu(this)">···</button>
+        <div class="cell-dropdown">
+          <button class="dropdown-item" onclick="event.stopPropagation();editItem('林晓雯')">✏️ 编辑信息</button>
+          <button class="dropdown-item danger" onclick="event.stopPropagation();deleteItem('林晓雯')">🗑️ 删除立绘</button>
+        </div>
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fef3c7,#fde68a);font-size:56px;">👩‍⚕️</div>
+        <div class="cell-bottom-bar"><div class="cell-name">林晓雯</div></div>
+      </div>
+
+      <!-- 立绘块 2 -->
+      <div class="counselor-cell" onclick="openDetail('张明远')" title="点击查看详情">
+        <button class="cell-menu-btn" onclick="event.stopPropagation();toggleMenu(this)">···</button>
+        <div class="cell-dropdown">
+          <button class="dropdown-item" onclick="event.stopPropagation();editItem('张明远')">✏️ 编辑信息</button>
+          <button class="dropdown-item" onclick="event.stopPropagation();setDefault('张明远')">⭐ 设为默认</button>
+          <button class="dropdown-item danger" onclick="event.stopPropagation();deleteItem('张明远')">🗑️ 删除立绘</button>
+        </div>
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#dbeafe,#bfdbfe);font-size:56px;">👨‍💼</div>
+        <div class="cell-bottom-bar"><div class="cell-name">张明远</div></div>
+      </div>
+
+      <!-- 立绘块 3 -->
+      <div class="counselor-cell" onclick="openDetail('李思语')" title="点击查看详情">
+        <button class="cell-menu-btn" onclick="event.stopPropagation();toggleMenu(this)">···</button>
+        <div class="cell-dropdown">
+          <button class="dropdown-item" onclick="event.stopPropagation();editItem('李思语')">✏️ 编辑信息</button>
+          <button class="dropdown-item" onclick="event.stopPropagation();setDefault('李思语')">⭐ 设为默认</button>
+          <button class="dropdown-item danger" onclick="event.stopPropagation();deleteItem('李思语')">🗑️ 删除立绘</button>
+        </div>
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ede9fe,#ddd6fe);font-size:56px;">👩‍🏫</div>
+        <div class="cell-bottom-bar"><div class="cell-name">李思语</div></div>
+      </div>
+
+      <!-- 上传块（+号，与立绘块等大） -->
+      <div class="counselor-cell upload-cell" onclick="alert('点击上传新立绘')">
+        <div class="upload-icon">+</div>
+        <div class="upload-text">上传立绘</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 变更要点说明 ========== -->
+  <div class="change-list">
+    <div class="section-title" style="font-size:16px;margin-bottom:16px;">📋 变更要点</div>
+
+    <div class="change-item">
+      <div class="change-icon">1️⃣</div>
+      <div class="change-text"><strong>横向滚动</strong>：立绘块从网格布局改为横向排列，可左右滑动浏览。上传按钮「+」与立绘块<em>等大等高</em>，始终在最右侧。</div>
+    </div>
+    <div class="change-item">
+      <div class="change-icon">2️⃣</div>
+      <div class="change-text"><strong>人物完整嵌入</strong>：立绘图片用 <code>object-fit: contain</code> 填满整个块，人物立绘完整可见不裁切。底部半透明渐变叠加名称。</div>
+    </div>
+    <div class="change-item">
+      <div class="change-icon">3️⃣</div>
+      <div class="change-text"><strong>卡片极简</strong>：卡片中<del>只展示立绘图片和名称</del>，不展示咨询师名、格言等额外信息。保持视觉干净。</div>
+    </div>
+    <div class="change-item">
+      <div class="change-icon">4️⃣</div>
+      <div class="change-text"><strong>操作按钮「···」</strong>：hover 时右上角浮现「···」菜单，点击展开下拉列表（编辑/设为默认/删除），取代当前底部的 3 个按钮。</div>
+    </div>
+    <div class="change-item">
+      <div class="change-icon">5️⃣</div>
+      <div class="change-text"><strong>点击弹窗看详情</strong>：点击立绘块打开详情弹窗，展示完整信息：立绘大图、咨询师名称、格言、简介，以及编辑/删除操作。</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== 详情弹窗 ========== -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="preview-thumb" id="detail-thumb">👩‍⚕️</div>
+      <div class="modal-title-area">
+        <div class="title-name" id="detail-name">林晓雯</div>
+        <div class="title-sub" id="detail-sub">⭐ 当前默认立绘</div>
+      </div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row">
+        <div class="detail-label">咨询师名称</div>
+        <div class="detail-value" id="detail-counselor">林晓雯</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">咨询格言</div>
+        <div class="detail-value" id="detail-motto" style="font-style:italic;">每一种感受，都值得被温柔以待</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">咨询师简介</div>
+        <div class="detail-value" id="detail-bio">国家二级心理咨询师，从业5年，擅长焦虑与抑郁情绪疏导，认知行为治疗取向。</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">上传时间</div>
+        <div class="detail-value" id="detail-time">2026-04-25 17:00</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" id="detail-default-btn">⭐ 设为默认</button>
+      <button class="btn btn-primary" id="detail-edit-btn">✏️ 编辑信息</button>
+      <button class="btn btn-danger" id="detail-del-btn">🗑️ 删除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 模拟数据
+const mockData = {
+  '林晓雯': { emoji: '👩‍⚕️', bg: 'linear-gradient(135deg,#fef3c7,#fde68a)', isDefault: true, counselor: '林晓雯', motto: '每一种感受，都值得被温柔以待', bio: '国家二级心理咨询师，从业5年，擅长焦虑与抑郁情绪疏导，认知行为治疗取向。', time: '2026-04-25 17:00' },
+  '张明远': { emoji: '👨‍💼', bg: 'linear-gradient(135deg,#dbeafe,#bfdbfe)', isDefault: false, counselor: '张明远', motto: '成长，从接纳不完美的自己开始', bio: '心理学硕士，专注于青少年心理发展，沙盘游戏治疗师。', time: '2026-04-24 14:30' },
+  '李思语': { emoji: '👩‍🏫', bg: 'linear-gradient(135deg,#ede9fe,#ddd6fe)', isDefault: false, counselor: '李思语', motto: '你不需要成为别人，做最好的自己就好', bio: '临床心理学博士，擅长人际关系与情感问题，正念减压疗法。', time: '2026-04-23 09:15' }
+};
+
+// "..." 菜单切换
+function toggleMenu(btn) {
+  const dropdown = btn.parentElement.querySelector('.cell-dropdown');
+  // 先关闭其他
+  document.querySelectorAll('.cell-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); });
+  dropdown.classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.querySelectorAll('.cell-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+// 打开详情弹窗
+function openDetail(name) {
+  const d = mockData[name];
+  if (!d) return;
+  document.getElementById('detail-thumb').textContent = d.emoji;
+  document.getElementById('detail-name').textContent = name;
+  document.getElementById('detail-sub').textContent = d.isDefault ? '⭐ 当前默认立绘' : '咨询师立绘';
+  document.getElementById('detail-counselor').textContent = d.counselor;
+  document.getElementById('detail-motto').textContent = d.motto || '未设置';
+  document.getElementById('detail-bio').textContent = d.bio || '未填写简介';
+  document.getElementById('detail-time').textContent = d.time;
+  document.getElementById('detail-default-btn').style.display = d.isDefault ? 'none' : '';
+  document.getElementById('detail-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('detail-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeDetail(); });
+
+// 模拟操作
+function editItem(name) { alert('打开「' + name + '」的编辑弹窗'); }
+function setDefault(name) { alert('将「' + name + '」设为默认立绘'); }
+function deleteItem(name) { alert('确认删除「' + name + '」？'); }
+</script>
+</body>
+</html>

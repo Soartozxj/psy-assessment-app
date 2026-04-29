@@ -1,0 +1,114 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 15:04
+      - generic [ref=e5]:
+        - generic [ref=e6]: 📶
+        - generic [ref=e7]: 📡
+        - generic [ref=e8]: 🔋
+    - generic [ref=e9]:
+      - generic:
+        - generic:
+          - img "心理咨询师"
+      - generic [ref=e210]:
+        - generic [ref=e211]:
+          - generic [ref=e212]:
+            - generic [ref=e213] [cursor=pointer]: ‹
+            - generic [ref=e214]: 测评简报
+            - generic "评价本次测评" [ref=e215] [cursor=pointer]: 💬
+            - generic [ref=e216]:
+              - generic "分享给朋友" [ref=e217] [cursor=pointer]:
+                - img [ref=e218]
+              - generic "重新测评" [ref=e220] [cursor=pointer]: 🔄
+          - generic [ref=e221]:
+            - generic [ref=e222]: 🎉
+            - generic [ref=e223]: 测评完成 ·
+            - generic [ref=e224]: 90项症状清单
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - generic [ref=e228]:
+                - generic:
+                  - generic: "2.98"
+                  - generic: 满分 450
+                  - generic: 1%
+              - generic [ref=e230]:
+                - generic [ref=e231]: 异常
+                - paragraph [ref=e232]: 有症状项目数超出正常范围
+            - generic [ref=e234]:
+              - generic [ref=e235]: 各维度分析
+              - generic [ref=e236]:
+                - generic [ref=e237]:
+                  - generic [ref=e238]:
+                    - generic [ref=e239]: 躯体化
+                    - generic [ref=e240]: 2.8分
+                  - generic [ref=e243]: 满分 5 · 57% · 异常
+                  - generic [ref=e244]: 存在该因子相关症状
+                - generic [ref=e245]:
+                  - generic [ref=e246]:
+                    - generic [ref=e247]: 强迫症状
+                    - generic [ref=e248]: 3.3分
+                  - generic [ref=e251]: 满分 5 · 66% · 异常
+                  - generic [ref=e252]: 存在该因子相关症状
+                - generic [ref=e253]:
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: 人际关系敏感
+                    - generic [ref=e256]: 3.4分
+                  - generic [ref=e259]: 满分 5 · 69% · 异常
+                  - generic [ref=e260]: 存在该因子相关症状
+                - generic [ref=e261]:
+                  - generic [ref=e262]:
+                    - generic [ref=e263]: 抑郁
+                    - generic [ref=e264]: 3.9分
+                  - generic [ref=e267]: 满分 5 · 77% · 异常
+                  - generic [ref=e268]: 存在该因子相关症状
+                - generic [ref=e269]:
+                  - generic [ref=e270]:
+                    - generic [ref=e271]: 焦虑
+                    - generic [ref=e272]: 2.8分
+                  - generic [ref=e275]: 满分 5 · 56% · 异常
+                  - generic [ref=e276]: 存在该因子相关症状
+                - generic [ref=e277]:
+                  - generic [ref=e278]:
+                    - generic [ref=e279]: 敌对
+                    - generic [ref=e280]: 2.8分
+                  - generic [ref=e283]: 满分 5 · 57% · 异常
+                  - generic [ref=e284]: 存在该因子相关症状
+                - generic [ref=e285]:
+                  - generic [ref=e286]:
+                    - generic [ref=e287]: 恐怖
+                    - generic [ref=e288]: 2.6分
+                  - generic [ref=e291]: 满分 5 · 51% · 异常
+                  - generic [ref=e292]: 存在该因子相关症状
+                - generic [ref=e293]:
+                  - generic [ref=e294]:
+                    - generic [ref=e295]: 偏执
+                    - generic [ref=e296]: 2.2分
+                  - generic [ref=e299]: 满分 5 · 43% · 异常
+                  - generic [ref=e300]: 存在该因子相关症状
+                - generic [ref=e301]:
+                  - generic [ref=e302]:
+                    - generic [ref=e303]: 精神病性
+                    - generic [ref=e304]: 2.5分
+                  - generic [ref=e307]: 满分 5 · 50% · 异常
+                  - generic [ref=e308]: 存在该因子相关症状
+                - generic [ref=e309]:
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: 其他
+                    - generic [ref=e312]: 2.7分
+                  - generic [ref=e315]: 满分 5 · 54% · 异常
+                  - generic [ref=e316]: 存在该因子相关症状
+          - paragraph [ref=e318]: 本测评为自助评估工具，结果仅供参考。如有明显不适或困扰，建议咨询专业心理医生获取专业帮助。
+          - generic [ref=e320] [cursor=pointer]:
+            - generic [ref=e321]:
+              - generic [ref=e322]: 测评详情报告
+              - generic [ref=e323]: 获取个性化分析报告
+            - generic [ref=e324]: ›
+  - generic:
+    - generic:
+      - generic: 🗑
+      - generic: 删除测评记录
+      - generic: 确定删除这条记录吗？删除后无法恢复。
+      - generic:
+        - button "取消"
+        - button "删除"

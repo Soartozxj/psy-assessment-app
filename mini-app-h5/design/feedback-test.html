@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>评价反馈测试数据注入</title>
+<style>
+body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f5f7fa; }
+h1 { font-size: 20px; margin-bottom: 20px; }
+.btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin: 6px; }
+.btn-primary { background: #4A90D9; color: #fff; }
+.btn-danger { background: #FF4D4F; color: #fff; }
+.btn-success { background: #52C41A; color: #fff; }
+.links { margin-top: 20px; }
+.links a { display: block; padding: 10px; margin: 6px 0; background: #fff; border-radius: 8px; text-decoration: none; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.links a:hover { background: #EBF4FF; }
+.status { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 13px; }
+.status.ok { background: #F6FFED; color: #52C41A; border: 1px solid #B7EB8F; }
+.status.err { background: #FFF2F0; color: #FF4D4F; border: 1px solid #FFCCC7; }
+</style>
+</head>
+<body>
+<h1>🧪 评价反馈功能测试页</h1>
+
+<div>
+  <button class="btn btn-primary" onclick="injectTestData()">📥 注入测试数据（8条）</button>
+  <button class="btn btn-danger" onclick="clearTestData()">🗑️ 清空评价数据</button>
+  <button class="btn btn-success" onclick="checkData()">🔍 查看当前数据</button>
+</div>
+
+<div id="status"></div>
+
+<div class="links">
+  <a href="../frontend/index.html" target="_blank">📱 前端页面（我的/记录/详情页评价）</a>
+  <a href="../backend/admin-legacy.html" target="_blank">📋 后台管理（用户评价页）</a>
+</div>
+
+<script>
+var testData = [
+  { id: 1001, stars: 5, tags: ['界面美观','方便快捷','值得推荐'], text: '非常好用的心理测评工具，界面设计简洁大方，操作也很方便。', source: 'mine', scaleId: '', scaleName: '整体评价', recordId: 'mine-1', nickname: '小明同学', userId: '', createdAt: new Date(Date.now() - 86400000*2).toISOString() },
+  { id: 1002, stars: 4, tags: ['题目清晰','报告详细'], text: '量表题目设置合理，报告分析得很详细，对我了解自己很有帮助。', source: 'result', scaleId: 'ppcrs', scaleName: 'PPCRS', recordId: '201', nickname: '张三', userId: '', createdAt: new Date(Date.now() - 86400000*1).toISOString() },
+  { id: 1003, stars: 5, tags: ['AI分析准','有帮助','建议实用'], text: '', source: 'history', scaleId: 'scl90', scaleName: 'SCL-90', recordId: '202', nickname: '体验用户', userId: '', createdAt: new Date(Date.now() - 86400000*3).toISOString() },
+  { id: 1004, stars: 3, tags: ['需要改进'], text: '希望增加更多量表，有些功能还不够完善。', source: 'mine', scaleId: '', scaleName: '整体评价', recordId: 'mine-2', nickname: '李四', userId: '', createdAt: new Date(Date.now() - 86400000*5).toISOString() },
+  { id: 1005, stars: 5, tags: ['专业靠谱','内容丰富','咨询师亲切','值得推荐'], text: '咨询师很专业，NPC角色设计很有温度，整个测评过程很舒适。', source: 'result', scaleId: 'faces', scaleName: 'FACES', recordId: '203', nickname: '王五', userId: '', createdAt: new Date().toISOString() },
+  { id: 1006, stars: 2, tags: ['需要改进'], text: '界面有些卡顿，加载速度有待提升。', source: 'history', scaleId: 'cbfpi', scaleName: 'CBF-PI-B', recordId: '204', nickname: '赵六', userId: '', createdAt: new Date(Date.now() - 86400000*7).toISOString() },
+  { id: 1007, stars: 4, tags: ['界面美观','AI报告好'], text: 'AI生成的报告很专业，建议准确。', source: 'result', scaleId: 'cpti', scaleName: 'CPTI', recordId: '205', nickname: '体验用户', userId: '', createdAt: new Date(Date.now() - 86400000*4).toISOString() },
+  { id: 1008, stars: 1, tags: [], text: '完成测评后没有收到报告，体验很差。', source: 'history', scaleId: 'rpqsc', scaleName: 'RPQ-SC', recordId: '206', nickname: '匿名用户', userId: '', createdAt: new Date(Date.now() - 86400000*6).toISOString() }
+];
+
+function showStatus(msg, ok) {
+  var el = document.getElementById('status');
+  el.className = 'status ' + (ok ? 'ok' : 'err');
+  el.textContent = msg;
+}
+
+function injectTestData() {
+  try {
+    // 合并到已有数据
+    var existing = JSON.parse(localStorage.getItem('psy_feedback_list') || '[]');
+    var existIds = existing.map(function(f) { return f.id; });
+    var newItems = testData.filter(function(f) { return existIds.indexOf(f.id) === -1; });
+    if (newItems.length === 0) { showStatus('⚠️ 测试数据已存在，无需重复注入', true); return; }
+    var merged = newItems.concat(existing);
+    localStorage.setItem('psy_feedback_list', JSON.stringify(merged));
+    showStatus('✅ 已注入 ' + newItems.length + ' 条测试数据（总计 ' + merged.length + ' 条）', true);
+  } catch (e) {
+    showStatus('❌ 注入失败: ' + e.message, false);
+  }
+}
+
+function clearTestData() {
+  localStorage.removeItem('psy_feedback_list');
+  showStatus('🗑️ 已清空全部评价数据', true);
+}
+
+function checkData() {
+  try {
+    var data = JSON.parse(localStorage.getItem('psy_feedback_list') || '[]');
+    showStatus('📊 当前共 ' + data.length + ' 条评价数据：' + data.map(function(f) { return '#' + f.id + '(' + f.stars + '星-' + f.source + ')'; }).join(', '), true);
+  } catch (e) {
+    showStatus('❌ 读取失败: ' + e.message, false);
+  }
+}
+</script>
+</body>
+</html>

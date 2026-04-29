@@ -1,0 +1,17 @@
+{
+  "name": "psy-assessment-server",
+  "version": "1.0.0",
+  "description": "星蓝心镜 - 后端 API 服务",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "edge-tts-node": "^1.5.7",
+    "express": "^4.21.0",
+    "mysql2": "^3.11.0"
+  }
+}
