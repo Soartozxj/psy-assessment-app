@@ -1440,35 +1440,6 @@
     .nav-icon-btn:hover { opacity: 1; }
     .nav-icon-btn:active { transform: scale(0.9); }
     .nav-icon-btn.active { opacity: 1; }
-    /* 更多操作菜单 — 从右向左滑出 */
-    #diag-more-menu {
-      display: flex; gap: 2px; align-items: center;
-      overflow: hidden; max-width: 0; opacity: 0;
-      transition: max-width 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
-      margin-left: 0;
-    }
-    #diag-more-menu.open {
-      max-width: 180px; opacity: 1; margin-left: 6px;
-    }
-    .diag-menu-item {
-      width: 32px; height: 32px; border: none; border-radius: 8px;
-      background: rgba(255,255,255,0.2); font-size: 16px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s, transform 0.15s;
-      color: #fff;
-    }
-    .diag-menu-item:hover { background: rgba(255,255,255,0.35); }
-    .diag-menu-item:active { transform: scale(0.9); }
-    /* TTS 播放器面板（嵌入 diag-hero 内部） */
-    #tts-player-panel {
-      overflow: hidden; max-height: 0; opacity: 0;
-      transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.3s ease;
-      padding: 0 12px;
-    }
-    #tts-player-panel.open {
-      max-height: 80px; opacity: 1; padding: 0 12px 10px;
-    }
     /* 透明分享图标 */
     .share-icon-transparent {
       cursor: pointer; opacity: 0.9; line-height: 1;
@@ -2570,14 +2541,11 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
         <div class="sub-nav">
           <div class="sub-back" onclick="goBackFromAiDiag()" title="返回">←</div>
           <div class="sub-title">测评详情报告</div>
-          <div style="margin-left:auto;display:flex;align-items:center">
-            <div id="diag-more-menu">
-              <button onclick="exportDiagAsImage()" class="diag-menu-item" title="保存为图片">💾</button>
-              <button onclick="toggleTtsPlayer()" class="diag-menu-item" title="朗读">🎧</button>
-              <button onclick="toggleReportFavorite(event)" class="diag-menu-item" title="收藏"><span id="diag-fav-icon">☆</span></button>
-              <button onclick="fbOpenModal('diag')" class="diag-menu-item" title="评价本次测评">📝</button>
-            </div>
-            <span class="nav-icon-btn" id="diag-more-btn" onclick="toggleDiagMoreMenu(event)" title="更多操作" style="font-size:22px;letter-spacing:2px;color:#fff">⋯</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <span class="nav-icon-btn" onclick="exportDiagAsImage()" title="保存为图片">📷</span>
+            <span class="nav-icon-btn" onclick="toggleTtsPlayer()" title="朗读">🎧</span>
+            <span class="nav-icon-btn" id="diag-fav-btn" onclick="toggleReportFavorite(event)" title="收藏"><span id="diag-fav-icon">☆</span></span>
+            <div class="fb-header-icon" onclick="fbOpenModal('diag')" title="评价本次测评">📝</div>
           </div>
         </div>
         <div class="diag-hero-compact">
@@ -2586,37 +2554,6 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
           <span class="diag-hero-divider">|</span>
           <span class="diag-hero-score" id="diag-meta-score">--</span>
           <span class="diag-hero-level" id="diag-meta-level">--</span>
-        </div>
-        <!-- TTS 播放器面板（嵌入 diag-hero 内部，随 sticky 固定） -->
-        <div id="tts-player-panel">
-          <div style="background:rgba(248,249,255,0.2);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:10px 14px">
-            <!-- 单行紧凑：播放 + 进度 + 语速 + 停止 -->
-            <div style="display:flex;align-items:center;gap:8px">
-              <button onclick="ttsPlayPause()" id="tts-play-btn"
-                style="width:32px;height:32px;border:none;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 2px 6px rgba(102,126,234,0.25)">
-                ▶
-              </button>
-              <div style="flex:1;display:flex;flex-direction:column;gap:1px">
-                <div id="tts-progress-bar" onclick="ttsSeek(event)"
-                  style="width:100%;height:4px;background:#e0e4ef;border-radius:2px;cursor:pointer;position:relative">
-                  <div id="tts-progress-fill" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:2px;width:0%;transition:width 0.3s"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.8)">
-                  <span id="tts-current-time">0:00</span>
-                  <span id="tts-total-time">0:00</span>
-                </div>
-              </div>
-              <!-- 语速切换 -->
-              <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
-                <button onclick="ttsSetRate(0.8)" class="tts-rate-btn" data-rate="0.8" style="padding:2px 5px;border:1px solid #e8ecf8;border-radius:6px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.2">0.8</button>
-                <button onclick="ttsSetRate(1.0)" class="tts-rate-btn active" data-rate="1.0" style="padding:2px 5px;border:1px solid #667eea;border-radius:6px;background:#667eea;font-size:10px;color:#fff;cursor:pointer;line-height:1.2">1.0</button>
-                <button onclick="ttsSetRate(1.2)" class="tts-rate-btn" data-rate="1.2" style="padding:2px 5px;border:1px solid #e8ecf8;border-radius:6px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.2">1.2</button>
-                <button onclick="ttsSetRate(1.5)" class="tts-rate-btn" data-rate="1.5" style="padding:2px 5px;border:1px solid #e8ecf8;border-radius:6px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.2">1.5</button>
-              </div>
-              <button onclick="ttsStop()" title="停止"
-                style="width:26px;height:26px;border:none;border-radius:50%;background:#f0f2f8;color:#888;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">⏹</button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -2659,6 +2596,37 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
           本系统生成的测评报告，仅供参考，不构成医疗诊断
         </div>
 
+        <!-- TTS 播放器控制条（默认隐藏，sticky 底部） -->
+        <div id="tts-player-panel" style="display:none;position:sticky;bottom:0;z-index:9;padding:8px 12px 12px">
+          <div style="background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid #e8ecf8;border-radius:14px;padding:10px 14px;box-shadow:0 -2px 12px rgba(102,126,234,0.12)">
+            <!-- 第一行：播放控制 + 进度 -->
+            <div style="display:flex;align-items:center;gap:10px">
+              <button onclick="ttsPlayPause()" id="tts-play-btn"
+                style="width:34px;height:34px;border:none;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 2px 8px rgba(102,126,234,0.3)">
+                ▶
+              </button>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+                <div id="tts-progress-bar" onclick="ttsSeek(event)"
+                  style="width:100%;height:4px;background:#e0e4ef;border-radius:2px;cursor:pointer;position:relative">
+                  <div id="tts-progress-fill" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:2px;width:0%;transition:width 0.3s"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa">
+                  <span id="tts-current-time">0:00</span>
+                  <span id="tts-total-time">0:00</span>
+                </div>
+              </div>
+              <!-- 语速切换（紧凑横排） -->
+              <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+                <button onclick="ttsSetRate(0.8)" class="tts-rate-btn" data-rate="0.8" style="padding:2px 7px;border:1px solid #e8ecf8;border-radius:8px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.3">0.8</button>
+                <button onclick="ttsSetRate(1.0)" class="tts-rate-btn active" data-rate="1.0" style="padding:2px 7px;border:1px solid #667eea;border-radius:8px;background:#667eea;font-size:10px;color:#fff;cursor:pointer;line-height:1.3">1.0</button>
+                <button onclick="ttsSetRate(1.2)" class="tts-rate-btn" data-rate="1.2" style="padding:2px 7px;border:1px solid #e8ecf8;border-radius:8px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.3">1.2</button>
+                <button onclick="ttsSetRate(1.5)" class="tts-rate-btn" data-rate="1.5" style="padding:2px 7px;border:1px solid #e8ecf8;border-radius:8px;background:#fff;font-size:10px;color:#aaa;cursor:pointer;line-height:1.3">1.5</button>
+              </div>
+              <button onclick="ttsStop()" title="停止"
+                style="width:28px;height:28px;border:none;border-radius:50%;background:#f0f2f8;color:#888;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">⏹</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6180,20 +6148,6 @@ function renderDiagReport(text) {
 // ====================================================
 // 导出诊断报告为图片（纯 Canvas 绘制）
 // ====================================================
-
-// 预加载小程序码图片（缓存复用）
-var _qrImgCache = null;
-async function _loadQrImage() {
-  if (_qrImgCache) return _qrImgCache;
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() { _qrImgCache = img; resolve(img); };
-    img.onerror = function() { resolve(null); };
-    img.src = 'assets/miniprogram-qr.png';
-  });
-}
-
 async function exportDiagAsImage() {
   _doExportDiagAsImage();
 }
@@ -6232,8 +6186,7 @@ async function _doExportDiagAsImage() {
     var sectionTitleH = 36;
     var bodyH = sectionPad + sectionTitleH + reportH + sectionPad;
     var disclaimerH = 36;
-    var footerH = 90; // 小程序码 + 引流文案区域
-    var totalH = PX + headerH + metaH + 12 + bodyH + 10 + disclaimerH + footerH + PX;
+    var totalH = PX + headerH + metaH + 12 + bodyH + 10 + disclaimerH + PX;
 
     // 3. 创建 Canvas
     var canvas = document.createElement('canvas');
@@ -6349,34 +6302,6 @@ async function _doExportDiagAsImage() {
       ctx.fillText(line.trim(), CW / 2, discY + i * 16);
     });
     ctx.textAlign = 'left';
-
-    // ---- 底部：小程序码 + 引流文案 ----
-    var qrSize = 80;
-    var ftY = discY + disclaimerH + 10;
-    var qrX = PX + 10;
-    var qrY = ftY + (footerH - qrSize) / 2;
-    try {
-      var qrImg = await _loadQrImage();
-      if (qrImg) {
-        ctx.save();
-        roundRect(ctx, qrX, qrY, qrSize, qrSize, 10);
-        ctx.clip();
-        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-        ctx.restore();
-      }
-    } catch(e) {}
-
-    // 引流文案（二维码右侧）— 不用 wrapDrawText（它会覆盖字体/颜色）
-    var txtX = qrX + qrSize + 14;
-    ctx.fillStyle = '#667eea';
-    ctx.font = 'bold 14px ' + FONT;
-    ctx.fillText('星蓝心镜', txtX, ftY + 30);
-    ctx.fillStyle = '#999';
-    ctx.font = '10px ' + FONT;
-    ctx.fillText('微信扫码 · 开启你的心理测评之旅', txtX, ftY + 48);
-    ctx.fillStyle = '#999';
-    ctx.font = '10px ' + FONT;
-    ctx.fillText('了解自我，关爱心灵，从一份专业测评开始', txtX, ftY + 68);
 
     // 4. 导出：显示图片预览（移动端长按保存至相册）
     var dataUrl = canvas.toDataURL('image/png');
@@ -6572,29 +6497,18 @@ function _splitTextToSegments(text) {
 }
 
 /**
- * 显示/隐藏更多操作菜单（从右向左滑出/折叠）
- */
-function toggleDiagMoreMenu(e) {
-  if (e) e.stopPropagation();
-  var menu = document.getElementById('diag-more-menu');
-  if (!menu) return;
-  menu.classList.toggle('open');
-}
-
-/**
- * 显示/隐藏 TTS 播放器面板（仅切换面板可见性，不触发合成）
+ * 显示/隐藏 TTS 播放器面板
  */
 function toggleTtsPlayer() {
   var panel = document.getElementById('tts-player-panel');
   if (!panel) return;
 
   _ttsPanelVisible = !_ttsPanelVisible;
-  panel.classList.toggle('open', _ttsPanelVisible);
+  panel.style.display = _ttsPanelVisible ? '' : 'none';
 
-  // 如果有已缓存的音频，恢复进度显示
-  if (_ttsPanelVisible && _ttsAudio && _ttsAudio.duration) {
-    document.getElementById('tts-total-time').textContent = _formatTime(_ttsAudio.duration);
-    _ttsUpdateProgress();
+  if (_ttsPanelVisible && !_ttsAudio) {
+    // 首次打开，开始生成音频
+    ttsStartSynthesis();
   }
 }
 
@@ -6669,7 +6583,7 @@ async function ttsStartSynthesis() {
 }
 
 /**
- * 从 base64 加载音频（不自动播放，等用户点▶）
+ * 从 base64 加载音频
  */
 function _ttsLoadFromBase64(base64) {
   if (_ttsAudio) {
@@ -6684,30 +6598,32 @@ function _ttsLoadFromBase64(base64) {
   _ttsAudio.addEventListener('timeupdate', _ttsUpdateProgress);
   _ttsAudio.addEventListener('ended', _ttsOnEnded);
   _updateTtsStatus('就绪');
-  // 加载完成后自动开始播放
+  // 自动开始播放
   ttsPlayPause(true);
 }
 
-/** 播放/暂停 — ▶ 时触发合成（如需），复用缓存 */
+/** 播放/暂停 */
 function ttsPlayPause(forcePlay) {
-  // 如果没有音频对象，启动合成（会命中缓存或发起新合成）
-  if (!_ttsAudio) {
-    ttsStartSynthesis();
-    return;
-  }
+  if (!_ttsAudio) return;
   if (forcePlay || !_ttsPlaying) {
     _ttsAudio.playbackRate = _ttsRate;
     _ttsAudio.play().catch(function(e) { console.warn('[TTS] play failed:', e); });
     _ttsPlaying = true;
     document.getElementById('tts-play-btn').textContent = '⏸';
+    var ttsLabel = document.getElementById('tts-btn-label');
+    if (ttsLabel) ttsLabel.textContent = '停止';
+    var ttsBtn = document.querySelector('[onclick="toggleTtsPlayer()"]');
+    if (ttsBtn) ttsBtn.style.opacity = '1';
   } else {
     _ttsAudio.pause();
     _ttsPlaying = false;
     document.getElementById('tts-play-btn').textContent = '▶';
+    if (ttsLabel) ttsLabel.textContent = '朗读';
+    if (ttsBtn) ttsBtn.style.opacity = '0.85';
   }
 }
 
-/** 停并重置进度 */
+/** 停止并收起 */
 function ttsStop() {
   if (_ttsAudio) {
     _ttsAudio.pause();
@@ -6715,8 +6631,11 @@ function ttsStop() {
   }
   _ttsPlaying = false;
   document.getElementById('tts-play-btn').textContent = '▶';
+  var _lbl = document.getElementById('tts-btn-label'); if (_lbl) _lbl.textContent = '朗读';
   document.getElementById('tts-progress-fill').style.width = '0%';
   document.getElementById('tts-current-time').textContent = '0:00';
+  var ttsBtn2 = document.querySelector('[onclick="toggleTtsPlayer()"]');
+  if (ttsBtn2) ttsBtn2.style.opacity = '0.85';
 }
 
 /** 进度条拖拽 */
@@ -6758,6 +6677,9 @@ function _ttsUpdateProgress() {
 function _ttsOnEnded() {
   _ttsPlaying = false;
   document.getElementById('tts-play-btn').textContent = '▶';
+  var _lbl2 = document.getElementById('tts-btn-label'); if (_lbl2) _lbl2.textContent = '朗读';
+  var ttsBtn3 = document.querySelector('[onclick="toggleTtsPlayer()"]');
+  if (ttsBtn3) ttsBtn3.style.opacity = '0.85';
 }
 
 /** 更新状态文字 */
@@ -7498,19 +7420,8 @@ function fbModalSubmit() {
  */
 function _fbUploadToCloud(fb) {
   if (typeof CloudAPI === 'undefined' || !CloudAPI || !CloudAPI.post) return;
-  // 构造服务端期望的字段映射：source→scene, text→comment
-  var payload = {
-    recordId: fb.recordId,
-    scene: fb.source || 'result',  // 服务端要求 scene 字段（result/diag）
-    stars: fb.stars,
-    tags: fb.tags || null,
-    comment: fb.text || '',         // 服务端兼容 text||comment
-    scaleId: fb.scaleId || '',
-    scaleName: fb.scaleName || '',
-    assessmentData: fb.assessmentData || null
-  };
-  CloudAPI.post('/api/feedback', payload).then(function() {
-    console.log('[FB] 评价已上报云端, scene:', payload.scene, ', stars:', payload.stars);
+  CloudAPI.post('/api/feedback', fb).then(function() {
+    console.log('[FB] 评价已上报云端');
   }).catch(function(e) {
     console.warn('[FB] 云端上报失败:', e.message);
   });
@@ -7968,15 +7879,15 @@ function toggleReportFavorite(event) {
 
 // 更新 AI 诊断页收藏按钮状态
 function updateDiagFavBtn() {
+  var btn = document.getElementById('diag-fav-btn');
   var icon = document.getElementById('diag-fav-icon');
-  if (!icon) return;
-  var item = icon.closest('.diag-menu-item');
+  if (!btn || !icon) return;
   if (isReportFavorited(lastHistoryRecordId)) {
     icon.textContent = '★';
-    if (item) item.style.background = 'rgba(102,126,234,0.1)';
+    icon.parentElement.classList.add('active');
   } else {
     icon.textContent = '☆';
-    if (item) item.style.background = '';
+    icon.parentElement.classList.remove('active');
   }
 }
 

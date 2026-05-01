@@ -560,9 +560,11 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
     .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 
     /* ===== 表格 ===== */
-    .table-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .table-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: collapse; }
     th { background: #FAFAFA; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-sec); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    thead tr th:first-child { border-radius: var(--radius) 0 0 0; }
+    thead tr th:last-child { border-radius: 0 var(--radius) 0 0; }
     td { padding: 14px 16px; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border-light, #F5F5F5); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #FAFBFF; }
@@ -2710,7 +2712,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
           <span class="icon">💬</span>
           <div class="info">
             <h3>用户评价管理</h3>
-            <p>查看和管理用户提交的测评评价反馈，数据来源为前端 localStorage（psy_feedback_list）</p>
+            <p>查看和管理用户提交的测评评价反馈，数据来源为服务端数据库</p>
           </div>
         </div>
 
@@ -4263,8 +4265,7 @@ function loadScales() {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
       const parsed = JSON.parse(data);
-      // 如果 localStorage 有数据但是空数组，或者 DEFAULT_SCALES 有更多量表，使用 DEFAULT_SCALES
-      if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(DEFAULT_SCALES) && DEFAULT_SCALES.length >= parsed.length) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         // 合并 DEFAULT_SCALES 中的 aiDiag 配置（localStorage 旧数据可能缺失）
         let needSave = false;
         parsed.forEach(function(item) {
@@ -4276,17 +4277,17 @@ function loadScales() {
             }
           }
         });
+        // 确保导入的新量表也有 npcConfig 等必要字段
+        parsed.forEach(function(item) {
+          if (!item.npcConfig) item.npcConfig = { counselorId: '', backgroundId: '' };
+          if (item.completedCount === undefined) item.completedCount = 0;
+          if (item.rating === undefined) item.rating = 5.0;
+        });
         if (needSave) {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
         }
         return parsed;
       }
-      // 数据不完整，使用 DEFAULT_SCALES 并保存
-      if (Array.isArray(DEFAULT_SCALES) && DEFAULT_SCALES.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SCALES));
-        return JSON.parse(JSON.stringify(DEFAULT_SCALES));
-      }
-      return parsed;
     }
   } catch(e) {}
   const defaults = Array.isArray(DEFAULT_SCALES) ? DEFAULT_SCALES : [];
@@ -4391,13 +4392,13 @@ function syncToFrontend() {
   const badge = document.getElementById('sync-badge');
   badge.className = 'sync-badge syncing';
   badge.innerHTML = '<span>🔄</span> 同步中...';
-  
+
   // 只同步上架的量表（status === 1）到前端
   const activeScales = scales.filter(s => s.status === 1 || s.status === undefined);
-  
+
   // 写入前端读取的同步键（psy_scales_synced）
   localStorage.setItem(SYNC_KEY, JSON.stringify(activeScales));
-  
+
   // 同时写入共享数据模块的标准键（psy_scales_data），确保 SharedData 模块也能读到最新数据
   try {
     // 如果 SharedData 模块已加载，直接调用它的保存函数
@@ -4411,26 +4412,79 @@ function syncToFrontend() {
     console.warn('同步到 psy_scales_data 时遇到警告：', e);
   }
 
-  // 云端模式下，同步到云端数据库
+  // 同步量表到 LNMP 静态 JSON（www.soarto.com.cn/api/scales-json）
+  // 无论云托管是否成功，都推送到 LNMP 作为可靠 fallback
+  var lnmpPromise = fetch('https://www.soarto.com.cn/api/scales-json', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scales: scales })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(result) {
+    if (result.code === 0) {
+      console.log('[Admin] 量表同步 LNMP 成功:', result.data.total, '个');
+      return { ok: true };
+    } else {
+      console.warn('[Admin] 量表同步 LNMP 失败:', result.message);
+      return { ok: false, msg: result.message };
+    }
+  })
+  .catch(function(err) {
+    console.warn('[Admin] 量表同步 LNMP 异常:', err.message);
+    return { ok: false, msg: err.message };
+  });
+
+  // 同步量表到云端（让微信小程序前端能拉到）
+  var cloudSyncPromise = null;
   if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.syncScales) {
-    window.CloudData.syncScales(scales).then(function() {
-      console.log('[Admin] 量表数据已同步到云端');
-      badge.className = 'sync-badge';
-      badge.innerHTML = '<span>✅</span> 已同步（云端+本地）';
-      showToast('量表数据已同步至云端数据库和前端！', 'success');
-    }).catch(function(err) {
-      console.warn('[Admin] 同步到云端失败:', err.message);
-      badge.className = 'sync-badge';
-      badge.innerHTML = '<span>⚠️</span> 仅本地同步';
-      showToast('云端同步失败，仅本地同步成功', 'warning');
-    });
+    // WebView 模式：通过 CloudData 模块同步
+    cloudSyncPromise = window.CloudData.syncScales(scales);
   } else {
-    setTimeout(() => {
-      badge.className = 'sync-badge';
-      badge.innerHTML = '<span>✅</span> 已同步前端';
-      showToast('量表数据已同步至前端展示页面！', 'success');
-    }, 800);
+    // 浏览器后台模式：直接 HTTP 调用云托管 API
+    var adminOpenid = localStorage.getItem('psy_admin_openid') || 'oyORU3XImvO_rYAWBUTMNm89-3v0';
+    var cloudBase = 'https://identity.soarto.com.cn';
+    cloudSyncPromise = fetch(cloudBase + '/api/scales', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scales: scales, openid: adminOpenid })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+      if (result.code === 0) {
+        console.log('[Admin] 量表同步云端成功:', result.saved, '/', result.total);
+        return { ok: true, saved: result.saved, total: result.total };
+      } else {
+        console.warn('[Admin] 量表同步云端失败:', result.message);
+        return { ok: false, msg: result.message };
+      }
+    })
+    .catch(function(err) {
+      console.warn('[Admin] 量表同步云端异常:', err.message);
+      return { ok: false, msg: err.message };
+    });
   }
+
+  // 两个同步都完成后更新 UI
+  Promise.all([cloudSyncPromise, lnmpPromise]).then(function(results) {
+    var cloudResult = results[0];
+    var lnmpResult = results[1];
+    badge.className = 'sync-badge';
+    var cloudOk = cloudResult && cloudResult.ok;
+    var lnmpOk = lnmpResult && lnmpResult.ok;
+    if (cloudOk && lnmpOk) {
+      badge.innerHTML = '<span>✅</span> 已同步（云端+LNMP+本地）';
+      showToast('量表数据已同步至云端、LNMP 和前端！', 'success');
+    } else if (lnmpOk) {
+      badge.innerHTML = '<span>✅</span> 已同步（LNMP+本地）';
+      showToast('LNMP+本地同步成功，云端同步失败', 'warning');
+    } else if (cloudOk) {
+      badge.innerHTML = '<span>✅</span> 已同步（云端+本地）';
+      showToast('云端+本地同步成功，LNMP 同步失败', 'warning');
+    } else {
+      badge.innerHTML = '<span>⚠️</span> 仅本地同步';
+      showToast('云端和 LNMP 同步均失败，仅本地同步成功', 'warning');
+    }
+  });
 }
 
 // ====================================================
@@ -6077,41 +6131,68 @@ function parseNewTemplateFormatCSV(lines, headers) {
   });
   
   // 解析数据行
+  let lastScale = null; // 跟踪上一个非空量表，用于后续行归属
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i]);
     if (values.length === 0 || values.every(v => !v.trim())) continue;
-    
+
     // 获取基础信息
     const scaleName = (values[headerMap['量表名称']] || '').trim();
     const scaleShortName = (values[headerMap['量表简称']] || '').trim();
     const scaleCode = (values[headerMap['量表编码']] || '').trim().toUpperCase();
-    
-    if (!scaleName || !scaleCode) {
-      console.warn(`第${i+1}行：缺少量表名称或编码，跳过`);
+
+    if (!scaleCode) {
+      // 当前行无量表编码，尝试归入上一个量表（多行题目格式）
+      if (lastScale) {
+        // 直接跳到题目解析
+      } else {
+        console.warn(`第${i+1}行：缺少量表编码且无前置量表，跳过`);
+        continue;
+      }
+    } else if (!scaleName) {
+      console.warn(`第${i+1}行：有量表编码但缺少名称，跳过`);
       continue;
     }
-    
-    // 获取或创建量表对象
-    let scale = scalesMap.get(scaleCode);
-    if (!scale) {
-      scale = {
-        name: scaleName,
-        shortName: scaleShortName || scaleName,
-        code: scaleCode,
-        category: 'unknown',
-        desc: '',
-        emoji: '📋',
-        color: '#4A90D9',
-        duration: 10,
-        applicablePeople: '',
-        instruction: '',
-        tags: [],
-        status: 1,
-        sortOrder: 0,
-        questionCount: 0,
-        questions: []
-      };
-      scalesMap.set(scaleCode, scale);
+
+    // 获取或创建量表对象（仅在 scaleCode 非空时）
+    let scale;
+    if (scaleCode) {
+      scale = scalesMap.get(scaleCode);
+      if (!scale) {
+        // 解析量表元信息（仅首次出现时）
+        const categoryVal = (values[headerMap['所属分类']] || '').trim() || 'unknown';
+        const descVal = (values[headerMap['量表描述']] || '').trim();
+        const emojiVal = (values[headerMap['图标']] || '').trim() || '📋';
+        const colorVal = (values[headerMap['主题色']] || '').trim() || '#4A90D9';
+        const durationVal = parseInt(values[headerMap['预计时长(分钟)']] || '10') || 10;
+        const peopleVal = (values[headerMap['适用人群']] || '').trim();
+        const instructionVal = (values[headerMap['指导语']] || '').trim();
+        const tagsVal = (values[headerMap['标签']] || '').trim();
+        const statusVal = parseInt(values[headerMap['状态']] || '1') || 1;
+        const sortVal = parseInt(values[headerMap['排序权重']] || '0') || 0;
+
+        scale = {
+          name: scaleName,
+          shortName: scaleShortName || scaleName,
+          code: scaleCode,
+          category: categoryVal,
+          desc: descVal,
+          emoji: emojiVal,
+          color: colorVal,
+          duration: durationVal,
+          applicablePeople: peopleVal,
+          instruction: instructionVal,
+          tags: tagsVal ? tagsVal.split(/[,，;；]/).map(t => t.trim()).filter(Boolean) : [],
+          status: statusVal,
+          sortOrder: sortVal,
+          questionCount: 0,
+          questions: []
+        };
+        scalesMap.set(scaleCode, scale);
+      }
+      lastScale = scale;
+    } else {
+      scale = lastScale; // 无编码行归入上一个量表
     }
     
     // 获取题目信息
@@ -8280,6 +8361,11 @@ function saveAiDiagConfig() {
   };
 
   SharedData.saveScalesData(scales);
+  // 同步更新全局 scales 变量，确保 syncToFrontend() 推送的数据包含 aiDiag
+  var globalIdx = window.scales ? window.scales.findIndex(function(s) { return s.id == currentAiDiagScaleId; }) : -1;
+  if (globalIdx >= 0 && window.scales) {
+    window.scales[globalIdx] = scale;
+  }
   SharedData.syncToFrontend();
   renderAiDiagScaleList();
   showToast('success', '测评详情配置已保存');
@@ -9738,9 +9824,12 @@ function manualSyncNpcImages() {
   var failed = 0;
   var processed = 0;
 
-  // 压缩图片（canvas 缩放 + JPEG 压缩）
-  var MAX_DIM = 800;   // 最大宽/高像素
-  var JPEG_Q = 0.6;    // JPEG 质量
+  // 压缩图片（canvas 缩放 + 按类型压缩）
+  // 立绘（ZXS-）：保留 PNG 透明通道，仅缩放尺寸
+  // 背景（CJ-）及其他：JPEG 压缩，体积更小
+  var MAX_DIM_NPC = 600;   // 立绘最大宽/高（手机屏幕够用）
+  var MAX_DIM_BG = 1200;   // 背景最大宽/高（需要铺满屏幕）
+  var JPEG_Q = 0.6;        // JPEG 质量
 
   function compressBase64(base64, imgId) {
     return new Promise(function(resolve, reject) {
@@ -9748,12 +9837,16 @@ function manualSyncNpcImages() {
       img.onload = function() {
         var w = img.naturalWidth;
         var h = img.naturalHeight;
-        var totalPx = w * h;
-        if (w <= MAX_DIM && h <= MAX_DIM && totalPx <= MAX_DIM * MAX_DIM && base64.length < 300 * 1024) {
+        var isPng = base64.indexOf('image/png') !== -1;
+        var isCounselor = imgId && imgId.indexOf('ZXS-') === 0;
+        var maxDim = isCounselor ? MAX_DIM_NPC : MAX_DIM_BG;
+
+        // 已足够小则不压缩
+        if (w <= maxDim && h <= maxDim && base64.length < 300 * 1024) {
           resolve(base64);
           return;
         }
-        var ratio = Math.min(MAX_DIM / w, MAX_DIM / h, 1);
+        var ratio = Math.min(maxDim / w, maxDim / h, 1);
         var nw = Math.round(w * ratio);
         var nh = Math.round(h * ratio);
         var canvas = document.createElement('canvas');
@@ -9761,8 +9854,11 @@ function manualSyncNpcImages() {
         canvas.height = nh;
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, nw, nh);
-        var compressed = canvas.toDataURL('image/jpeg', JPEG_Q);
-        console.log('[NPC-Sync] 压缩:', imgId || '?', Math.round(base64.length / 1024) + 'KB → ' + Math.round(compressed.length / 1024) + 'KB');
+        // PNG 立绘保留透明通道；背景及其他用 JPEG 压缩
+        var format = (isPng && isCounselor) ? 'image/png' : 'image/jpeg';
+        var quality = (format === 'image/jpeg') ? JPEG_Q : undefined;
+        var compressed = canvas.toDataURL(format, quality);
+        console.log('[NPC-Sync] 压缩:', imgId || '?', format, Math.round(base64.length / 1024) + 'KB → ' + Math.round(compressed.length / 1024) + 'KB');
         resolve(compressed);
       };
       img.onerror = function() { reject(new Error('图片加载失败')); };
@@ -13516,6 +13612,29 @@ var fbAdminPage = 1;
 var fbAdminPageSize = 20;
 var fbAdminStarFilter = '';
 var fbAdminCachedData = [];
+var _fbAdminCloudData = null;   // 服务端数据缓存
+var _fbAdminCloudLoading = false;
+
+// 从服务端拉取评价列表
+function _fetchFeedbackFromCloud() {
+  if (_fbAdminCloudLoading) return Promise.resolve(_fbAdminCloudData || []);
+  _fbAdminCloudLoading = true;
+  return fetch('/api/feedback')
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      _fbAdminCloudLoading = false;
+      if (json.code === 0 && Array.isArray(json.data)) {
+        _fbAdminCloudData = json.data;
+        return json.data;
+      }
+      return [];
+    })
+    .catch(function(e) {
+      console.warn('[FB Admin] 云端拉取失败:', e);
+      _fbAdminCloudLoading = false;
+      return [];
+    });
+}
 
 // ===== 测评结果收集配置 =====
 var FB_COLLECT_KEY = 'psy_fb_collect_config';
@@ -13604,68 +13723,65 @@ function fbAdminSetStarFilter(el) {
   renderFeedbackAdmin();
 }
 
-function renderFeedbackAdmin() {
-  // 读取数据
-  var allData = [];
-  try {
-    var raw = localStorage.getItem('psy_feedback_list');
-    if (raw) allData = JSON.parse(raw);
-  } catch (e) { console.error('加载评价数据失败:', e); }
+function renderFeedbackAdmin(forceRefresh) {
+  // 优先从服务端拉取，失败时 fallback 到 localStorage
+  if (forceRefresh) _fbAdminCloudData = null;
 
-  fbAdminCachedData = allData;
+  var renderWithData = function(allData) {
+    fbAdminCachedData = allData;
 
-  // ---- 统计卡 ----
-  var total = allData.length;
-  var avgStars = total > 0 ? (allData.reduce(function(s, f) { return s + (f.stars || 0); }, 0) / total) : 0;
-  var now = new Date();
-  var thisMonth = allData.filter(function(f) { var d = new Date(f.createdAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
-  var badCount = allData.filter(function(f) { return (f.stars || 0) <= 2; }).length;
-  var statsHtml = ''
-    + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val">' + total + '</div><div class="fb-admin-stat-label">总评价数</div></div>'
-    + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val">' + avgStars.toFixed(1) + '<span style="font-size:14px;color:#F5A623">⭐</span></div><div class="fb-admin-stat-label">平均星级</div></div>'
-    + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val" style="color:#52C41A">' + thisMonth + '</div><div class="fb-admin-stat-label">本月新增</div></div>'
-    + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val" style="color:#FF4D4F">' + badCount + '</div><div class="fb-admin-stat-label">差评(≤2星)</div>' + (badCount > 0 ? '<div class="fb-admin-stat-sub warn">需关注</div>' : '<div class="fb-admin-stat-sub up">👍 无差评</div>') + '</div>';
-  document.getElementById('fb-admin-stats').innerHTML = statsHtml;
+    // ---- 统计卡 ----
+    var total = allData.length;
+    var avgStars = total > 0 ? (allData.reduce(function(s, f) { return s + (f.stars || 0); }, 0) / total) : 0;
+    var now = new Date();
+    var thisMonth = allData.filter(function(f) { var d = new Date(f.createdAt); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
+    var badCount = allData.filter(function(f) { return (f.stars || 0) <= 2; }).length;
+    var statsHtml = ''
+      + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val">' + total + '</div><div class="fb-admin-stat-label">总评价数</div></div>'
+      + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val">' + avgStars.toFixed(1) + '<span style="font-size:14px;color:#F5A623">⭐</span></div><div class="fb-admin-stat-label">平均星级</div></div>'
+      + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val" style="color:#52C41A">' + thisMonth + '</div><div class="fb-admin-stat-label">本月新增</div></div>'
+      + '<div class="fb-admin-stat-card"><div class="fb-admin-stat-val" style="color:#FF4D4F">' + badCount + '</div><div class="fb-admin-stat-label">差评(≤2星)</div>' + (badCount > 0 ? '<div class="fb-admin-stat-sub warn">需关注</div>' : '<div class="fb-admin-stat-sub up">👍 无差评</div>') + '</div>';
+    document.getElementById('fb-admin-stats').innerHTML = statsHtml;
 
-  // ---- 星级分布图 ----
-  var starDist = [0, 0, 0, 0, 0];
-  allData.forEach(function(f) { if (f.stars >= 1 && f.stars <= 5) starDist[f.stars - 1]++; });
-  var maxBar = Math.max.apply(null, starDist) || 1;
-  var barHtml = '';
-  for (var i = 5; i >= 1; i--) {
-    var cnt = starDist[i - 1];
-    var h = Math.round((cnt / maxBar) * 100);
-    barHtml += '<div class="fb-admin-bar-item"><div class="fb-admin-bar-count">' + cnt + '</div><div class="fb-admin-bar" style="height:' + h + 'px"></div><div class="fb-admin-bar-label">' + i + '星</div></div>';
-  }
-  document.getElementById('fb-chart-stars').innerHTML = barHtml;
-  document.getElementById('fb-chart-avg').innerHTML = '平均 <b>' + avgStars.toFixed(1) + '</b> 星';
+    // ---- 星级分布图 ----
+    var starDist = [0, 0, 0, 0, 0];
+    allData.forEach(function(f) { if (f.stars >= 1 && f.stars <= 5) starDist[f.stars - 1]++; });
+    var maxBar = Math.max.apply(null, starDist) || 1;
+    var barHtml = '';
+    for (var i = 5; i >= 1; i--) {
+      var cnt = starDist[i - 1];
+      var h = Math.round((cnt / maxBar) * 100);
+      barHtml += '<div class="fb-admin-bar-item"><div class="fb-admin-bar-count">' + cnt + '</div><div class="fb-admin-bar" style="height:' + h + 'px"></div><div class="fb-admin-bar-label">' + i + '星</div></div>';
+    }
+    document.getElementById('fb-chart-stars').innerHTML = barHtml;
+    document.getElementById('fb-chart-avg').innerHTML = '平均 <b>' + avgStars.toFixed(1) + '</b> 星';
 
-  // ---- 热门标签 ----
-  var tagCount = {};
-  allData.forEach(function(f) {
-    if (f.tags && f.tags.length) f.tags.forEach(function(t) { tagCount[t] = (tagCount[t] || 0) + 1; });
-  });
-  var tagArr = Object.keys(tagCount).map(function(t) { return { tag: t, count: tagCount[t] }; }).sort(function(a, b) { return b.count - a.count; }).slice(0, 12);
-  document.getElementById('fb-chart-tags').innerHTML = tagArr.length > 0
-    ? tagArr.map(function(t) { return '<div class="fb-admin-tag-item">' + t.tag + '<span class="count">' + t.count + '</span></div>'; }).join('')
-    : '<div style="color:var(--text-muted);font-size:12px">暂无标签数据</div>';
+    // ---- 热门标签 ----
+    var tagCount = {};
+    allData.forEach(function(f) {
+      if (f.tags && f.tags.length) f.tags.forEach(function(t) { tagCount[t] = (tagCount[t] || 0) + 1; });
+    });
+    var tagArr = Object.keys(tagCount).map(function(t) { return { tag: t, count: tagCount[t] }; }).sort(function(a, b) { return b.count - a.count; }).slice(0, 12);
+    document.getElementById('fb-chart-tags').innerHTML = tagArr.length > 0
+      ? tagArr.map(function(t) { return '<div class="fb-admin-tag-item">' + t.tag + '<span class="count">' + t.count + '</span></div>'; }).join('')
+      : '<div style="color:var(--text-muted);font-size:12px">暂无标签数据</div>';
 
-  // ---- 量表筛选下拉 ----
-  var scaleSet = {};
-  allData.forEach(function(f) { if (f.scaleName) scaleSet[f.scaleName] = true; });
-  var scaleSelect = document.getElementById('fb-filter-scale');
-  var currentScaleVal = scaleSelect.value;
-  scaleSelect.innerHTML = '<option value="">全部量表</option>' + Object.keys(scaleSet).map(function(s) { return '<option value="' + s + '"' + (currentScaleVal === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    // ---- 量表筛选下拉 ----
+    var scaleSet = {};
+    allData.forEach(function(f) { if (f.scaleName) scaleSet[f.scaleName] = true; });
+    var scaleSelect = document.getElementById('fb-filter-scale');
+    var currentScaleVal = scaleSelect.value;
+    scaleSelect.innerHTML = '<option value="">全部量表</option>' + Object.keys(scaleSet).map(function(s) { return '<option value="' + s + '"' + (currentScaleVal === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
 
-  // ---- 筛选 + 排序 ----
-  var keyword = (document.getElementById('fb-search-input').value || '').trim().toLowerCase();
-  var scaleFilter = document.getElementById('fb-filter-scale').value;
+    // ---- 筛选 + 排序 ----
+    var keyword = (document.getElementById('fb-search-input').value || '').trim().toLowerCase();
+    var scaleFilter = document.getElementById('fb-filter-scale').value;
   var sourceFilter = document.getElementById('fb-filter-source').value;
   var sortMode = document.getElementById('fb-filter-sort').value;
 
   var filtered = allData.filter(function(f) {
     if (keyword) {
-      var haystack = (f.text || '') + ' ' + (f.nickname || '') + ' ' + (f.tags || []).join(' ');
+      var haystack = (f.text || f.comment || '') + ' ' + (f.nickname || '') + ' ' + (f.tags || []).join(' ');
       if (haystack.toLowerCase().indexOf(keyword) === -1) return false;
     }
     if (scaleFilter && f.scaleName !== scaleFilter) return false;
@@ -13708,7 +13824,7 @@ function renderFeedbackAdmin() {
         + '<td><span class="fb-admin-stars">' + fbAdminStarsStr(f.stars) + '</span><span class="fb-admin-stars-label">' + f.stars + '星</span></td>'
         + '<td><div class="fb-admin-scale-name">' + (f.scaleName || '-') + '</div>' + fbAdminSourceLabel(f.source) + (f.assessmentData ? '<span style="font-size:10px;color:#4A90D9;margin-left:4px">📊</span>' : '') + '</td>'
         + '<td>' + tagsStr + '</td>'
-        + '<td><div class="fb-admin-content">' + (f.text || '-').replace(/</g, '&lt;') + '</div></td>'
+        + '<td><div class="fb-admin-content">' + (f.text || f.comment || '-').replace(/</g, '&lt;') + '</div></td>'
         + '<td><div class="fb-admin-date">' + dateStr + '</div></td>'
         + '<td><span class="fb-admin-action" onclick="fbAdminShowDetail(' + f.id + ')">📋 详情</span><span class="fb-admin-action danger" onclick="fbAdminDelete(' + f.id + ')">🗑️ 删除</span></td>'
         + '</tr>';
@@ -13727,6 +13843,20 @@ function renderFeedbackAdmin() {
 
   // 初始化标签管理面板
   fbTagInitPanel();
+  }; // end renderWithData
+
+  // 异步从服务端拉取最新数据（不阻塞首次渲染）
+  _fetchFeedbackFromCloud().then(function(cloudData) {
+    if (cloudData.length > 0) {
+      renderWithData(cloudData);
+    } else {
+      // 服务端无数据，尝试 localStorage fallback
+      try {
+        var raw = localStorage.getItem('psy_feedback_list');
+        if (raw) renderWithData(JSON.parse(raw));
+      } catch (e) {}
+    }
+  });
 }
 
 function fbAdminGoPage(p) {
@@ -13788,7 +13918,7 @@ function fbAdminShowDetail(id) {
     + '<div class="fb-detail-row"><span class="fb-detail-label">来源</span><span class="fb-detail-val">' + fbAdminSourceLabel(f.source) + '</span></div>'
     + '<div class="fb-detail-row"><span class="fb-detail-label">时间</span><span class="fb-detail-val">' + dateStr + '</span></div>'
     + '<div class="fb-detail-row"><span class="fb-detail-label">标签</span><span class="fb-detail-val">' + ((f.tags || []).length > 0 ? f.tags.join('、') : '-') + '</span></div>'
-    + (f.text ? '<div class="fb-detail-text">' + f.text.replace(/</g, '&lt;') + '</div>' : '')
+    + ((f.text || f.comment) ? '<div class="fb-detail-text">' + (f.text || f.comment).replace(/</g, '&lt;') + '</div>' : '')
     + '</div>'
     + assessHtml
     + '<div class="fb-detail-actions"><button class="btn btn-danger" style="padding:6px 16px;font-size:12px" onclick="fbAdminDelete(' + f.id + ');document.getElementById(\'fb-detail-overlay\').remove()">🗑️ 删除评价</button></div>'

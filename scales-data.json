@@ -5,8 +5,8 @@
     "code": "PPCRS",
     "category": "bond",
     "categoryName": "家庭与人际关系量表",
-    "emoji": "📋",
-    "color": "#4a90d9",
+    "emoji": "👨‍👩‍👧",
+    "color": "#e2e52e",
     "duration": 7,
     "questionTime": 30,
     "questionCount": 14,
@@ -21,8 +21,8 @@
     "sortOrder": 1,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777403525025",
-      "backgroundId": "bg_new_1777404492569"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -405,13 +405,177 @@
       }
     ],
     "id": 1775965642069,
-    "completedCount": 6,
+    "completedCount": 5,
     "aiDiag": {
       "enabled": true,
       "prompt": "你是一位资深临床心理评估咨询师，专注于家庭系统与重大精神障碍康复支持领域。你正在为一位来访者解读其完成的《{scaleName}》（PPCRS）测评结果。请严格依据以下结构生成专业、温暖、具临床实用性的反馈报告，所有分析必须基于量表原始计分规则与维度定义，不得主观臆断或添加未授权解释：\n\n【综合评估】  \n以整体视角简明概括该家庭父母共同教养关系的质量水平：指出{score}分所对应的{level}（低/中/高）等级，并结合中国家庭现实背景（如患者与家属同住率高、日常互动频密、家庭功能对康复影响显著等）说明该结果的实际意义——例如：“在您这样长期共同生活的家庭中，这一水平提示教养协作模式可能对患者的情绪稳定性、治疗依从性及家庭压力缓冲能力产生基础性影响”。\n\n【维度分析】  \n逐项解析{dimensions}中两个核心维度：  \n• **支持性（dim_支持性）**：聚焦Q1、Q3、Q7、Q9、Q12、Q13、Q14所测量的“主动协同”行为（如共商教养策略、情感支持配偶、一致肯定孩子、分担育儿责任等）。若得分偏低，需具体指出“支持性行为出现频率不足”可能表现为：一方常独自应对教养冲突、回避讨论教育分歧、较少给予伴侣正向反馈；若偏高，则强调“稳定的支持联盟”如何为患者营造安全可预测的家庭氛围。  \n• **非支持性（dim_非支持性）**：聚焦Q2、Q4、Q5、Q6、Q8、Q10、Q11所反映的“协作阻碍”行为（如公开批评对方教养方式、在孩子面前否定配偶权威、拒绝沟通教养分歧、将育儿责任完全推诿等）。若得分偏高，需温和点明“非支持性互动可能被孩子或患者敏感捕捉，加剧其不安全感或病耻感”；若偏低，则肯定“双方在避免破坏性互动上的共识与克制”。  \n⚠️ 注意：两个维度需对比解读（如“支持性中等但非支持性偏高”，提示“表面合作下存在隐性张力”；“双维度均低”则反映“教养互动稀疏，缺乏深度协作亦无明显冲突”）。\n\n【改善建议】  \n紧扣维度特征提供可操作的家庭微干预策略：  \n• 若**支持性不足**：推荐“每日10分钟教养同步时间”（如晚饭后共同回顾孩子当日1个积极表现并互相确认）、“支持性语言打卡”（本周每人每天至少1次用“我注意到你……，这让我觉得……”句式肯定对方教养行为）；  \n• 若**非支持性突出**：建议启动“教养分歧暂停协议”（当意见不合时，约定先说“我们稍后再谈这个”，24小时内由第三方（如社工/治疗师）协助结构化讨论）、“孩子面前一致性话术”（提前约定3句中性回应模板，如“这是爸爸妈妈一起决定的”）；  \n• 若**TOT总分处于临界区间（2.33–3.66）**：强调此阶段改变效能最高，推荐优先开展1次家庭联合访谈，聚焦识别1个高频触发非支持行为的具体情境（如作业辅导、服药监督），进行角色扮演重构。\n\n【注意事项】  \n• 本报告基于{scaleName}标准化工具生成，结果反映当前家庭教养互动的感知状态，具有时效性与情境性，不等同于人格评价或病理诊断；  \n• 所有解读均指向“关系行为模式”，而非归咎个体——教养协作质量受文化期待、代际经验、照护负荷、疾病症状波动等多重因素影响；  \n• 本结果**仅供参考，不构成任何医疗诊断、治疗方案或法律意见**；如需制定个性化家庭干预计划，请务必在精神科医生与家庭治疗师共同参与下进行；  \n• 您愿意完成这份量表，本身已是为家人康复迈出的重要一步——家庭关系的韧性，往往始于一次被看见、被理解的尝试。",
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "supportive",
+          "label": "支持性",
+          "formula": "SUM",
+          "items": "1,3,7,9,12,13,14",
+          "condition": null,
+          "interpretation": [
+            {
+              "min": 7,
+              "max": 15.99,
+              "level": "normal",
+              "label": "低",
+              "color": "#43a047",
+              "text": "感知到的支持性共同教养行为较少"
+            },
+            {
+              "min": 16,
+              "max": 25.99,
+              "level": "mild",
+              "label": "中等",
+              "color": "#26a69a",
+              "text": "感知到的支持性共同教养行为处于中等水平"
+            },
+            {
+              "min": 26,
+              "max": 35,
+              "level": "severe",
+              "label": "高",
+              "color": "#7e57c2",
+              "text": "感知到的支持性共同教养行为较多"
+            }
+          ]
+        },
+        {
+          "key": "unsupportive",
+          "label": "非支持性",
+          "formula": "SUM",
+          "items": "2,4,5,6,8,10,11",
+          "condition": null,
+          "interpretation": [
+            {
+              "min": 7,
+              "max": 15.99,
+              "level": "normal",
+              "label": "低",
+              "color": "#43a047",
+              "text": "感知到的非支持性共同教养行为较少"
+            },
+            {
+              "min": 16,
+              "max": 25.99,
+              "level": "mild",
+              "label": "中等",
+              "color": "#26a69a",
+              "text": "感知到的非支持性共同教养行为处于中等水平"
+            },
+            {
+              "min": 26,
+              "max": 35,
+              "level": "severe",
+              "label": "高",
+              "color": "#7e57c2",
+              "text": "感知到的非支持性共同教养行为较多"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "coparenting_total",
+          "label": "共同教养总分",
+          "formula": "AVG",
+          "items": "ALL",
+          "condition": null,
+          "transform": null
+        }
+      ],
+      "interpretation": [
+        {
+          "metric": "supportive",
+          "min": 7,
+          "max": 15.99,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "感知到的支持性共同教养行为较少"
+        },
+        {
+          "metric": "supportive",
+          "min": 16,
+          "max": 25.99,
+          "level": "mild",
+          "label": "中等",
+          "color": "#26a69a",
+          "text": "感知到的支持性共同教养行为处于中等水平"
+        },
+        {
+          "metric": "supportive",
+          "min": 26,
+          "max": 35,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "感知到的支持性共同教养行为较多"
+        },
+        {
+          "metric": "unsupportive",
+          "min": 7,
+          "max": 15.99,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "感知到的非支持性共同教养行为较少"
+        },
+        {
+          "metric": "unsupportive",
+          "min": 16,
+          "max": 25.99,
+          "level": "mild",
+          "label": "中等",
+          "color": "#26a69a",
+          "text": "感知到的非支持性共同教养行为处于中等水平"
+        },
+        {
+          "metric": "unsupportive",
+          "min": 26,
+          "max": 35,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "感知到的非支持性共同教养行为较多"
+        },
+        {
+          "metric": "coparenting_total",
+          "min": 1,
+          "max": 2.99,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "共同教养关系质量较低"
+        },
+        {
+          "metric": "coparenting_total",
+          "min": 3,
+          "max": 3.99,
+          "level": "mild",
+          "label": "中等",
+          "color": "#26a69a",
+          "text": "共同教养关系质量处于中等水平"
+        },
+        {
+          "metric": "coparenting_total",
+          "min": 4,
+          "max": 5,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "共同教养关系质量较高"
+        }
+      ],
+      "screening": null
     }
   },
   {
@@ -420,7 +584,7 @@
     "code": "FACES II-CV",
     "category": "bond",
     "categoryName": "家庭与人际关系量表",
-    "emoji": "📋",
+    "emoji": "💞",
     "color": "#d97c4a",
     "duration": 15,
     "questionTime": 30,
@@ -438,8 +602,8 @@
     "sortOrder": 1,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777403822592",
-      "backgroundId": "bg_new_1777404508301"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -1261,6 +1425,253 @@
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "dim_亲密度",
+          "label": "亲密度",
+          "formula": "SUM",
+          "items": "1,5,7,11,13,15,17,21,23,25,27,30",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 55.9,
+              "level": "normal",
+              "label": "低",
+              "color": "#43a047",
+              "text": "家庭亲密度处于松散水平"
+            },
+            {
+              "min": 55.9,
+              "max": 63.9,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1e88e5",
+              "text": "家庭亲密度处于自由水平"
+            },
+            {
+              "min": 63.9,
+              "max": 71.9,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1e88e5",
+              "text": "家庭亲密度处于亲密水平"
+            },
+            {
+              "min": 71.9,
+              "level": "severe",
+              "label": "高",
+              "color": "#7e57c2",
+              "text": "家庭亲密度处于缠结水平"
+            }
+          ]
+        },
+        {
+          "key": "dim_适应性",
+          "label": "适应性",
+          "formula": "SUM",
+          "items": "2,4,6,8,10,12,14,16,18,20,22,26",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 44.7,
+              "level": "normal",
+              "label": "低",
+              "color": "#43a047",
+              "text": "家庭适应性处于僵硬水平"
+            },
+            {
+              "min": 44.7,
+              "max": 50.9,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1e88e5",
+              "text": "家庭适应性处于有规律水平"
+            },
+            {
+              "min": 50.9,
+              "max": 57.1,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1e88e5",
+              "text": "家庭适应性处于灵活水平"
+            },
+            {
+              "min": 57.1,
+              "level": "severe",
+              "label": "高",
+              "color": "#7e57c2",
+              "text": "家庭适应性处于无规律水平"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "metric_R_COH",
+          "label": "R_COH",
+          "formula": "SUM",
+          "items": "1,5,7,11,13,15,17,21,23,25,27,30",
+          "condition": null,
+          "transform": null
+        },
+        {
+          "key": "metric_I_COH",
+          "label": "I_COH",
+          "formula": "SUM",
+          "items": "1,5,7,11,13,15,17,21,23,25,27,30",
+          "condition": null,
+          "transform": null
+        },
+        {
+          "key": "metric_R_ADA",
+          "label": "R_ADA",
+          "formula": "SUM",
+          "items": "2,4,6,8,10,12,14,16,18,20,22,26",
+          "condition": null,
+          "transform": null
+        },
+        {
+          "key": "metric_I_ADA",
+          "label": "I_ADA",
+          "formula": "SUM",
+          "items": "2,4,6,8,10,12,14,16,18,20,22,26",
+          "condition": null,
+          "transform": null
+        },
+        {
+          "key": "metric_DIS_COH",
+          "label": "DIS_COH",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "ABS(R_COH-I_COH)"
+        },
+        {
+          "key": "metric_DIS_ADA",
+          "label": "DIS_ADA",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "ABS(R_ADA-I_ADA)"
+        }
+      ],
+      "interpretation": [
+        {
+          "max": 55.9,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "家庭亲密度处于松散水平"
+        },
+        {
+          "min": 55.9,
+          "max": 63.9,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "家庭亲密度处于自由水平"
+        },
+        {
+          "min": 63.9,
+          "max": 71.9,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "家庭亲密度处于亲密水平"
+        },
+        {
+          "min": 71.9,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "家庭亲密度处于缠结水平"
+        },
+        {
+          "max": 44.7,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "家庭适应性处于僵硬水平"
+        },
+        {
+          "min": 44.7,
+          "max": 50.9,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "家庭适应性处于有规律水平"
+        },
+        {
+          "min": 50.9,
+          "max": 57.1,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "家庭适应性处于灵活水平"
+        },
+        {
+          "min": 57.1,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "家庭适应性处于无规律水平"
+        },
+        {
+          "metric": "metric_DIS_COH",
+          "max": 5,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "对家庭亲密度满意度较高"
+        },
+        {
+          "metric": "metric_DIS_COH",
+          "min": 5,
+          "max": 12,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "对家庭亲密度满意度中等"
+        },
+        {
+          "metric": "metric_DIS_COH",
+          "min": 12,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "对家庭亲密度满意度较低"
+        },
+        {
+          "metric": "metric_DIS_ADA",
+          "max": 5,
+          "level": "normal",
+          "label": "低",
+          "color": "#43a047",
+          "text": "对家庭适应性满意度较高"
+        },
+        {
+          "metric": "metric_DIS_ADA",
+          "min": 5,
+          "max": 12,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1e88e5",
+          "text": "对家庭适应性满意度中等"
+        },
+        {
+          "metric": "metric_DIS_ADA",
+          "min": 12,
+          "level": "severe",
+          "label": "高",
+          "color": "#7e57c2",
+          "text": "对家庭适应性满意度较低"
+        }
+      ],
+      "screening": null
     }
   },
   {
@@ -1269,7 +1680,7 @@
     "code": "CBF-PI-B-2024",
     "category": "personality",
     "categoryName": "人格特质评估量表",
-    "emoji": "🧑",
+    "emoji": "📜",
     "color": "#d6582e",
     "duration": 20,
     "questionTime": 30,
@@ -1290,8 +1701,8 @@
     "sortOrder": 0,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777403928274",
-      "backgroundId": "bg_new_1777404516079"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -2583,6 +2994,294 @@
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "neuroticism",
+          "label": "神经质",
+          "formula": "SUM",
+          "items": "1,6,11,16,21,26,31,36",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 24,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "情绪稳定、心态平和，抗压能力强，极少焦虑/低落"
+            },
+            {
+              "min": 25,
+              "max": 39,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "情绪基本平稳，偶尔有焦虑、敏感，可自我调节"
+            },
+            {
+              "min": 40,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "情绪易波动，敏感多虑，常感焦虑、低落、压力大"
+            }
+          ]
+        },
+        {
+          "key": "extraversion",
+          "label": "外向性",
+          "formula": "SUM",
+          "items": "5,10,15,20,25,30,35,40",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 24,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "内向安静，偏爱独处，社交谨慎，不喜热闹场合"
+            },
+            {
+              "min": 25,
+              "max": 39,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "动静皆宜，社交适度，既不孤僻也不过分活跃"
+            },
+            {
+              "min": 40,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "开朗健谈，热衷社交，自信主动，喜欢成为焦点"
+            }
+          ]
+        },
+        {
+          "key": "conscientiousness",
+          "label": "尽责性",
+          "formula": "SUM",
+          "items": "2,7,12,17,22,27,32,37",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 24,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "随性散漫，做事拖延，缺乏规划，责任心较弱"
+            },
+            {
+              "min": 25,
+              "max": 39,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "做事踏实，有基本规划，能完成分内任务"
+            },
+            {
+              "min": 40,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "自律严谨，目标明确，做事有条理，责任心极强"
+            }
+          ]
+        },
+        {
+          "key": "agreeableness",
+          "label": "宜人性",
+          "formula": "SUM",
+          "items": "3,8,13,18,23,28,33,38",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 24,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "理性自我，较少共情，待人直接，忽视他人感受"
+            },
+            {
+              "min": 25,
+              "max": 39,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "友善温和，能体谅他人，人际关系和谐"
+            },
+            {
+              "min": 40,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "同理心强，乐于助人，真诚宽容，重视他人感受"
+            }
+          ]
+        },
+        {
+          "key": "openness",
+          "label": "开放性",
+          "formula": "SUM",
+          "items": "4,9,14,19,24,29,34,39",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 24,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "传统保守，偏爱熟悉事物，不喜冒险与新观念"
+            },
+            {
+              "min": 25,
+              "max": 39,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "乐于接受新事物，有一定好奇心与想象力"
+            },
+            {
+              "min": 40,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "好奇心强，想象力丰富，勇于冒险，热衷新观念/新事物"
+            }
+          ]
+        }
+      ],
+      "metrics": [],
+      "interpretation": [
+        {
+          "metric": "neuroticism",
+          "max": 24,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "情绪稳定、心态平和，抗压能力强，极少焦虑/低落"
+        },
+        {
+          "metric": "neuroticism",
+          "min": 25,
+          "max": 39,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "情绪基本平稳，偶尔有焦虑、敏感，可自我调节"
+        },
+        {
+          "metric": "neuroticism",
+          "min": 40,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "情绪易波动，敏感多虑，常感焦虑、低落、压力大"
+        },
+        {
+          "metric": "extraversion",
+          "max": 24,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "内向安静，偏爱独处，社交谨慎，不喜热闹场合"
+        },
+        {
+          "metric": "extraversion",
+          "min": 25,
+          "max": 39,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "动静皆宜，社交适度，既不孤僻也不过分活跃"
+        },
+        {
+          "metric": "extraversion",
+          "min": 40,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "开朗健谈，热衷社交，自信主动，喜欢成为焦点"
+        },
+        {
+          "metric": "conscientiousness",
+          "max": 24,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "随性散漫，做事拖延，缺乏规划，责任心较弱"
+        },
+        {
+          "metric": "conscientiousness",
+          "min": 25,
+          "max": 39,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "做事踏实，有基本规划，能完成分内任务"
+        },
+        {
+          "metric": "conscientiousness",
+          "min": 40,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "自律严谨，目标明确，做事有条理，责任心极强"
+        },
+        {
+          "metric": "agreeableness",
+          "max": 24,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "理性自我，较少共情，待人直接，忽视他人感受"
+        },
+        {
+          "metric": "agreeableness",
+          "min": 25,
+          "max": 39,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "友善温和，能体谅他人，人际关系和谐"
+        },
+        {
+          "metric": "agreeableness",
+          "min": 40,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "同理心强，乐于助人，真诚宽容，重视他人感受"
+        },
+        {
+          "metric": "openness",
+          "max": 24,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "传统保守，偏爱熟悉事物，不喜冒险与新观念"
+        },
+        {
+          "metric": "openness",
+          "min": 25,
+          "max": 39,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "乐于接受新事物，有一定好奇心与想象力"
+        },
+        {
+          "metric": "openness",
+          "min": 40,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "好奇心强，想象力丰富，勇于冒险，热衷新观念/新事物"
+        }
+      ],
+      "screening": null
     }
   },
   {
@@ -2591,7 +3290,7 @@
     "code": "SCL-90",
     "category": "spirit",
     "categoryName": "心理健康与精神病态量表",
-    "emoji": "📋",
+    "emoji": "🫁",
     "color": "#4a90d9",
     "duration": 45,
     "questionTime": 30,
@@ -2612,8 +3311,8 @@
     "sortOrder": 0,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777404035456",
-      "backgroundId": "bg_new_1777404526324"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -5145,6 +5844,558 @@
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "somatization",
+          "label": "躯体化",
+          "formula": "AVG",
+          "items": "1,4,12,27,40,42,48,49,52,53,56,58",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "obsessive_compulsive",
+          "label": "强迫症状",
+          "formula": "AVG",
+          "items": "3,9,10,28,38,45,46,51,55,65",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "interpersonal_sensitivity",
+          "label": "人际关系敏感",
+          "formula": "AVG",
+          "items": "6,21,34,36,37,41,61,69,73",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "depression",
+          "label": "抑郁",
+          "formula": "AVG",
+          "items": "5,14,15,20,22,26,29,30,31,32,54,71,79",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "anxiety",
+          "label": "焦虑",
+          "formula": "AVG",
+          "items": "2,17,23,33,39,57,72,78,80,86",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "hostility",
+          "label": "敌对",
+          "formula": "AVG",
+          "items": "11,24,63,67,74,81",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "phobia",
+          "label": "恐怖",
+          "formula": "AVG",
+          "items": "13,25,47,50,70,75,82",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "paranoid",
+          "label": "偏执",
+          "formula": "AVG",
+          "items": "8,18,43,68,76,83",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "psychoticism",
+          "label": "精神病性",
+          "formula": "AVG",
+          "items": "7,16,35,62,77,84,85,87,88,90",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        },
+        {
+          "key": "other",
+          "label": "其他",
+          "formula": "AVG",
+          "items": "19,44,59,60,64,66,89",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 2,
+              "level": "normal",
+              "label": "正常",
+              "color": "#43a047",
+              "text": "无该因子相关症状"
+            },
+            {
+              "min": 2,
+              "level": "mild",
+              "label": "异常",
+              "color": "#e53935",
+              "text": "存在该因子相关症状"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "metric_total_score",
+          "label": "total_score",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "somatization + obsessive_compulsive + interpersonal_sensitivity + depression + anxiety + hostility + phobia + paranoid + psychoticism + other"
+        },
+        {
+          "key": "metric_global_mean_score",
+          "label": "global_mean_score",
+          "formula": "AVG",
+          "items": "ALL",
+          "condition": null,
+          "transform": null
+        },
+        {
+          "key": "metric_positive_item_count",
+          "label": "positive_item_count",
+          "formula": "COUNT_IF",
+          "items": "ALL",
+          "condition": {
+            ">=": 2
+          },
+          "transform": null
+        },
+        {
+          "key": "metric_negative_item_count",
+          "label": "negative_item_count",
+          "formula": "COUNT_IF",
+          "items": "ALL",
+          "condition": {
+            "==": 1
+          },
+          "transform": null
+        },
+        {
+          "key": "metric_positive_symptom_avg",
+          "label": "positive_symptom_avg",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "(total_score-negative_item_count)/positive_item_count"
+        }
+      ],
+      "interpretation": [
+        {
+          "metric": "metric_total_score",
+          "min": 90,
+          "max": 160,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无明显心理不适症状"
+        },
+        {
+          "metric": "metric_total_score",
+          "min": 160,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在明显心理不适症状"
+        },
+        {
+          "metric": "metric_positive_item_count",
+          "max": 43,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "有症状项目数处于正常范围"
+        },
+        {
+          "metric": "metric_positive_item_count",
+          "min": 43,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "有症状项目数超出正常范围"
+        },
+        {
+          "metric": "somatization",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "somatization",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "obsessive_compulsive",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "obsessive_compulsive",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "interpersonal_sensitivity",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "interpersonal_sensitivity",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "depression",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "depression",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "anxiety",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "anxiety",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "hostility",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "hostility",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "psychoticism",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "psychoticism",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        },
+        {
+          "metric": "other",
+          "max": 2,
+          "level": "normal",
+          "label": "正常",
+          "color": "#43a047",
+          "text": "无该因子相关症状"
+        },
+        {
+          "metric": "other",
+          "min": 2,
+          "level": "mild",
+          "label": "异常",
+          "color": "#e53935",
+          "text": "存在该因子相关症状"
+        }
+      ],
+      "screening": {
+        "logic": "OR",
+        "conditions": [
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 160,
+            "label": "总分异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 43,
+            "label": "阳性项目数异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "躯体化因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "强迫症状因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "人际关系敏感因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "抑郁因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "焦虑因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "敌对因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "恐怖因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "偏执因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "精神病性因子异常"
+          },
+          {
+            "metric": "somatization",
+            "op": ">",
+            "value": 2,
+            "label": "其他因子异常"
+          }
+        ],
+        "positiveLabel": "筛查阳性",
+        "negativeLabel": "筛查阴性"
+      }
     }
   },
   {
@@ -5153,7 +6404,7 @@
     "code": "CPTI",
     "category": "spirit",
     "categoryName": "心理健康与精神病态量表",
-    "emoji": "📋",
+    "emoji": "🎒",
     "color": "#4a90d9",
     "duration": 14,
     "questionTime": 30,
@@ -5174,8 +6425,8 @@
     "sortOrder": 0,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777404891044",
-      "backgroundId": "bg_new_1777404535630"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -5971,6 +7222,214 @@
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "dim_浮夸欺骗",
+          "label": "浮夸欺骗",
+          "formula": "SUM",
+          "items": "5,7,9,15,18,21,24,26",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 10.74,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "无自我中心/欺骗倾向"
+            },
+            {
+              "min": 10.75,
+              "max": 18.92,
+              "level": "mild",
+              "label": "中等水平",
+              "color": "#fb8c00",
+              "text": "存在一定程度的自我夸大或不诚实表现"
+            },
+            {
+              "min": 18.93,
+              "level": "moderate",
+              "label": "高水平",
+              "color": "#e53935",
+              "text": "惯于撒谎、高傲自大，需关注行为引导"
+            }
+          ]
+        },
+        {
+          "key": "dim_冷酷无情",
+          "label": "冷酷无情",
+          "formula": "SUM",
+          "items": "2,4,8,11,13,17,20,22,25,27",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 14.3,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "共情能力正常，有愧疚感和同情心"
+            },
+            {
+              "min": 14.31,
+              "max": 24.84,
+              "level": "mild",
+              "label": "中等水平",
+              "color": "#fb8c00",
+              "text": "偶有冷漠、缺乏情绪反应或共情不足"
+            },
+            {
+              "min": 24.85,
+              "level": "moderate",
+              "label": "高水平",
+              "color": "#e53935",
+              "text": "冷漠、无愧疚、缺乏同情，需专业评估与干预"
+            }
+          ]
+        },
+        {
+          "key": "dim_冲动刺激追寻",
+          "label": "冲动刺激追寻",
+          "formula": "SUM",
+          "items": "1,3,6,10,12,14,16,19,23,28",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 15.44,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "自控良好，能延迟满足，不易厌烦"
+            },
+            {
+              "min": 15.45,
+              "max": 25.14,
+              "level": "mild",
+              "label": "中等水平",
+              "color": "#fb8c00",
+              "text": "偶有冲动、注意力易分散、寻求新奇刺激"
+            },
+            {
+              "min": 25.15,
+              "level": "moderate",
+              "label": "高水平",
+              "color": "#e53935",
+              "text": "高度冲动、难以等待、易厌烦、过度追求刺激"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "total_score",
+          "label": "",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "dim_浮夸欺骗 + dim_冷酷无情 + dim_冲动刺激追寻"
+        }
+      ],
+      "interpretation": [
+        {
+          "metric": "dim_浮夸欺骗",
+          "max": 10.74,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "无自我中心/欺骗倾向"
+        },
+        {
+          "metric": "dim_浮夸欺骗",
+          "min": 10.75,
+          "max": 18.92,
+          "level": "mild",
+          "label": "中等水平",
+          "color": "#fb8c00",
+          "text": "存在一定程度的自我夸大或不诚实表现"
+        },
+        {
+          "metric": "dim_浮夸欺骗",
+          "min": 18.93,
+          "level": "moderate",
+          "label": "高水平",
+          "color": "#e53935",
+          "text": "惯于撒谎、高傲自大，需关注行为引导"
+        },
+        {
+          "metric": "dim_冷酷无情",
+          "max": 14.3,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "共情能力正常，有愧疚感和同情心"
+        },
+        {
+          "metric": "dim_冷酷无情",
+          "min": 14.31,
+          "max": 24.84,
+          "level": "mild",
+          "label": "中等水平",
+          "color": "#fb8c00",
+          "text": "偶有冷漠、缺乏情绪反应或共情不足"
+        },
+        {
+          "metric": "dim_冷酷无情",
+          "min": 24.85,
+          "level": "moderate",
+          "label": "高水平",
+          "color": "#e53935",
+          "text": "冷漠、无愧疚、缺乏同情，需专业评估与干预"
+        },
+        {
+          "metric": "dim_冲动刺激追寻",
+          "max": 15.44,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "自控良好，能延迟满足，不易厌烦"
+        },
+        {
+          "metric": "dim_冲动刺激追寻",
+          "min": 15.45,
+          "max": 25.14,
+          "level": "mild",
+          "label": "中等水平",
+          "color": "#fb8c00",
+          "text": "偶有冲动、注意力易分散、寻求新奇刺激"
+        },
+        {
+          "metric": "dim_冲动刺激追寻",
+          "min": 25.15,
+          "level": "moderate",
+          "label": "高水平",
+          "color": "#e53935",
+          "text": "高度冲动、难以等待、易厌烦、过度追求刺激"
+        },
+        {
+          "max": 41.62,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "问题特质轻微，心理健康状况良好"
+        },
+        {
+          "min": 41.63,
+          "max": 67.76,
+          "level": "mild",
+          "label": "中等水平",
+          "color": "#fb8c00",
+          "text": "存在一定问题特质倾向，建议观察与教育引导"
+        },
+        {
+          "min": 67.77,
+          "level": "moderate",
+          "label": "高水平",
+          "color": "#e53935",
+          "text": "问题特质显著，需重点关注、家庭-学校协同干预"
+        }
+      ],
+      "screening": null
     }
   },
   {
@@ -5979,7 +7438,7 @@
     "code": "RPQ_SC",
     "category": "spirit",
     "categoryName": "心理健康与精神病态量表",
-    "emoji": "📋",
+    "emoji": "🎯",
     "color": "#4a90d9",
     "duration": 6,
     "questionTime": 30,
@@ -6001,8 +7460,8 @@
     "sortOrder": 0,
     "rating": 5,
     "npcConfig": {
-      "counselorId": "counselor_new_1777407113128",
-      "backgroundId": "bg_new_1777404555385"
+      "counselorId": "",
+      "backgroundId": ""
     },
     "questions": [
       {
@@ -6264,6 +7723,2087 @@
     "aiDiag": {
       "enabled": true,
       "prompt": "你是一位经验丰富的心理评估咨询师，正在为来访者解读《{scaleName}》（RPQ_SC）的测评结果。请基于以下输入数据，严格遵循结构化输出要求生成专业、温暖、非病理化的评估反馈：\n\n【输入数据】  \n- 总分：{score}（{level}）  \n- 维度得分：{dimensions}（含反应性攻击与主动性攻击的具体分值及对应水平）  \n- 原始作答：{answers}（11题Likert 3点计分，1=从来没有，2=有时，3=经常）\n\n【输出结构与内容要求】  \n✅ **综合评估**：以整体攻击行为倾向为切入点，结合总分水平（低/中/高），用平实语言描述来访者在人际互动中表现出的整体行为风格特征（如“更倾向于即时回应压力”或“较常以目标为导向调整行为方式”），强调这是可理解、可调节的心理反应模式，而非人格定性。  \n\n✅ **维度分析**：  \n- 针对「反应性攻击」维度：聚焦Q7–Q9（明确标注题号）所测量的“对感知威胁/挑衅产生的快速、情绪驱动的防御性反应”，结合其得分水平，具体说明其在日常中可能的表现（如易被误解而激动、冲突升级较快、事后易自责等），避免使用“冲动控制障碍”等临床标签；  \n- 针对「主动性攻击」维度：指出该维度实际由Q1–Q6、Q10–Q11共9题构成（注：题干虽未标注，但根据量表编制逻辑及维度归属推断，Q1–Q6、Q10–Q11为主动性攻击条目；Q7–Q9为反应性攻击条目；Q8在原始描述中重复列为反应性，此处以Q7–Q9为反应性核心，其余为主动性），解释其反映的是“为达成目标（如维护权威、获取资源、确立边界）而有意识规划并实施影响他人的行为倾向”，结合得分说明其在目标管理、人际策略、自我主张等方面的典型表现（如善于设定界限但偶显强硬、能主动化解矛盾但也可能忽略他人感受等）。  \n\n✅ **改善建议**：  \n- 若反应性攻击得分偏高：推荐具身化调节策略——如“暂停-呼吸-命名情绪”三步法（在冲动升起时默数3秒、做两次腹式呼吸、用一句话标注当前情绪：“我现在感到被冒犯，心跳加快”），并建议通过结构化日记记录触发情境与身体信号，提升前摄觉察；  \n- 若主动性攻击得分偏高：引导区分“坚定”与“支配”，提供替代性行为练习——如用“我需要……”句式替代“你应该……”表达诉求，或在重要沟通前预演三种非对抗性方案；  \n- 若双维均处中高水平：强调两类倾向常共存且具适应价值，建议开展“意图-影响”反思练习（例如：写下一次主动争取某事的初衷，再客观记录他人当时的非语言反应），增强行为与关系结果之间的联结意识。  \n\n✅ **注意事项**：  \n- 明确声明：“本解读基于《{scaleName}》自评结果生成，仅反映近期特定情境下的行为倾向快照，**仅供参考，不构成任何医学诊断、精神障碍判定或临床干预依据**”；  \n- 提醒：攻击行为倾向受情境、压力、睡眠、社会支持等多重因素动态影响，单次测评不能定义个体；  \n- 温和鼓励：“您愿意完成这份量表，本身已体现对自我成长的重视与勇气——这些倾向不是您的全部，而是您可以更懂自己、更从容选择回应方式的重要线索。”\n\n请始终以尊重、去标签、发展性视角组织语言，避免绝对化表述（如“总是”“从不”），多用“可能”“有时”“倾向”等留有弹性的措辞；所有解释须严格锚定量表定义与计分规则，不引申无关理论。",
+      "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
+      "temperature": 0.7,
+      "maxTokens": 2000
+    },
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "dim_反应性攻击",
+          "label": "反应性攻击",
+          "formula": "SUM",
+          "items": "1-4,8",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 8,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "对挑衅/威胁的冲动性防御性攻击倾向较低"
+            },
+            {
+              "min": 9,
+              "max": 12,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "存在一定的冲动性攻击反应，程度适中"
+            },
+            {
+              "min": 13,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "易因感知到威胁/挑衅出现明显冲动性攻击行为"
+            }
+          ]
+        },
+        {
+          "key": "dim_主动性攻击",
+          "label": "主动性攻击",
+          "formula": "SUM",
+          "items": "5-7,9-11",
+          "condition": null,
+          "interpretation": [
+            {
+              "max": 10,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43a047",
+              "text": "为达成目标而主动发起预谋性攻击的倾向较低"
+            },
+            {
+              "min": 11,
+              "max": 14,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1e88e5",
+              "text": "存在一定的目的性、预谋性攻击行为，程度适中"
+            },
+            {
+              "min": 15,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7e57c2",
+              "text": "常为获取利益/主导地位主动实施有计划的攻击行为"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "metric_total_score",
+          "label": "total_score",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "condition": null,
+          "transform": null,
+          "expression": "dim_反应性攻击 + dim_主动性攻击"
+        }
+      ],
+      "interpretation": [
+        {
+          "max": 8,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "对挑衅/威胁的冲动性防御性攻击倾向较低"
+        },
+        {
+          "min": 9,
+          "max": 12,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "存在一定的冲动性攻击反应，程度适中"
+        },
+        {
+          "min": 13,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "易因感知到威胁/挑衅出现明显冲动性攻击行为"
+        },
+        {
+          "max": 10,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "为达成目标而主动发起预谋性攻击的倾向较低"
+        },
+        {
+          "min": 11,
+          "max": 14,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "存在一定的目的性、预谋性攻击行为，程度适中"
+        },
+        {
+          "min": 15,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "常为获取利益/主导地位主动实施有计划的攻击行为"
+        },
+        {
+          "metric": "metric_total_score",
+          "max": 19,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43a047",
+          "text": "整体攻击行为倾向较低"
+        },
+        {
+          "metric": "metric_total_score",
+          "min": 20,
+          "max": 26,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1e88e5",
+          "text": "存在一定攻击行为，类型以反应性或主动性为主"
+        },
+        {
+          "metric": "metric_total_score",
+          "min": 27,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7e57c2",
+          "text": "整体攻击行为倾向显著，两类攻击表现均较突出"
+        }
+      ],
+      "screening": null
+    }
+  },
+  {
+    "name": "简易应对方式问卷",
+    "shortName": "SCSQ",
+    "code": "SCSQ",
+    "category": "stresscoping",
+    "categoryName": "应激与应对量表",
+    "emoji": "💪",
+    "color": "#4a90d9",
+    "duration": 10,
+    "questionTime": 30,
+    "questionCount": 20,
+    "applicablePeople": "16岁以上人群",
+    "desc": "解亚宁、张育坤于1995年编制的自评量表，由积极应对和消极应对两个分量表组成，共20个条目。采用4级评分法。",
+    "instruction": "以下列出的是当你在生活中经受挫折打击，或遇到困难时可能采取的态度和做法。请你仔细阅读每一项，然后在最适合你本人情况的数字上画√。其中，不采取代表0，偶尔采取代表1，有时采取代表2，经常采取代表3。",
+    "notice": [
+      "请根据您过去一周的真实感受作答"
+    ],
+    "tags": [
+      "应对方式"
+    ],
+    "status": 1,
+    "sortOrder": 10,
+    "rating": 5,
+    "npcConfig": {
+      "counselorId": "",
+      "backgroundId": ""
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "通过工作学习或一些其他活动解脱",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 2,
+        "content": "与他人交谈，倾诉内心烦恼",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 3,
+        "content": "尽量看到事物好的一面",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 4,
+        "content": "改变自己的想法，重新发现生活中什么是重要的",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 5,
+        "content": "不把问题看得太重",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 6,
+        "content": "坚持自己的立场，为自己想要得到的而斗争",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 7,
+        "content": "找出几种不同的解决问题的方法",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 8,
+        "content": "向亲戚朋友或同学寻求帮助",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 9,
+        "content": "改正自己原来的一些做法或一些问题",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 10,
+        "content": "借鉴他人处理类似困难情境的办法",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 11,
+        "content": "寻找业余爱好，积极参加文体活动",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 12,
+        "content": "尽量克制自己的失望、悔恨、悲伤或愤怒情绪",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "积极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 13,
+        "content": "试图通过休息或休假，暂时把问题（烦恼）抛开",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 14,
+        "content": "通过吸烟、喝酒、服药或吃东西的方式来解除烦恼",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 15,
+        "content": "认为时间会改变现状，唯一要做的便是等待",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 16,
+        "content": "试图忘记整个事情",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 17,
+        "content": "依靠别人解决问题",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 18,
+        "content": "接受现实，因为没有其他办法",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 19,
+        "content": "幻想可能会发生某种奇迹来改变现状",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 20,
+        "content": "自我安慰",
+        "options": [
+          {
+            "id": "A",
+            "label": "不采取",
+            "score": 0
+          },
+          {
+            "id": "B",
+            "label": "偶尔采取",
+            "score": 1
+          },
+          {
+            "id": "C",
+            "label": "有时采取",
+            "score": 2
+          },
+          {
+            "id": "D",
+            "label": "经常采取",
+            "score": 3
+          }
+        ],
+        "dimension": "消极应对",
+        "transition": "phase:结束阶段"
+      }
+    ],
+    "id": 1777520156864,
+    "completedCount": 0,
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "positive_coping",
+          "label": "积极应对",
+          "formula": "AVG",
+          "items": "1-12",
+          "interpretation": [
+            {
+              "min": 0,
+              "max": 1.26,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43A047",
+              "text": "低于常模均值−1SD，提示积极应对资源使用较少"
+            },
+            {
+              "min": 1.27,
+              "max": 2.3,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1E88E5",
+              "text": "处于常模均值±1SD范围内，积极应对方式使用较均衡"
+            },
+            {
+              "min": 2.31,
+              "max": 3,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7E57C2",
+              "text": "高于常模均值+1SD，提示积极应对策略使用频繁且突出"
+            }
+          ]
+        },
+        {
+          "key": "negative_coping",
+          "label": "消极应对",
+          "formula": "AVG",
+          "items": "13-20",
+          "interpretation": [
+            {
+              "min": 0,
+              "max": 0.93,
+              "level": "normal",
+              "label": "低水平",
+              "color": "#43A047",
+              "text": "低于常模均值−1SD，提示消极应对行为较少"
+            },
+            {
+              "min": 0.94,
+              "max": 2.25,
+              "level": "moderate",
+              "label": "中等水平",
+              "color": "#1E88E5",
+              "text": "处于常模均值±1SD范围内，消极应对方式使用较均衡"
+            },
+            {
+              "min": 2.26,
+              "max": 3,
+              "level": "severe",
+              "label": "高水平",
+              "color": "#7E57C2",
+              "text": "高于常模均值+1SD，提示消极应对策略使用频繁且突出"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "coping_tendency",
+          "label": "应对倾向",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "expression": "(positive_coping - 1.78) / 0.52 - (negative_coping - 1.59) / 0.66"
+        }
+      ],
+      "interpretation": [
+        {
+          "metric": "positive_coping",
+          "min": 0,
+          "max": 1.26,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43A047",
+          "text": "低于常模均值−1SD，提示积极应对资源使用较少"
+        },
+        {
+          "metric": "positive_coping",
+          "min": 1.27,
+          "max": 2.3,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1E88E5",
+          "text": "处于常模均值±1SD范围内，积极应对方式使用较均衡"
+        },
+        {
+          "metric": "positive_coping",
+          "min": 2.31,
+          "max": 3,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7E57C2",
+          "text": "高于常模均值+1SD，提示积极应对策略使用频繁且突出"
+        },
+        {
+          "metric": "negative_coping",
+          "min": 0,
+          "max": 0.93,
+          "level": "normal",
+          "label": "低水平",
+          "color": "#43A047",
+          "text": "低于常模均值−1SD，提示消极应对行为较少"
+        },
+        {
+          "metric": "negative_coping",
+          "min": 0.94,
+          "max": 2.25,
+          "level": "moderate",
+          "label": "中等水平",
+          "color": "#1E88E5",
+          "text": "处于常模均值±1SD范围内，消极应对方式使用较均衡"
+        },
+        {
+          "metric": "negative_coping",
+          "min": 2.26,
+          "max": 3,
+          "level": "severe",
+          "label": "高水平",
+          "color": "#7E57C2",
+          "text": "高于常模均值+1SD，提示消极应对策略使用频繁且突出"
+        },
+        {
+          "metric": "coping_tendency",
+          "min": -9999,
+          "max": -0.2,
+          "level": "severe",
+          "label": "消极倾向",
+          "color": "#E53935",
+          "text": "提示个体在应激中更习惯采用消极应对方式"
+        },
+        {
+          "metric": "coping_tendency",
+          "min": -0.2,
+          "max": 0.2,
+          "level": "moderate",
+          "label": "中性倾向",
+          "color": "#FF6F00",
+          "text": "积极与消极应对倾向基本平衡"
+        },
+        {
+          "metric": "coping_tendency",
+          "min": 0.2,
+          "max": 9999,
+          "level": "normal",
+          "label": "积极倾向",
+          "color": "#43A047",
+          "text": "提示个体在应激中主要采用积极应对方式"
+        }
+      ],
+      "screening": {
+        "logic": "OR",
+        "conditions": [
+          {
+            "label": "消极倾向",
+            "metric": "coping_tendency",
+            "op": "<",
+            "value": -0.2
+          },
+          {
+            "label": "积极倾向",
+            "metric": "coping_tendency",
+            "op": ">",
+            "value": 0.2
+          }
+        ],
+        "positiveLabel": "存在显著应对倾向（积极或消极）",
+        "negativeLabel": "应对倾向中性（无显著主导倾向）"
+      }
+    },
+    "aiDiag": {
+      "enabled": true,
+      "prompt": "你是一位专业、温暖且富有同理心的心理评估咨询师，正在为来访者解读《简易应对方式问卷》（SCSQ）的测评结果。请基于量表的理论基础、常模标准与临床意义，结合用户真实作答数据，提供一份结构清晰、语言平实、有温度、有依据的个性化反馈报告。报告须严格遵循以下逻辑框架与表达规范：\n\n### 🌟 综合评估  \n以整体应对倾向（coping_tendency）为核心，结合积极应对与消极应对两个维度的水平分布，简明扼要地概括来访者在面对压力时的习惯性反应风格——是更倾向于主动调适、灵活转化，还是容易回避退缩、情绪内耗？强调这是长期形成的适应策略，而非“对错”判断，并点明其现实功能与潜在发展空间。\n\n### 🔍 维度深度解析  \n逐一对 {dimensions} 中每个维度（即“积极应对”与“消极应对”）进行具象化解读：  \n- **积极应对（positive_coping）**：结合该维度定义（如问题解决、寻求支持、认知重构、自我激励等典型行为），说明当前得分水平（{level}）反映其在日常压力中调动建设性资源的频率与稳定性；若为低水平，不归因为“能力不足”，而描述为“尚未形成稳定习惯”；若为高水平，肯定其心理弹性价值，同时提示避免过度承担或忽视情绪信号。  \n- **消极应对（negative_coping）**：紧扣其内涵（如否认、幻想、自责、逃避、物质使用倾向等防御模式），解释当前水平所提示的行为惯性特征；若为低水平，肯定其情绪耐受力与现实感；若为高水平，以非评判语气指出这些方式短期可能缓解痛苦，但长期易加剧压力循环，并关联到具体作答模式（如{answers}中高频选择Q5/Q12/Q18等题目的倾向）。  \n所有分析必须锚定量表原始计分逻辑（AVG均值）、常模区间（±1SD）及临床含义，避免脱离数据空谈。\n\n### 🌱 改善建议  \n建议须具体、可操作、情境化，杜绝“多沟通”“多运动”等泛化表述。例如：  \n1. 若积极应对处于中低水平：可推荐“微行动启动法”——从本周起，每天记录1件自己已采取的小型积极行动（如主动询问同事意见、提前5分钟规划任务），强化自我效能感；  \n2. 若消极应对处于中高水平：可引导识别“触发点时刻”（如Q7/Q14作答较高分者，常在人际冲突后出现回避倾向），练习“暂停-呼吸-命名情绪”三步短干预；  \n3. 若应对倾向呈显著积极或消极倾向：分别提供1个平衡性练习（如积极倾向者尝试每周1次“允许自己休息而不自责”，消极倾向者尝试1次“用中性语言重述困扰事件”）。  \n每条建议需呼应{answers}中的实际作答线索，体现“因人而异”。\n\n### ❤️ 重要提醒  \n- 本报告基于《简易应对方式问卷》（SCSQ）20题自评结果生成，反映的是特定时间点的习惯性应对偏好，**不构成任何医学诊断或精神障碍判定**；  \n- 应对方式具有可塑性，短期练习即可带来感知变化，无需追求“完美应对”；  \n- 若近期经历重大应激事件（如失业、疾病、关系破裂）或持续感到情绪沉重、躯体不适、社会功能下降，请务必联系专业心理咨询师或精神科医生进行面对面评估；  \n- 所有结论仅供自我觉察与成长参考，**不能替代临床诊疗**。\n\n━━━━━━━━━━━━━━━━━━━━  \n【输出格式要求】  \n你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：  \n\n✅ 允许使用的格式：  \n- **粗体**：用 \\*\\*文字\\*\\* 包裹  \n- *斜体*：用 \\*文字\\* 包裹  \n- 标题：用 ## 或 ### 开头（不要用 # 一级标题）  \n- 分隔线：独占一行的 ---  \n- 列表：用 - 或数字 1. 2. 3. 开头  \n- 引用：用 > 开头（如话术、引用语等）  \n- 行内代码：用反引号 ` 包裹  \n\n❌ 严禁使用的格式（会导致页面显示异常）：  \n- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）  \n- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）  \n- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行  \n- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代  \n\n报告结构建议（纯 Markdown）：  \n### 🌟 综合评估  \n（总结性分析文字）  \n---  \n### 🔍 维度深度解析  \n（每个维度一段分析，用粗体标注维度名）  \n---  \n### 🌱 改善建议  \n（用编号列表 1. 2. 3. 组织建议）  \n---  \n### ❤️ 重要提醒  \n（注意事项）  \n━━━━━━━━━━━━━━━━━━━━  \n\n请严格依据输入变量生成报告：  \n- 量表名称：{scaleName}  \n- 总分：{score}  \n- 总分等级：{level}  \n- 维度详情：{dimensions}  \n- 原始作答：{answers}  \n\n始终牢记：你的角色是陪伴者，不是裁判；你的语言是桥梁，不是标尺。",
+      "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
+      "temperature": 0.7,
+      "maxTokens": 2000
+    }
+  },
+  {
+    "name": "社会支持评定量表",
+    "shortName": "SSRS",
+    "code": "SSRS",
+    "category": "stresscoping",
+    "categoryName": "应激与应对量表",
+    "emoji": "🏆",
+    "color": "#4a90d9",
+    "duration": 5,
+    "questionTime": 30,
+    "questionCount": 10,
+    "applicablePeople": "16岁以上人群",
+    "desc": "肖水源等于1986年编制的自评量表，1990年修订。包括主观支持、客观支持和社会支持利用度3个维度，共10个条目。",
+    "instruction": "下面的问题用于反映你在社会中所获得的支持，请按各个问题的具体要求，根据你的实际情况填写。",
+    "notice": [
+      "请根据您过去一周的真实感受作答"
+    ],
+    "tags": [
+      "社会支持"
+    ],
+    "status": 1,
+    "sortOrder": 10,
+    "rating": 5,
+    "npcConfig": {
+      "counselorId": "",
+      "backgroundId": ""
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "你有多少个关系密切，并可以得到支持和帮助的朋友(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "一个也没有",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "1~2个",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "3~5个",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "6个或6个以上",
+            "score": 4
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 2,
+        "content": "你近1年来(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "远离家人，且独居一室",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "住处经常变动，多数时间和陌生人住在一起",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "和同学、同事或朋友住在一起",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "和家人住在一起",
+            "score": 4
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 3,
+        "content": "你与邻居(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "相互之间从不关心，只是点头之交",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "遇到困难可能稍微关心",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "有些邻居很关心你",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "大多数邻居都很关心你",
+            "score": 4
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 4,
+        "content": "你与同事(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "相互之间从不关心，只是点头之交",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "遇到困难可能稍微关心",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "有些同事很关心你",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "大多数同事都很关心你",
+            "score": 4
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 5,
+        "content": "从家庭成员中得到的支持和照顾(在合适的框内画\"√\")",
+        "options": [
+          {
+            "id": "A",
+            "label": "无",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "极少",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "一般",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "全力支持",
+            "score": 4
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 6,
+        "content": "过去，在你遇到急难情况时，曾经得到的经济支持和解决实际问题的帮助的来源",
+        "options": [
+          {
+            "id": "A",
+            "label": "无任何来源，有几个来源计几分",
+            "score": 0
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 7,
+        "content": "过去，在你遇到急难情况时，曾经得到的安慰和关心的来源",
+        "options": [
+          {
+            "id": "A",
+            "label": "无任何来源，有几个来源计几分",
+            "score": 0
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 8,
+        "content": "当你遇到烦恼时的倾诉方式(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "从不向任何人倾诉",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "只向关系极为密切的1~2个人倾诉",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "如果朋友主动询问你时会说出来",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "主动倾诉自己的烦恼，以获得支持和理解",
+            "score": 4
+          }
+        ],
+        "dimension": "社会支持利用度",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 9,
+        "content": "当你遇到烦恼时的求助方式(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "只靠自己，不接受别人的帮助",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "很少请求别人的帮助",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "有时请求别人的帮助",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有困难时经常向家人、亲友、组织求助",
+            "score": 4
+          }
+        ],
+        "dimension": "社会支持利用度",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 10,
+        "content": "你对于团体(如党团组织、宗教组织、工会、学生会等)组织活动(只选一项)",
+        "options": [
+          {
+            "id": "A",
+            "label": "从不参加",
+            "score": 1
+          },
+          {
+            "id": "B",
+            "label": "偶尔参加",
+            "score": 2
+          },
+          {
+            "id": "C",
+            "label": "经常参加",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "主动参加并积极活动",
+            "score": 4
+          }
+        ],
+        "dimension": "社会支持利用度",
+        "transition": "phase:结束阶段"
+      }
+    ],
+    "id": 1777520540778,
+    "completedCount": 0,
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "subjective_support",
+          "label": "主观支持",
+          "formula": "SUM",
+          "items": "1,3,4,5",
+          "interpretation": [
+            {
+              "min": 7,
+              "max": 13,
+              "level": "normal",
+              "label": "低",
+              "color": "#43A047",
+              "text": "主观支持感受较弱，情感体验中缺乏被尊重、被理解感"
+            },
+            {
+              "min": 14,
+              "max": 21,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1E88E5",
+              "text": "具备基本主观支持体验，情感联结较稳定"
+            },
+            {
+              "min": 22,
+              "max": 28,
+              "level": "severe",
+              "label": "高",
+              "color": "#7E57C2",
+              "text": "主观感受到较强的情感支持与满意程度"
+            }
+          ]
+        },
+        {
+          "key": "objective_support",
+          "label": "客观支持",
+          "formula": "SUM",
+          "items": "2,6,7",
+          "interpretation": [
+            {
+              "min": 1,
+              "max": 8,
+              "level": "normal",
+              "label": "低",
+              "color": "#43A047",
+              "text": "实际获得的支持资源有限，社会网络薄弱或援助渠道缺失"
+            },
+            {
+              "min": 9,
+              "max": 15,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1E88E5",
+              "text": "有一定现实支持基础，如家庭、同事或朋友等稳定关系存在"
+            },
+            {
+              "min": 16,
+              "max": 22,
+              "level": "severe",
+              "label": "高",
+              "color": "#7E57C2",
+              "text": "拥有广泛且多元的实际支持来源，应对急难能力较强"
+            }
+          ]
+        },
+        {
+          "key": "support_utilization",
+          "label": "社会支持利用度",
+          "formula": "SUM",
+          "items": "8,9,10",
+          "interpretation": [
+            {
+              "min": 3,
+              "max": 6,
+              "level": "normal",
+              "label": "低",
+              "color": "#43A047",
+              "text": "较少主动寻求或接受支持，可能存在回避、自责或独立过度倾向"
+            },
+            {
+              "min": 7,
+              "max": 9,
+              "level": "moderate",
+              "label": "中等",
+              "color": "#1E88E5",
+              "text": "能适度利用支持资源，但在主动性或开放性上仍有提升空间"
+            },
+            {
+              "min": 10,
+              "max": 12,
+              "level": "severe",
+              "label": "高",
+              "color": "#7E57C2",
+              "text": "积极、灵活地运用各类社会支持，求助与倾诉行为成熟"
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "key": "totalScore",
+          "label": "总分",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "expression": "subjective_support + objective_support + support_utilization"
+        }
+      ],
+      "interpretation": [
+        {
+          "metric": "subjective_support",
+          "min": 7,
+          "max": 13,
+          "level": "normal",
+          "label": "低",
+          "color": "#43A047",
+          "text": "主观支持感受较弱，情感体验中缺乏被尊重、被理解感"
+        },
+        {
+          "metric": "subjective_support",
+          "min": 14,
+          "max": 21,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1E88E5",
+          "text": "具备基本主观支持体验，情感联结较稳定"
+        },
+        {
+          "metric": "subjective_support",
+          "min": 22,
+          "max": 28,
+          "level": "severe",
+          "label": "高",
+          "color": "#7E57C2",
+          "text": "主观感受到较强的情感支持与满意程度"
+        },
+        {
+          "metric": "objective_support",
+          "min": 1,
+          "max": 8,
+          "level": "normal",
+          "label": "低",
+          "color": "#43A047",
+          "text": "实际获得的支持资源有限，社会网络薄弱或援助渠道缺失"
+        },
+        {
+          "metric": "objective_support",
+          "min": 9,
+          "max": 15,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1E88E5",
+          "text": "有一定现实支持基础，如家庭、同事或朋友等稳定关系存在"
+        },
+        {
+          "metric": "objective_support",
+          "min": 16,
+          "max": 22,
+          "level": "severe",
+          "label": "高",
+          "color": "#7E57C2",
+          "text": "拥有广泛且多元的实际支持来源，应对急难能力较强"
+        },
+        {
+          "metric": "support_utilization",
+          "min": 3,
+          "max": 6,
+          "level": "normal",
+          "label": "低",
+          "color": "#43A047",
+          "text": "较少主动寻求或接受支持，可能存在回避、自责或独立过度倾向"
+        },
+        {
+          "metric": "support_utilization",
+          "min": 7,
+          "max": 9,
+          "level": "moderate",
+          "label": "中等",
+          "color": "#1E88E5",
+          "text": "能适度利用支持资源，但在主动性或开放性上仍有提升空间"
+        },
+        {
+          "metric": "support_utilization",
+          "min": 10,
+          "max": 12,
+          "level": "severe",
+          "label": "高",
+          "color": "#7E57C2",
+          "text": "积极、灵活地运用各类社会支持，求助与倾诉行为成熟"
+        },
+        {
+          "metric": "totalScore",
+          "min": 12,
+          "max": 29,
+          "level": "normal",
+          "label": "低社会支持水平",
+          "color": "#43A047",
+          "text": "显著低于常模均值2个标准差以上，提示支持系统严重匮乏，需关注心理风险"
+        },
+        {
+          "metric": "totalScore",
+          "min": 30,
+          "max": 38,
+          "level": "moderate",
+          "label": "中等社会支持水平",
+          "color": "#1E88E5",
+          "text": "接近或略低于常模均值，属一般人群常见范围"
+        },
+        {
+          "metric": "totalScore",
+          "min": 39,
+          "max": 62,
+          "level": "severe",
+          "label": "高社会支持水平",
+          "color": "#7E57C2",
+          "text": "显著高于常模均值，是心理韧性的重要保护因素"
+        }
+      ],
+      "screening": {
+        "logic": "OR",
+        "conditions": [
+          {
+            "label": "社会支持严重不足（提示高心理应激风险，建议进一步评估）",
+            "metric": "totalScore",
+            "op": "<=",
+            "value": 29
+          }
+        ],
+        "positiveLabel": "社会支持严重不足",
+        "negativeLabel": "社会支持处于一般或良好水平"
+      }
+    },
+    "aiDiag": {
+      "enabled": true,
+      "prompt": "你是一位专业、温暖且富有同理心的心理评估咨询师，正在为来访者解读其完成的{scaleName}（SSRS）测评结果。请基于以下结构化信息，生成一份严谨、个性化、有温度的心理测评分析报告。所有分析必须严格依据量表原始编制逻辑、维度定义、计分规则及临床解释标准，不得主观臆断或添加未授权内容。\n\n你将收到以下变量数据：\n- 总分：{score}\n- 总分等级：{level}\n- 维度详情：{dimensions}\n- 作答记录：{answers}\n\n请结合题文内涵深入理解各维度所反映的真实心理与行为特征：  \n• **主观支持**（Q1/Q3/Q4/Q5）反映个体内心对“被尊重、被理解、被接纳”的情感确认程度——不是社会关系的数量，而是关系质量在内心留下的温度；  \n• **客观支持**（Q2/Q6/Q7）刻画现实可调用的支持资源网络——居住状态、邻里/同事关系稳定性、实际援助来源数量，体现外部支持系统的结构性基础；  \n• **社会支持利用度**（Q8/Q9/Q10）揭示个体在压力情境中主动联结、开放求助、参与互助的行为倾向——它不取决于“有没有人”，而在于“敢不敢说、愿不愿求、会不会用”。\n\n所有分析须恪守以下原则：  \n✅ 坚持发展性视角：将低分视为可调节的心理行为模式，而非人格缺陷；  \n✅ 强调情境敏感性：如Q6/Q7为计数题，需结合{answers}中具体数值判断支持源广度；Q2居住状态需关联Q3/Q4中人际感知，理解“物理距离”与“心理亲近”的张力；  \n✅ 区分描述与诊断：所有结论仅指向社会支持功能水平，**绝不使用“抑郁症”“焦虑症”“人格障碍”等临床诊断术语**；  \n✅ 语言兼具专业性与人文感：避免术语堆砌，用“你可能感到……”“这种倾向常伴随……”等共情句式替代绝对化表述；  \n✅ 建议务必具身可行：例如针对“支持利用度低”者，不泛泛说“多交朋友”，而建议“本周尝试向一位信任的人分享一件小事，并观察自己的身体反应与对方回应”；  \n✅ 所有风险提示须锚定筛查条件：当{score} ≤ 29时，必须明确标注“社会支持严重不足”，并强调“这提示当前心理应激缓冲系统承压较大，建议在专业支持下共同梳理可用资源”。\n\n━━━━━━━━━━━━━━━━━━━━  \n【输出格式要求】  \n你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：  \n\n✅ 允许使用的格式：  \n- **粗体**：用 \\*\\*文字\\*\\* 包裹  \n- *斜体*：用 \\*文字\\* 包裹  \n- 标题：用 ## 或 ### 开头（不要用 # 一级标题）  \n- 分隔线：独占一行的 ---  \n- 列表：用 - 或数字 1. 2. 3. 开头  \n- 引用：用 > 开头（如话术、引用语等）  \n- 行内代码：用反引号 ` 包裹  \n\n❌ 严禁使用的格式（会导致页面显示异常）：  \n- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）  \n- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）  \n- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行  \n- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代  \n\n报告结构建议（纯 Markdown）：  \n### 🌟 综合评估  \n（总结性分析文字）  \n---  \n### 🔍 维度深度解析  \n（每个维度一段分析，用粗体标注维度名）  \n---  \n### 🌱 改善建议  \n（用编号列表 1. 2. 3. 组织建议）  \n---  \n### ❤️ 重要提醒  \n（注意事项）  \n━━━━━━━━━━━━━━━━━━━━  \n\n请始终牢记：这份报告是来访者照见自己社会联结状态的一面镜子，而非一张评判标签。你的语言，应当让ta感到被看见、被理解，也看到改变的微光。  \n**本报告仅供参考，不构成任何形式的医疗诊断、治疗建议或心理干预方案。如您正经历持续的情绪困扰、社会功能明显受损或有自伤/伤人念头，请务必及时联系精神科医生或拨打心理援助热线。**",
+      "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
+      "temperature": 0.7,
+      "maxTokens": 2000
+    }
+  },
+  {
+    "name": "青少年社会支持量表",
+    "shortName": "ASSS",
+    "code": "ASSS",
+    "category": "stresscoping",
+    "categoryName": "应激与应对量表",
+    "emoji": "🎭",
+    "color": "#4a90d9",
+    "duration": 9,
+    "questionTime": 30,
+    "questionCount": 17,
+    "applicablePeople": "中学生和大学生",
+    "desc": "叶悦妹、戴晓阳等于2008年编制的自评量表，以肖水源的社会支持理论模型为基础。包括主观支持、客观支持和支持利用度3个维度，共17个条目。采用5级评分法。",
+    "instruction": "这是一份关于大学生社会支持的量表。请根据你自身与各个项目所描述情况相符合的程度，在每题后相对应的数字上画√。答案无好坏和对错之分，请根据你的真实情况填写，我们承诺对你的资料严格保密。完成这份问卷可能会耽误你一点宝贵的时间，在此我向你表示衷心的感谢!",
+    "notice": [
+      "请根据您过去一周的真实感受作答"
+    ],
+    "tags": [
+      "社会支持"
+    ],
+    "status": 1,
+    "sortOrder": 10,
+    "rating": 5,
+    "npcConfig": {
+      "counselorId": "",
+      "backgroundId": ""
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "大多数同学都很关心我",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 2,
+        "content": "面对两难的选择时，我会主动向他人寻求帮助",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 3,
+        "content": "当有烦恼时，我会主动向家人、亲友倾诉",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:开始阶段"
+      },
+      {
+        "id": 4,
+        "content": "我经常能得到同学、朋友的照顾和支持",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 5,
+        "content": "当遇到困难时，我经常会向家人、亲人寻求帮助",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 6,
+        "content": "我周围有许多关系密切，并可以给予我支持和帮助的人",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 7,
+        "content": "在我遇到问题时，同学、朋友都会出现在我身旁",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 8,
+        "content": "在遇到困难的时候，我可以依靠家人或亲友",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 9,
+        "content": "我经常从同学、朋友那里获得情感上的帮助和支持",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "主观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 10,
+        "content": "我经常能得到家人、亲友的照顾和支持",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 11,
+        "content": "当有需要时，我可以从家人、亲友那里得到经济支持",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 12,
+        "content": "当遇到麻烦时，我通常会主动寻求别人的帮助",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 13,
+        "content": "当我生病时，总是能得到家人、亲友的照顾",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 14,
+        "content": "当有烦恼时，我会主动向同学、朋友倾诉",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:中间阶段"
+      },
+      {
+        "id": 15,
+        "content": "在我遇到问题时，家人、亲友都会出现在我身旁",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 16,
+        "content": "我经常从家人、亲友那里获得情感上的帮助和支持",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "客观支持",
+        "transition": "phase:结束阶段"
+      },
+      {
+        "id": 17,
+        "content": "当遇到困难时，我经常会向同学、朋友寻求帮助",
+        "options": [
+          {
+            "id": "A",
+            "label": "符合",
+            "score": 5
+          },
+          {
+            "id": "B",
+            "label": "有点符合",
+            "score": 4
+          },
+          {
+            "id": "C",
+            "label": "不确定",
+            "score": 3
+          },
+          {
+            "id": "D",
+            "label": "有点不符合",
+            "score": 2
+          },
+          {
+            "id": "E",
+            "label": "不符合",
+            "score": 1
+          }
+        ],
+        "dimension": "支持利用度",
+        "transition": "phase:结束阶段"
+      }
+    ],
+    "id": 1777520630731,
+    "completedCount": 0,
+    "scoring": {
+      "dimensions": [
+        {
+          "key": "subjective_support",
+          "label": "主观支持",
+          "formula": "SUM",
+          "items": "1,4,6,7,9"
+        },
+        {
+          "key": "objective_support",
+          "label": "客观支持",
+          "formula": "SUM",
+          "items": "8,10,11,13,15,16"
+        },
+        {
+          "key": "support_utilization",
+          "label": "支持利用度",
+          "formula": "SUM",
+          "items": "2,3,5,12,14,17"
+        }
+      ],
+      "metrics": [
+        {
+          "key": "totalScore",
+          "label": "总分",
+          "formula": "DERIVED",
+          "items": "ALL",
+          "expression": "subjective_support + objective_support + support_utilization"
+        }
+      ],
+      "interpretation": [],
+      "screening": null
+    },
+    "aiDiag": {
+      "enabled": true,
+      "prompt": "你是一位专业、温暖且富有同理心的心理评估咨询师，专注于青少年心理健康与发展。你正在为一位中学生或大学生解读《{scaleName}》（ASSS）测评结果。请基于量表理论基础（叶悦妹、戴晓阳，2008；以肖水源社会支持三维度模型为框架）、题目内涵与计分逻辑，对用户作答进行严谨而有人文温度的分析。你的任务不是诊断，而是陪伴式理解——帮助来访者更清晰地看见自己在“被理解与接纳”（主观支持）、“实际可获得的支持资源”（客观支持）以及“主动求助、接纳与转化支持的能力”（支持利用度）三个关键成长维度上的状态。\n\n请严格遵循以下结构输出一份纯 Markdown 格式的个性化反馈报告：\n\n### 🌟 综合评估  \n结合总分 {score}（等级：{level}），整体反映该青少年当前感知到的社会支持系统处于[此处根据{level}动态填充：如“较充实”/“基本稳定”/“存在明显薄弱环节”]水平。社会支持是青少年应对学业压力、人际波动与自我认同探索的重要心理缓冲带；本结果不指向缺陷，而是映照出一段值得被温柔看见的成长图景。\n\n---\n### 🔍 维度深度解析  \n**主观支持**：该维度得分 {dimensions[0].score}/{dimensions[0].max}（{dimensions[0].pct}%，{dimensions[0].levelLabel}）——反映其内心是否真切感受到家人、朋友、师长的关心、尊重与情感共鸣。高分常体现较强的归属感与被信任感；若得分偏低，可能并非缺乏支持源，而是因青春期特有的敏感、自我怀疑或表达习惯，暂时“接收不到”他人传递的暖意。  \n**客观支持**：该维度得分 {dimensions[1].score}/{dimensions[1].max}（{dimensions[1].pct}%，{dimensions[1].levelLabel}）——指向现实中可调用的实际支持资源，如困难时能否获得帮助、是否有倾诉对象、家庭是否提供稳定照料等。它不依赖主观感受，而是可观察的行为事实；得分偏低需关注现实支持网络是否存在结构性缺口（如家庭功能弱化、同伴关系疏离）。  \n**支持利用度**：该维度得分 {dimensions[2].score}/{dimensions[2].max}（{dimensions[2].pct}%，{dimensions[2].levelLabel}）——衡量其是否能主动识别需求、开口求助、接纳建议并灵活运用支持资源。这是最具发展性、也最易通过练习提升的维度；得分偏低往往与“怕麻烦别人”“习惯独自硬扛”“不知如何开口”等典型青少年应对模式相关，而非缺乏支持意愿。\n\n---\n### 🌱 改善建议  \n1. **为“主观支持”松动一点期待**：尝试每天记录1件“别人无意中让我感到被看见的小事”（如同学顺手帮你扶起倒下的水杯），连续一周。这不是要求你立刻相信“大家都爱我”，而是训练大脑重新校准对善意的敏感度。  \n2. **给“客观支持”做一次轻量盘点**：列出3个你*实际*可以联系的人（不限于最亲近者），标注他们最可能提供的支持类型（如：A同学→听你吐槽；B老师→给学习方法建议；C家人→陪你散步）。不必立刻行动，先让这张“支持地图”在心里清晰起来。  \n3. **把“支持利用度”变成一个微小动作**：下次遇到小困扰（如作业卡壳、心情低落），只做一件小事：向名单中的1个人发送一句具体请求，例如“XX，这道题我卡住了，能花2分钟帮我看看第一步吗？”——重点在“具体”和“限时”，降低双方压力。  \n\n---\n### ❤️ 重要提醒  \n> 本报告基于《青少年社会支持量表》（ASSS）的标准化施测与计分规则生成，旨在提供发展性参考视角。  \n> 社会支持状态具有情境性与动态性，单次测评结果不能定义一个人的价值或长期心理状态；它更像一张快照，捕捉的是此刻与重要他人联结的某种质地。  \n> 若近期持续感到孤独、无助、情绪沉重或有自伤/自杀念头，请务必及时联系学校心理老师、信任的成年人，或拨打全国希望24热线：400-161-9995（生命热线，24小时免费）。  \n> **本报告仅供参考，不构成任何形式的医学诊断、治疗建议或心理干预方案。**\n\n━━━━━━━━━━━━━━━━━━━━  \n【输出格式要求】  \n你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：  \n\n✅ 允许使用的格式：  \n- **粗体**：用 \\*\\*文字\\*\\* 包裹  \n- *斜体*：用 \\*文字\\* 包裹  \n- 标题：用 ## 或 ### 开头（不要用 # 一级标题）  \n- 分隔线：独占一行的 ---  \n- 列表：用 - 或数字 1. 2. 3. 开头  \n- 引用：用 > 开头（如话术、引用语等）  \n- 行内代码：用反引号 ` 包裹  \n\n❌ 严禁使用的格式（会导致页面显示异常）：  \n- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）  \n- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）  \n- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行  \n- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代  \n\n报告结构建议（纯 Markdown）：  \n### 🌟 综合评估  \n（总结性分析文字）  \n---  \n### 🔍 维度深度解析  \n（每个维度一段分析，用粗体标注维度名）  \n---  \n### 🌱 改善建议  \n（用编号列表 1. 2. 3. 组织建议）  \n---  \n### ❤️ 重要提醒  \n（注意事项）  \n━━━━━━━━━━━━━━━━━━━━",
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000

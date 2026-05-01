@@ -1,12 +1,16 @@
 /**
- * cloud-api.js v3.2 - 云托管 HTTP API 通信模块
- * 
+ * cloud-api.js v3.3 - 云托管 HTTP API 通信模块
+ *
  * 替代 cloud-data.js 中的 mock 通信，实现真正的云端数据交互
- * 
+ *
+ * v3.3 改动：
+ *   - WebView 模式下也跳过 URL 参数 apiBase，强制同域（H5 与 API 同在 www.soarto.com.cn）
+ *   - 修复 WebView AI 诊断 403（apiBase=https://identity.soarto.com.cn 导致请求发到云托管）
+ *
  * v3.2 改动：
  *   - AI 诊断超时从 8s 增加到 60s（DashScope 生成报告可能需 20s+）
  *   - 移除 WebView 自动推断 API 地址的旧逻辑
- * 
+ *
  * v3.0 改动：
  *   - 默认 API_BASE 改为空字符串（同域部署，前端与 API 同域名）
  *   - 去掉 WebView 模式的禁用逻辑，WebView 内 H5 可以正常调用
@@ -14,9 +18,9 @@
  *   - submitAnswers 自动传入 openid
  *   - fetchHistory 自动传入 openid（按用户筛选）
  *   - 修正 API 路径前缀：/api/submit, /api/history 等
- * 
+ *
  * 降级策略：云端不可用时自动降级到本地 localStorage + 本地计分引擎
- * 
+ *
  * 配置优先级：localStorage('psy_api_base') > URL 参数(apiBase) > 默认值
  */
 
@@ -33,10 +37,14 @@
   var _openid = urlParams.get('openid') || '';
 
   // API 基础地址
-  // 配置优先级：localStorage('psy_api_base') > URL 参数(apiBase) > 默认值
-  var customBase = urlParams.get('apiBase');
+  // WebView 模式（env=cloud）下强制同域（H5 与 API 同在 www.soarto.com.cn），
+  // 忽略 URL 参数 apiBase 和 localStorage 残留配置（防止请求发到云托管返回 403）
+  var customBase = null;
   var storedBase = null;
-  try { storedBase = localStorage.getItem('psy_api_base'); } catch(e) {}
+  if (urlParams.get('env') !== 'cloud' && !/MicroMessenger/i.test(navigator.userAgent)) {
+    customBase = urlParams.get('apiBase');
+    try { storedBase = localStorage.getItem('psy_api_base'); } catch(e) {}
+  }
 
   var API_BASE = storedBase || customBase || '';
   var TIMEOUT_MS = 15000;        // 普通接口 15 秒
@@ -197,6 +205,16 @@
      */
     get: function(path) {
       return apiRequest('GET', path);
+    },
+
+    /**
+     * 通用 POST 请求（评价反馈等场景使用）
+     * @param {string} path - API 路径（如 '/api/feedback'）
+     * @param {object} body - 请求体
+     * @returns {Promise<object>} 响应 data
+     */
+    post: function(path, body) {
+      return apiRequest('POST', path, body);
     },
 
     /**

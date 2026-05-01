@@ -16,6 +16,7 @@ import re
 import shutil
 import json
 import sys
+import urllib.request
 
 # ============================================================
 # 配置
@@ -27,6 +28,14 @@ DEPLOY_DIR = os.path.join(WORKSPACE, 'deploy')
 
 # 量表数据源文件（从后台导出的 JSON）
 SCALES_DATA_FILE = os.path.join(WORKSPACE, 'scales-data.json')
+
+# LNMP 量表 API（构建时自动拉取最新量表）
+LNMP_SCALES_URL = 'https://www.soarto.com.cn/api/scales-json'
+
+# LNMP 服务器配置（前端 JS 文件需同步到此服务器）
+LNMP_SSH_HOST = 'root@101.43.43.125'
+LNMP_WWW_DIR = '/www/wwwroot/www.soarto.com.cn'
+LNMP_FRONTEND_FILES = ['shared-data.js', 'cloud-data.js', 'cloud-api.js', 'scoring-engine.js', 'asset-storage.js', 'data-monitor.js', 'index.html', 'miniprogram-qr.png', 'counselor.png']
 
 # AI 配置文件（DashScope API Key 等）
 AI_CONFIG_FILE = os.path.join(WORKSPACE, 'ai-config.json')
@@ -44,7 +53,8 @@ DEPLOY_FILES = [
     'scoring-engine.js',            # 计分引擎
     'asset-storage.js',             # 资源存储模块
     'data-monitor.js',              # 数据监控模块
-    'frontend/assets/counselor.png' # 咨询师立绘（原始 PNG）
+    'frontend/assets/counselor.png', # 咨询师立绘（原始 PNG）
+    'frontend/assets/miniprogram-qr.png' # 小程序码
 ]
 
 # 根目录直接复制的配置文件（不经过路径替换，仅当文件存在时复制）
@@ -105,11 +115,29 @@ SCALE_TYPES_PLACEHOLDER_END = '// @BUNDLED_SCALE_TYPES_END'
 # ============================================================
 
 def load_scales_data():
-    """从 scales-data.json 读取量表数据"""
+    """从 LNMP 拉取最新量表数据，失败则回退到本地 scales-data.json"""
+    # 优先从 LNMP 拉取
+    print('  📡 从 LNMP 拉取最新量表数据...')
+    try:
+        req = urllib.request.Request(LNMP_SCALES_URL, headers={'User-Agent': 'build-deploy/2.0'})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+        if result.get('code') == 0 and result.get('data'):
+            scales = result['data']
+            # 同步保存到本地 scales-data.json
+            with open(SCALES_DATA_FILE, 'w', encoding='utf-8') as f:
+                json.dump(scales, f, ensure_ascii=False, indent=2)
+            print(f'  ✅ LNMP 拉取成功: {len(scales)} 个量表，已同步到本地')
+            return scales
+        else:
+            print('  ⚠️  LNMP 返回空数据，尝试本地文件')
+    except Exception as e:
+        print(f'  ⚠️  LNMP 拉取失败: {e}，尝试本地文件')
+
+    # Fallback: 从本地 scales-data.json 读取
     if not os.path.exists(SCALES_DATA_FILE):
         print(f'  ⚠️  未找到 {SCALES_DATA_FILE}')
-        print(f'  ⚠️  请先从后台导出量表数据:')
-        print(f'       后台 → 数据管理 → 导出所有量表数据 → 保存为 scales-data.json')
+        print(f'  ⚠️  请先在后台点「同步至前端」再构建')
         return None
 
     with open(SCALES_DATA_FILE, 'r', encoding='utf-8') as f:
@@ -117,15 +145,16 @@ def load_scales_data():
 
     if isinstance(data, list):
         scales = data
+    elif isinstance(data, dict) and 'data' in data:
+        scales = data['data']
     elif isinstance(data, dict) and 'scales' in data:
         scales = data['scales']
     else:
-        print(f'  ⚠️  scales-data.json 格式不正确，需要量表数组')
+        print(f'  ⚠️  scales-data.json 格式不正确')
         return None
 
-    if not scales:
-        print(f'  ⚠️  量表数据为空')
-        return None
+    print(f'  📁 从本地文件加载: {len(scales)} 个量表')
+    return scales
 
     # 验证数据完整性
     for i, s in enumerate(scales):
@@ -195,11 +224,19 @@ def inject_scales_into_shared_data(content, scales, ai_config=None):
             return content, False
         print(f'  ✅ 量表数据已注入（{len(scales)} 个量表）')
     else:
-        # 占位符不存在，检查是否已内置数据
+        # 占位符不存在，检查是否已内置数据并强制更新
         _match = _re.search(r'const DEFAULT_SCALES\s*=\s*(\[.+?\])\s*;', content, _re.DOTALL)
         if _match and len(_match.group(1).strip()) > 10:
-            new_content = content
-            print(f'  ✅ 量表数据已内置（上次构建已注入），跳过注入')
+            # 强制替换已有数据（修复：上次构建注入的可能是旧数据）
+            old_scales_json = _match.group(1)
+            scales_json = json.dumps(scales, ensure_ascii=False, indent=None, separators=(',', ':'))
+            new_content = content.replace(old_scales_json, scales_json, 1)
+            # 验证替换：用更精确的方式计数（查找顶层 scale 对象）
+            _scale_count = scales_json.count('"shortName":')
+            if _scale_count != len(scales):
+                print(f'  ⚠️  注入后量表数量不匹配（期望 {len(scales)}，实际 {_scale_count}），回滚')
+                return content, False
+            print(f'  ✅ 量表数据已更新（{len(scales)} 个量表，替换旧数据）')
         else:
             print(f'  ⚠️  DEFAULT_SCALES 为空且无占位符，无法注入')
             return content, False
@@ -367,6 +404,15 @@ def main():
                 print(f'  ✅ {html_file}: "{old}" → "{new}" ({count} 处)')
                 modified = True
 
+            # miniprogram-qr.png 引用
+            old = 'assets/miniprogram-qr.png'
+            new = 'miniprogram-qr.png'
+            if old in content:
+                count = content.count(old)
+                content = content.replace(old, new)
+                print(f'  ✅ {html_file}: "{old}" → "{new}" ({count} 处)')
+                modified = True
+
             # 替换 localhost URL
             for old_url, new_url in LOCALHOST_REPLACEMENTS:
                 if old_url in content:
@@ -421,17 +467,25 @@ def main():
     print(f'✅ 构建完成！共 {file_count} 个文件，总计 {total_size:.1f} KB')
     print(f'📊 已打包 {len(scales)} 个量表，{total_questions} 道题目')
     print(f'📂 部署目录: {DEPLOY_DIR}')
-    print('\n📤 上传步骤:')
-    print('   1. 打开微信云开发控制台')
-    print('   2. 进入「静态网站托管」')
-    print('   3. 上传 deploy/ 目录下的所有文件（覆盖旧文件）')
-    print('   4. 真机扫码测试')
-    print('\n🔄 更新量表后的流程:')
-    print('   1. 后台页面修改量表数据')
-    print('   2. 点击"导出所有量表数据"保存为 scales-data.json')
-    print('   3. （可选）编辑 scale-types.json 修改量表类型')
-    print('   4. 重新运行: python3 build-deploy.py')
-    print('   5. 重新上传 deploy/ 文件')
+
+    # 自动部署到 LNMP 服务器（小程序 WebView 加载 www.soarto.com.cn/）
+    print(f'\n🚀 同步前端文件到 LNMP 服务器（{LNMP_SSH_HOST}）...')
+    import subprocess
+    scp_files = [f for f in LNMP_FRONTEND_FILES if os.path.exists(os.path.join(DEPLOY_DIR, f))]
+    scp_args = ['scp'] + [os.path.join(DEPLOY_DIR, f) for f in scp_files] + [f'{LNMP_SSH_HOST}:{LNMP_WWW_DIR}/']
+    try:
+        result = subprocess.run(scp_args, capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            print(f'  ✅ 已同步 {len(scp_files)} 个文件到 www.soarto.com.cn')
+        else:
+            print(f'  ⚠️  scp 失败: {result.stderr.strip()}')
+    except Exception as e:
+        print(f'  ⚠️  scp 异常: {e}')
+
+    print('\n📤 后续步骤:')
+    print('   1. 运行 tcb hosting deploy ./deploy  → 部署到云开发静态托管（rich.soarto.com.cn）')
+    print('   2. LNMP 服务器已自动同步（www.soarto.com.cn）')
+    print('   3. 真机退出小程序重新进入测试')
     print('=' * 60)
 
 

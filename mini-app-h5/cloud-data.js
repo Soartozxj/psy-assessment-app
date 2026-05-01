@@ -1,8 +1,5 @@
 /**
- * cloud-data.js v8.0 - 云端数据代理版
- *
- * v7.0 改动：彻底移除 URL hash / evaluateJavascript 数据传输
- * 量表数据已内置在 shared-data.js 的 DEFAULT_SCALES 中
+ * cloud-data.js v8.1 - 云端数据代理版
  *
  * v8.0 改动：历史记录操作代理到 CloudAPI（HTTP 云端）
  *   - saveHistory: 双写（云端 + 本地 localStorage）
@@ -10,6 +7,11 @@
  *   - deleteHistory: 双删（云端 + 本地）
  *   - callAi: 继续桥接到 CloudAPI.aiDiagnose
  *   - 无 openid 时仅操作本地（降级模式）
+ *
+ * v8.1 改动：量表数据云端同步
+ *   - syncScales: 管理员全量写入云端（PUT /api/scales）
+ *   - loadCloudScales: 从云端拉取上架量表（GET /api/scales）
+ *   - init: WebView 模式下自动从云端加载量表
  */
 (function() {
   'use strict';
@@ -37,7 +39,7 @@
     dataReady: false
   };
 
-  console.log('[CloudData v8] 环境:', isCloud ? 'WebView 云端模式 (' + envId + ')' : '本地模式');
+  console.log('[CloudData v8.1] 环境:', isCloud ? 'WebView 云端模式 (' + envId + ')' : '本地模式');
   console.log('[CloudData v8] 量表数据由 shared-data.js 提供，历史记录代理到 CloudAPI');
 
   // ====================================================
@@ -164,8 +166,96 @@
       return Promise.resolve(true);
     },
 
+    /**
+     * 同步量表到云端（管理员保存时调用）
+     * PUT /api/scales — 全量覆盖云端量表数据
+     */
     syncScales: function(scales) {
-      return Promise.resolve(true);
+      if (!window.CloudAPI || !CloudAPI.isAvailable()) {
+        console.warn('[CloudData] CloudAPI 不可用，跳过云端同步');
+        return Promise.resolve(true);
+      }
+      var openid = CloudAPI.getOpenId();
+      if (!openid) {
+        console.warn('[CloudData] 无 openid，跳过云端同步');
+        return Promise.resolve(true);
+      }
+      var apiBase = window.API_BASE || '';
+      return fetch(apiBase + '/api/scales', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scales: scales, openid: openid })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result.code === 0) {
+          console.log('[CloudData] 量表同步云端成功:', result.saved, '/', result.total);
+          return true;
+        } else {
+          console.warn('[CloudData] 量表同步云端失败:', result.message);
+          return false;
+        }
+      })
+      .catch(function(err) {
+        console.warn('[CloudData] 量表同步云端异常:', err.message);
+        return false;
+      });
+    },
+
+    /**
+     * 从云端拉取上架量表列表（前端 WebView 启动时调用）
+     * 策略：先尝试云托管 API（/api/scales），失败则 fallback 到 LNMP 静态 JSON（/api/scales-json）
+     * 成功后自动写入 localStorage（psy_scales_synced）
+     */
+    loadCloudScales: function() {
+      // 优先 LNMP 静态 JSON（稳定可靠），云托管作为 fallback
+      var lnmpPromise = this._loadFromLNMP();
+      if (!window.CloudAPI || !CloudAPI.isAvailable()) {
+        return lnmpPromise;
+      }
+      // LNMP 成功则直接返回，失败再尝试云托管
+      return lnmpPromise.then(function(lnmpData) {
+        if (lnmpData && lnmpData.length > 0) return lnmpData;
+        console.log('[CloudData] LNMP 无数据，尝试云托管 fallback');
+        var apiBase = window.API_BASE || '';
+        return fetch(apiBase + '/api/scales', { signal: AbortSignal.timeout(5000) })
+          .then(function(res) { return res.json(); })
+          .then(function(result) {
+            if (result.code === 0 && result.data && result.data.length > 0) {
+              console.log('[CloudData] 从云托管加载量表:', result.data.length, '个');
+              localStorage.setItem('psy_scales_synced', JSON.stringify(result.data));
+              return result.data;
+            }
+            return null;
+          })
+          .catch(function(err) {
+            console.warn('[CloudData] 云托管也失败:', err.message);
+            return null;
+          });
+      });
+    },
+
+    /**
+     * LNMP 静态 JSON fallback
+     * 直接 fetch www.soarto.com.cn/api/scales-json（Nginx 反代到 psy-api）
+     */
+    _loadFromLNMP: function() {
+      var lnmpBase = 'https://www.soarto.com.cn';
+      return fetch(lnmpBase + '/api/scales-json', { signal: AbortSignal.timeout(5000) })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+          if (result.code === 0 && result.data && result.data.length > 0) {
+            console.log('[CloudData] 从 LNMP 加载量表:', result.data.length, '个');
+            localStorage.setItem('psy_scales_synced', JSON.stringify(result.data));
+            return result.data;
+          }
+          console.log('[CloudData] LNMP 也无量表数据');
+          return null;
+        })
+        .catch(function(err) {
+          console.warn('[CloudData] LNMP 加载失败:', err.message);
+          return null;
+        });
     },
 
     /**

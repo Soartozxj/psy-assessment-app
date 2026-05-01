@@ -451,10 +451,85 @@ app.get('/', (req, res) => {
   res.json({ code: 0, message: '星蓝心镜 API', version: '1.0.2', env: ENV_ID, deployed: new Date().toISOString() });
 });
 
+// ====================================================
+// 量表数据同步
+// ====================================================
+
+/**
+ * GET /api/scales
+ * 获取上架量表列表（公开接口）
+ * 返回：{ code, data: Scale[] }（仅 status=1 的量表，不含 completedCount/rating 等管理字段）
+ */
+app.get('/api/scales', async (req, res) => {
+  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  try {
+    const { data } = await db.collection('scales').where({ status: 1 }).limit(100).get();
+    const list = (data || []).map(function(s) {
+      return {
+        id: s.id, name: s.name, shortName: s.shortName, code: s.code,
+        category: s.category, categoryName: s.categoryName,
+        emoji: s.emoji, color: s.color, duration: s.duration,
+        questionCount: s.questionCount, desc: s.desc,
+        instruction: s.instruction, tags: s.tags || [],
+        npcConfig: s.npcConfig || { counselorId: '', backgroundId: '' },
+        questions: s.questions || []
+      };
+    });
+    res.json({ code: 0, data: list, count: list.length });
+  } catch (e) {
+    console.error('[Scales] GET 失败:', e.message);
+    res.status(500).json({ code: -1, message: '获取量表列表失败: ' + e.message });
+  }
+});
+
+/**
+ * PUT /api/scales
+ * 全量同步量表数据到云端（管理员专用）
+ * Body: { scales: Scale[], openid }
+ * 会覆盖云端所有量表数据
+ */
+app.put('/api/scales', async (req, res) => {
+  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  try {
+    const openid = req.body.openid || req.body._openid || '';
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (!ADMIN_OPENIDS.includes(openid)) {
+      return res.status(403).json({ code: -1, message: '无管理员权限' });
+    }
+
+    const scales = req.body.scales;
+    if (!Array.isArray(scales)) {
+      return res.status(400).json({ code: -1, message: '需要 scales 数组' });
+    }
+
+    // 先删除旧数据，再逐个写入
+    const { data: oldData } = await db.collection('scales').limit(100).get();
+    for (const doc of (oldData || [])) {
+      try { await db.collection('scales').doc(doc._id).remove(); } catch (e) {}
+    }
+
+    let saved = 0;
+    for (const scale of scales) {
+      try {
+        await db.collection('scales').add({ data: scale });
+        saved++;
+      } catch (e) {
+        console.error('[Scales] 写入失败:', scale.code, e.message);
+      }
+    }
+
+    console.log('[Scales] PUT 完成：写入', saved, '/', scales.length);
+    res.json({ code: 0, message: '同步成功', saved: saved, total: scales.length });
+  } catch (e) {
+    console.error('[Scales] PUT 失败:', e.message);
+    res.status(500).json({ code: -1, message: '同步量表失败: ' + e.message });
+  }
+});
+
 /**
  * POST /api/submit
  * 提交测评答案
- * 
+ *
  * Body: { scaleId, answers, duration? }
  * Returns: { code, data: { id, score, maxScore, level, levelName, color, interp, dims, screening } }
  */

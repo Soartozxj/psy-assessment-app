@@ -658,6 +658,54 @@ app.get('/api/feedback/:recordId', async (req, res) => {
 });
 
 // ====================================================
+// 量表数据静态 JSON 同步（给前端 WebView 直接 fetch）
+// ====================================================
+
+const SCALES_JSON_PATH = process.env.SCALES_JSON_PATH || '/www/wwwroot/www.soarto.com.cn/scales-data.json';
+
+/**
+ * GET /api/scales-json — 公开接口，返回上架量表
+ * 前端 WebView 启动时直接 fetch 此接口获取最新量表列表
+ */
+app.get('/api/scales-json', (req, res) => {
+  try {
+    if (!fs.existsSync(SCALES_JSON_PATH)) {
+      return res.json({ code: 0, data: [], message: '暂无量表数据' });
+    }
+    const raw = fs.readFileSync(SCALES_JSON_PATH, 'utf-8');
+    const allScales = JSON.parse(raw);
+    // 只返回上架的量表（status === 1 或未设置）
+    const active = (Array.isArray(allScales) ? allScales : [])
+      .filter(s => s.status === 1 || s.status === undefined);
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json({ code: 0, data: active, total: active.length });
+  } catch (err) {
+    console.error('[ScalesJSON] 读取失败:', err.message);
+    res.status(500).json({ code: -1, message: '读取量表数据失败' });
+  }
+});
+
+/**
+ * PUT /api/scales-json — 管理员专用，全量更新 scales-data.json
+ * 后台保存时调用，覆盖写入
+ */
+app.put('/api/scales-json', adminSecretMiddleware, (req, res) => {
+  try {
+    const { scales } = req.body;
+    if (!Array.isArray(scales)) {
+      return res.status(400).json({ code: -1, message: '需要 scales 数组' });
+    }
+    const json = JSON.stringify(scales, null, 2);
+    fs.writeFileSync(SCALES_JSON_PATH, json, 'utf-8');
+    console.log('[ScalesJSON] 已更新，共', scales.length, '个量表');
+    res.json({ code: 0, data: { total: scales.length } });
+  } catch (err) {
+    console.error('[ScalesJSON] 写入失败:', err.message);
+    res.status(500).json({ code: -1, message: '写入量表数据失败' });
+  }
+});
+
+// ====================================================
 // 健康检查
 // ====================================================
 
