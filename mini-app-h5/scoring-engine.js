@@ -67,10 +67,38 @@ var ScoringEngine = (() => {
   }
 
   /**
+   * 收集新题型得分（matrix / parent-child）
+   * @param {object} q - 题目对象（含 type 字段）
+   * @param {object} ans - 该题的答案（对象格式）
+   * @returns {number|null} 得分，null 表示非特殊题型
+   */
+  function _collectSpecialScore(q, ans) {
+    // 矩阵题：每行选一列，各列分数求和
+    if (q.type === 'matrix') {
+      let total = 0;
+      const rows = q.rows || [];
+      const opts = q.options || [];
+      for (const row of rows) {
+        const colIdx = ans[row.id];
+        if (colIdx !== undefined && colIdx !== null && opts[colIdx]) {
+          total += (opts[colIdx].score || 0);
+        }
+      }
+      return total;
+    }
+    // 父子题：选"无任何来源"=0分，否则=选中的子选项数
+    if (q.type === 'parent-child') {
+      if (ans.main === 0 || ans.main === '0') return 0;
+      return Array.isArray(ans.subs) ? ans.subs.length : 0;
+    }
+    return null;
+  }
+
+  /**
    * 收集指定题目的得分
    * @param {object[]} questions - 题目数组
    * @param {number[]} itemIds - 题号数组
-   * @param {object} answers - 用户答案 { questionId: optionIndex }
+   * @param {object} answers - 用户答案 { questionId: optionIndex | object }
    * @returns {number[]} 得分数组
    */
   function collectScores(questions, itemIds, answers) {
@@ -80,16 +108,24 @@ var ScoringEngine = (() => {
       const q = questions.find(q => q.id == qid);
       if (!q) continue;
       // 兼容数字键和字符串键
-      const optIdx = answers[qid] !== undefined ? answers[qid] : answers[String(qid)];
-      if (optIdx === undefined || optIdx === null) continue;
+      const ans = answers[qid] !== undefined ? answers[qid] : answers[String(qid)];
+      if (ans === undefined || ans === null) continue;
+
+      // 新题型：答案为对象（matrix/parent-child）
+      if (typeof ans === 'object' && ans !== null) {
+        const score = _collectSpecialScore(q, ans);
+        if (score !== null) { scores.push(score); }
+        continue;
+      }
+
+      // 原有逻辑：简单值（数字索引或选项 id）
       let opt;
-      if (typeof optIdx === 'number' && optIdx < q.options.length) {
-        opt = q.options[optIdx];
-      } else if (typeof optIdx === 'string') {
-        // 选项 id 是字符串（如 'A', 'B', 'C'）
-        opt = q.options.find(o => o.id === optIdx);
+      if (typeof ans === 'number' && ans < q.options.length) {
+        opt = q.options[ans];
+      } else if (typeof ans === 'string') {
+        opt = q.options.find(o => o.id === ans);
       } else {
-        opt = q.options.find(o => o.id === optIdx);
+        opt = q.options.find(o => o.id === ans);
       }
       if (opt) scores.push(opt.score || 0);
     }
@@ -296,6 +332,7 @@ var ScoringEngine = (() => {
 
   /**
    * 获取指定题号列表中每道题的最大选项分
+   * 支持 matrix（行数×最大列分）和 parent-child（子选项数最大值）
    * @param {object[]} questions - 题目数组
    * @param {number[]} itemIds - 题号数组
    * @returns {number[]} 每道题的最大选项分
@@ -305,6 +342,20 @@ var ScoringEngine = (() => {
     for (const qid of itemIds) {
       const q = questions.find(q => q.id == qid);
       if (!q || !q.options || q.options.length === 0) continue;
+
+      // 矩阵题：最大分 = 行数 × 最大列分
+      if (q.type === 'matrix' && q.rows && q.rows.length > 0) {
+        const maxCol = Math.max(...q.options.map(o => o.score || 0));
+        maxScores.push(q.rows.length * maxCol);
+        continue;
+      }
+
+      // 父子题：最大分 = 子选项数量
+      if (q.type === 'parent-child' && q.subOptions) {
+        maxScores.push(q.subOptions.length);
+        continue;
+      }
+
       const maxOpt = Math.max(...q.options.map(o => o.score || 0));
       maxScores.push(maxOpt);
     }
@@ -313,6 +364,7 @@ var ScoringEngine = (() => {
 
   /**
    * 获取指定题号列表中每道题的最小选项分
+   * 支持 matrix（行数×最小列分）和 parent-child（0，因为可以选"无任何来源"）
    * @param {object[]} questions - 题目数组
    * @param {number[]} itemIds - 题号数组
    * @returns {number[]} 每道题的最小选项分
@@ -322,6 +374,20 @@ var ScoringEngine = (() => {
     for (const qid of itemIds) {
       const q = questions.find(q => q.id == qid);
       if (!q || !q.options || q.options.length === 0) continue;
+
+      // 矩阵题：最小分 = 行数 × 最小列分
+      if (q.type === 'matrix' && q.rows && q.rows.length > 0) {
+        const minCol = Math.min(...q.options.map(o => o.score || 0));
+        minScores.push(q.rows.length * minCol);
+        continue;
+      }
+
+      // 父子题：最小分 = 0（选"无任何来源"）
+      if (q.type === 'parent-child') {
+        minScores.push(0);
+        continue;
+      }
+
       const minOpt = Math.min(...q.options.map(o => o.score || 0));
       minScores.push(minOpt);
     }
@@ -365,6 +431,7 @@ var ScoringEngine = (() => {
   function calcMaxScores(scoring, questions, actualMetrics) {
     const dimsMax = {};
     let totalMax = null;
+    if (!scoring) scoring = {};
 
     // 1. 维度最大分
     if (scoring.dimensions && scoring.dimensions.length > 0) {
@@ -472,6 +539,15 @@ var ScoringEngine = (() => {
     if (totalMax === null) {
       const allMax = questions.map(q => {
         if (!q.options || q.options.length === 0) return 0;
+        // 矩阵题：行数 × 最大列分
+        if (q.type === 'matrix' && q.rows && q.rows.length > 0) {
+          const maxCol = Math.max(...q.options.map(o => o.score || 0));
+          return q.rows.length * maxCol;
+        }
+        // 父子题：子选项数
+        if (q.type === 'parent-child' && q.subOptions) {
+          return q.subOptions.length;
+        }
         return Math.max(...q.options.map(o => o.score || 0));
       });
       totalMax = allMax.reduce((a, b) => a + b, 0);
@@ -493,6 +569,7 @@ var ScoringEngine = (() => {
   function calcMinScores(scoring, questions) {
     const dimsMin = {};
     let totalMin = 0;
+    if (!scoring) scoring = {};
 
     // 1. 维度最低分
     if (scoring.dimensions && scoring.dimensions.length > 0) {
@@ -623,13 +700,19 @@ var ScoringEngine = (() => {
     // 无 scoring 配置时，回退到简单求和
     if (!scoring) {
       const scores = questions.map(q => {
-        const optIdx = answers[q.id];
-        if (optIdx === undefined || optIdx === null) return 0;
+        const ans = answers[q.id];
+        if (ans === undefined || ans === null) return 0;
+        // 新题型：答案为对象
+        if (typeof ans === 'object' && ans !== null) {
+          const score = _collectSpecialScore(q, ans);
+          return score !== null ? score : 0;
+        }
+        // 原有逻辑
         let opt;
-        if (typeof optIdx === 'number' && optIdx < q.options.length) {
-          opt = q.options[optIdx];
+        if (typeof ans === 'number' && ans < q.options.length) {
+          opt = q.options[ans];
         } else {
-          opt = q.options.find(o => o.id === optIdx);
+          opt = q.options.find(o => o.id === ans);
         }
         return opt ? (opt.score || 0) : 0;
       });
@@ -776,6 +859,16 @@ var ScoringEngine = (() => {
 
     // 5. 计算理论最大分（用于百分比和进度环）
     result.maxScores = calcMaxScores(scoring, questions, result.metrics);
+
+    // 6. 回退：无 metrics/dimensions 配置时，基于 keys 做 SUM 计算总分
+    if (!result.metrics.totalScore && !result.metrics.total_score &&
+        scoring.keys && scoring.keys.length > 0) {
+      const keyIds = parseItems(scoring.keys, questions.length);
+      const allScores = collectScores(questions, keyIds, answers);
+      let total = applyFormula(scoring.type || 'SUM', allScores);
+      if (scoring.transform) total = applyTransform(total, scoring.transform);
+      result.metrics.totalScore = Math.round(total * 100) / 100;
+    }
 
     return result;
   }
@@ -1093,6 +1186,14 @@ var ScoringEngine = (() => {
     const p = prefix || 'metric_';
     const slug = label.replace(/[^a-zA-Z0-9\u4e00-\u9fff_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     return p + slug.substring(0, 30);
+  }
+
+  // 暴露内部函数供测试使用（浏览器 + Node.vm 环境）
+  if (typeof globalThis !== 'undefined') {
+    globalThis._collectSpecialScore = _collectSpecialScore;
+    globalThis.collectScores = collectScores;
+    globalThis.calcMaxScores = calcMaxScores;
+    globalThis.calcMinScores = calcMinScores;
   }
 
   // 公开 API

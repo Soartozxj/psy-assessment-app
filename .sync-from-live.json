@@ -1,0 +1,27 @@
+{
+  "index.html": {
+    "remotePath": "/www/wwwroot/www.soarto.com.cn/index.html",
+    "localPath": "/Users/rich/WorkBuddy/20260407113106/mini-app-h5/frontend/index.html",
+    "md5": "351646fc32203adaa7a9330386bd1c3e",
+    "syncTime": "2026-05-01 12:32:44"
+  },
+  "shared-data.js": {
+    "remotePath": "/www/wwwroot/www.soarto.com.cn/shared-data.js",
+    "localPath": "/Users/rich/WorkBuddy/20260407113106/mini-app-h5/shared-data.js",
+    "md5": "5bb1c56bbd64922c214ae804fee8c43c",
+    "syncTime": "2026-05-01 12:32:46"
+  },
+  "scoring-engine.js": {
+    "remotePath": "/www/wwwroot/www.soarto.com.cn/scoring-engine.js",
+    "localPath": "/Users/rich/WorkBuddy/20260407113106/mini-app-h5/scoring-engine.js",
+    "md5": "220ab45d5c9dbd73a27fe3da83532237",
+    "syncTime": "2026-05-01 12:32:46"
+  },
+  "psy-api.js": {
+    "remotePath": "/www/server/psy-api/app.js",
+    "localPath": "/Users/rich/WorkBuddy/20260407113106/server/psy-api.js",
+    "md5": "e174a3412e31bb7ee332dddc645b2ab1",
+    "syncTime": "2026-05-01 12:32:47"
+  },
+  "_lastSync": "2026-05-01 12:32:47"
+}

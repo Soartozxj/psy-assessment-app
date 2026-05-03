@@ -242,7 +242,27 @@
     console.log = console.debug = console.info = console.warn = function(){};
   }
   </script>
- <script src="../shared-data.js?v=3"></script>
+  <!-- 本地开发模式：从 scales-data.json 加载量表数据 -->
+  <script>
+    (function() {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '../../scales-data.json', false);
+        xhr.send(null);
+        if (xhr.status === 200) {
+          window.__BUNDLED_SCALES__ = JSON.parse(xhr.responseText);
+          console.log('[Admin] 从 scales-data.json 加载了 ' + window.__BUNDLED_SCALES__.length + ' 个量表');
+        } else {
+          console.warn('[Admin] 加载 scales-data.json 失败（HTTP ' + xhr.status + '），使用空数组');
+          window.__BUNDLED_SCALES__ = [];
+        }
+      } catch(e) {
+        console.warn('[Admin] 加载 scales-data.json 异常: ' + e.message);
+        window.__BUNDLED_SCALES__ = [];
+      }
+    })();
+  </script>
+  <script src="../shared-data.js?v=3"></script>
  <script src="../cloud-data.js"></script>
  <script src="../data-monitor.js"></script>
  <script src="../asset-storage.js?v=20260429d"></script>
@@ -1796,6 +1816,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
     .fb-detail-actions { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
   </style>
+<script src="default-prompts.js?v=6"></script>
 </head>
 <body>
 
@@ -6223,6 +6244,42 @@ function parseNewTemplateFormatCSV(lines, headers) {
       question.reverse = true;
     }
 
+    // 解析题型字段（非必填，默认标准单选题）
+    const typeVal = (values[headerMap['题型']] || '').trim().toLowerCase();
+    if (typeVal === 'matrix' || typeVal === 'parent-child') {
+      question.type = typeVal;
+    }
+
+    // 解析行项目(JSON) —— 矩阵题专用
+    if (question.type === 'matrix') {
+      const rowsRaw = (values[headerMap['行项目(JSON)']] || '').trim();
+      if (rowsRaw) {
+        try {
+          const parsed = JSON.parse(rowsRaw);
+          if (Array.isArray(parsed)) {
+            question.rows = parsed;
+          }
+        } catch (e) {
+          console.warn('第' + (i+1) + '行：行项目(JSON)解析失败 -', e.message);
+        }
+      }
+    }
+
+    // 解析子选项(JSON) —— 父子题专用
+    if (question.type === 'parent-child') {
+      const subsRaw = (values[headerMap['子选项(JSON)']] || '').trim();
+      if (subsRaw) {
+        try {
+          const parsed = JSON.parse(subsRaw);
+          if (Array.isArray(parsed)) {
+            question.subOptions = parsed;
+          }
+        } catch (e) {
+          console.warn('第' + (i+1) + '行：子选项(JSON)解析失败 -', e.message);
+        }
+      }
+    }
+
     // 处理选项（动态识别，支持 A~Z，不再硬编码上限）
     for (let optionIndex = 0; optionIndex < 26; optionIndex++) {
       const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, ...
@@ -6501,22 +6558,75 @@ function previewImportScaleQuestions(index) {
   const questionsHtml = questions.length === 0
     ? '<div style="color:var(--text-muted);text-align:center;padding:20px;">该量表暂无题目</div>'
     : questions.map((q, qi) => {
-        const optionsHtml = (q.options || []).map((opt, oi) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:var(--bg);border-radius:6px;">
-            <span style="font-weight:600;color:var(--primary);min-width:18px;">${String.fromCharCode(65+oi)}</span>
-            <span style="flex:1;font-size:13px;">${escHtml(opt.label || opt.text || '')}</span>
-            <span style="font-size:12px;color:var(--text-muted);background:#eee;padding:1px 8px;border-radius:10px;">${opt.score}分</span>
-          </div>`).join('');
+        // 题型标签
+        let typeTag = '';
+        if (q.type === 'matrix') {
+          typeTag = '<span style="font-size:11px;color:#7C3AED;background:#F3E8FF;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">📊 矩阵题</span>';
+        } else if (q.type === 'parent-child') {
+          typeTag = '<span style="font-size:11px;color:#0891B2;background:#ECFEFF;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">🔗 父子题</span>';
+        }
         const reverseTag = q.reverse
           ? '<span style="font-size:11px;color:#D0021B;background:#FFF2F0;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">🔄 反向计分</span>'
           : '';
-        const cardBorder = q.reverse ? '1px solid #FFB3B3' : '1px solid var(--border)';
+
+        // 选项渲染（分题型）
+        let optionsHtml = '';
+        if (q.type === 'matrix' && q.rows && q.rows.length > 0) {
+          // 矩阵题：表格形式展示
+          const cols = (q.options || []);
+          optionsHtml = '<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+          // 表头：选项
+          optionsHtml += '<tr style="background:var(--bg);"><th style="padding:6px 8px;border:1px solid var(--border);text-align:left;min-width:80px;">评分项</th>';
+          cols.forEach((col, ci) => {
+            optionsHtml += '<th style="padding:6px 4px;border:1px solid var(--border);text-align:center;">' + escHtml(col.label || '') + '<br><span style="color:var(--text-muted);font-size:10px;">' + col.score + '分</span></th>';
+          });
+          optionsHtml += '</tr>';
+          // 行项目
+          q.rows.forEach(row => {
+            optionsHtml += '<tr><td style="padding:6px 8px;border:1px solid var(--border);font-weight:500;">' + escHtml(row.label || row.id || '') + '</td>';
+            cols.forEach(() => {
+              optionsHtml += '<td style="padding:6px;border:1px solid var(--border);text-align:center;"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-radius:50%;"></span></td>';
+            });
+            optionsHtml += '</tr>';
+          });
+          optionsHtml += '</table></div>';
+        } else if (q.type === 'parent-child') {
+          // 父子题：主选项 + 子选项列表
+          const mainOpts = (q.options || []).map((opt, oi) => `
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:var(--bg);border-radius:6px;">
+              <span style="min-width:18px;height:18px;border:2px solid ${oi === 0 ? 'var(--border)' : 'var(--primary)'};border-radius:50%;display:flex;align-items:center;justify-content:center;">${oi === 0 ? '' : '●'}</span>
+              <span style="flex:1;font-size:13px;">${escHtml(opt.label || opt.text || '')}</span>
+              <span style="font-size:12px;color:var(--text-muted);background:#eee;padding:1px 8px;border-radius:10px;">${opt.score}分</span>
+            </div>`).join('');
+          const subs = (q.subOptions || []);
+          const subsHtml = subs.length > 0
+            ? '<div style="margin-top:8px;padding:8px 10px;border:1px dashed var(--primary);border-radius:6px;background:#FAFAFF;"><div style="font-size:11px;color:var(--primary);font-weight:500;margin-bottom:6px;">子选项（选择"有"后展开）</div>' +
+              subs.map(sub => `
+                <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                  <span style="width:16px;height:16px;border:2px solid var(--primary);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--primary);">☐</span>
+                  <span style="font-size:12px;">${escHtml(sub.label || '')}</span>
+                  <span style="font-size:10px;color:var(--text-muted);">${sub.id || ''}</span>
+                </div>`).join('') + '</div>'
+            : '';
+          optionsHtml = mainOpts + subsHtml;
+        } else {
+          // 标准单选题
+          optionsHtml = (q.options || []).map((opt, oi) => `
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:var(--bg);border-radius:6px;">
+              <span style="font-weight:600;color:var(--primary);min-width:18px;">${String.fromCharCode(65+oi)}</span>
+              <span style="flex:1;font-size:13px;">${escHtml(opt.label || opt.text || '')}</span>
+              <span style="font-size:12px;color:var(--text-muted);background:#eee;padding:1px 8px;border-radius:10px;">${opt.score}分</span>
+            </div>`).join('');
+        }
+
+        const cardBorder = q.reverse ? '1px solid #FFB3B3' : (q.type === 'matrix' ? '1px solid #D8B4FE' : q.type === 'parent-child' ? '1px solid #A5F3FC' : '1px solid var(--border)');
+        const cardBg = q.reverse ? 'background:#FFFAFA;' : (q.type === 'matrix' ? 'background:#FAF5FF;' : q.type === 'parent-child' ? 'background:#F0FDFA;' : '');
         return `
-          <div style="border:${cardBorder};border-radius:8px;padding:12px;margin-bottom:10px;${q.reverse ? 'background:#FFFAFA;' : ''}">
+          <div style="border:${cardBorder};border-radius:8px;padding:12px;margin-bottom:10px;${cardBg}">
             <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
-              <span style="min-width:24px;height:24px;background:${q.reverse ? '#D0021B' : 'var(--primary)'};color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">${qi+1}</span>
+              <span style="min-width:24px;height:24px;background:${q.reverse ? '#D0021B' : q.type === 'matrix' ? '#7C3AED' : q.type === 'parent-child' ? '#0891B2' : 'var(--primary)'};color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">${qi+1}</span>
               <span style="font-size:14px;line-height:1.5;">${escHtml(q.content || q.text || '')}</span>
-              ${reverseTag}
+              ${typeTag}${reverseTag}
             </div>
             ${optionsHtml}
           </div>`;
@@ -7946,10 +8056,14 @@ async function callAi(messages, options) {
       console.log('[Admin AI] 使用 CloudAPI 服务端代理');
       return await window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', temperature: temperature, maxTokens: maxTokens });
     }
-    // fallback：直接调用 LNMP /api/ai-diagnose（admin-legacy.html 部署在同域）
+    // fallback：直接调用 LNMP /api/ai-diagnose
     console.log('[Admin AI] 使用 LNMP /api/ai-diagnose 直接调用');
+    var apiBase = (localStorage.getItem('psy_cloud_api_base') || '').replace(/\/+$/, '');
+    if (!apiBase) {
+      throw new Error('未配置 API 服务器地址（psy_cloud_api_base），请在"运维工具 → AI 密钥管理"中设置 API 地址');
+    }
     var model = (options && options.model) || cfg.dashscope.model || 'qwen-plus';
-    var res = await fetch('/api/ai-diagnose', {
+    var res = await fetch(apiBase + '/api/ai-diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ provider: 'dashscope', model: model, messages: messages, maxTokens: maxTokens, temperature: temperature })
@@ -8003,8 +8117,11 @@ var DEFAULT_META_PROMPT = '你是一个心理测评系统的 Prompt 工程师。
   + '• {dimensions} — JSON 数组，各维度得分详情，结构如下：\n'
   + '  [{"name":"维度名","score":12,"pct":75.0,"max":16,"color":"#4CAF50","levelLabel":"良好","levelText":"该维度得分处于良好水平","hasInterp":true}, ...]\n'
   + '  其中：name=维度名，score=维度分，pct=得分百分比(0-100)，max=满分，color=等级颜色(十六进制)，levelLabel=等级标签，levelText=等级解释，hasInterp=是否有解释规则\n'
-  + '• {answers} — JSON 对象，用户的作答详情，键为题目序号(从1开始)，值为选项索引(从0开始)，如：\n'
-  + '  {"1":0,"2":2,"3":1} 表示第1题选了第1个选项、第2题选了第3个选项、第3题选了第2个选项\n'
+  + '• {answers} — JSON 对象，用户的作答详情。格式因题型而异：\n'
+  + '  标准题：{"1":0,"2":2} 表示第1题选第1个选项(index=0)，第2题选第3个选项(index=2)\n'
+  + '  矩阵题：{"5":{"row_1":0,"row_2":2}} 表示第5题各行的选项index\n'
+  + '  父子题：{"6":{"main":0,"subs":[1,3],"subFill":{}}} 表示第6题主选项index=0，勾选了子选项index 1和3\n'
+  + '  若量表仅含标准题，则所有值均为数字（选项index），无嵌套对象\n'
   + '\n'
   + '【⚠️ 输出格式约束（极其重要，必须写入 Prompt 中）】\n'
   + '你生成的 Prompt 必须包含以下格式约束段落，确保 AI 诊断输出为纯 Markdown 格式：\n'
@@ -8240,21 +8357,69 @@ function buildScaleContext(scale) {
     const qNum = i + 1;
     const dimName = qDimMap[i] || qDimMap[qNum] || '';
     const reverseFlag = q.reverseScored ? '，反向计分' : '';
+    const qType = q.type || 'standard';
+
+    // 题型标签
+    const typeLabel = qType === 'matrix' ? ' [矩阵题]' : (qType === 'parent-child' ? ' [父子题]' : '');
 
     ctx += `Q${qNum}`;
+    if (typeLabel) ctx += typeLabel;
     if (dimName) ctx += ` [${dimName}]`;
     if (reverseFlag) ctx += ` [反向计分]`;
     ctx += `：${q.text || '(无题文)'}\n`;
 
-    // 选项
+    // 选项（所有题型共有）
     if (q.options && q.options.length > 0) {
-      q.options.forEach(opt => {
+      ctx += '  共享选项：';
+      q.options.forEach((opt, oi) => {
         const label = opt.label || opt.text || '';
         const score = opt.score !== undefined ? opt.score : '';
-        ctx += `  ${label}(${score}分)`;
-        if (q.options.indexOf(opt) < q.options.length - 1) ctx += ' / ';
+        ctx += `${label}(${score}分)`;
+        if (oi < q.options.length - 1) ctx += ' / ';
       });
       ctx += '\n';
+    }
+
+    // 矩阵题：输出行项目
+    if (qType === 'matrix' && q.rows && q.rows.length > 0) {
+      ctx += '  行项目：';
+      q.rows.forEach((row, ri) => {
+        const rowLabel = typeof row === 'object' ? (row.label || row.text || row.id) : row;
+        ctx += rowLabel;
+        if (ri < q.rows.length - 1) ctx += ' / ';
+      });
+      ctx += '\n';
+      ctx += '  计分：每行选择一个选项，该选项的分数即为该行得分，所有行得分求和\n';
+    }
+
+    // 父子题：输出主选项属性 + 子选项
+    if (qType === 'parent-child') {
+      // 主选项属性
+      if (q.options && q.options.length > 0) {
+        ctx += '  主选项属性：';
+        q.options.forEach((opt, oi) => {
+          const label = opt.label || opt.text || '';
+          const attrs = [];
+          if (opt.isTerminal) attrs.push('终止');
+          if (opt.hasChildren) attrs.push('展开子选项');
+          ctx += `${label}(${attrs.length ? attrs.join('+') : '默认'})`;
+          if (oi < q.options.length - 1) ctx += ' / ';
+        });
+        ctx += '\n';
+      }
+      // 子选项
+      if (q.subOptions && q.subOptions.length > 0) {
+        ctx += '  子选项：';
+        q.subOptions.forEach((sub, si) => {
+          const subLabel = typeof sub === 'object' ? (sub.label || sub.text || sub.id) : sub;
+          const subScore = typeof sub === 'object' && sub.score !== undefined ? `(${sub.score}分)` : '';
+          const subInput = typeof sub === 'object' && sub.hasInput ? '[可填空]' : '';
+          ctx += `${subLabel}${subScore}${subInput}`;
+          if (si < q.subOptions.length - 1) ctx += ' / ';
+        });
+        ctx += '\n';
+        ctx += '  计分：选"终止"的主选项计0分；选"展开子选项"的主选项后，勾选的子选项数即为该题得分\n';
+      }
     }
   });
 
@@ -9155,16 +9320,84 @@ function renderQEditor() {
   document.getElementById('q-count').textContent = currentQuestions.length;
   // 读取过渡语池的阶段统计，供下拉框显示
   var poolPhases = _getTransitionPhaseCounts();
-  container.innerHTML = currentQuestions.map((q, qi) => `
-    <div class="question-item" id="q-item-${qi}">
+  container.innerHTML = currentQuestions.map((q, qi) => {
+    var qType = q.type || 'standard';
+    var typeLabel = qType === 'matrix' ? '📊 矩阵题' : qType === 'parent-child' ? '🔗 父子题' : '📝 单选题';
+    var typeColor = qType === 'matrix' ? '#7C3AED' : qType === 'parent-child' ? '#0891B2' : 'var(--text-muted)';
+    var cardStyle = qType === 'matrix' ? 'border-left:3px solid #7C3AED;background:#FAF5FF;' : qType === 'parent-child' ? 'border-left:3px solid #0891B2;background:#F0FDFA;' : '';
+
+    // 选项区域：根据题型分支
+    var optionsHtml = '';
+    if (qType === 'matrix') {
+      // 矩阵题：共享选项 + 行项目
+      optionsHtml = '<div class="options-row" style="margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#7C3AED;font-weight:600;margin-bottom:4px">📋 共享选项（每行共享同一套选项）</div>' +
+        q.options.map((opt, oi) => '<div class="option-input-row">' +
+          '<div class="opt-label">' + String.fromCharCode(65+oi) + '</div>' +
+          '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateOptLabel(' + qi + ',' + oi + ',this.value)" />' +
+          '<input class="opt-score" type="number" value="' + opt.score + '" min="-10" max="10" step="1" onchange="updateOptScore(' + qi + ',' + oi + ',parseFloat(this.value))" />' +
+          '<span class="opt-score-label">分</span>' +
+        '</div>').join('') +
+        '<div style="margin-top:6px"><button type="button" style="padding:3px 10px;font-size:11px;background:#7C3AED;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addOptToQuestion(' + qi + ')">＋ 添加选项</button></div>' +
+      '</div>' +
+      '<div style="margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#7C3AED;font-weight:600;margin-bottom:4px">📐 矩阵行项目</div>' +
+        (q.rows || []).map((row, ri) => '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">' +
+          '<span style="font-size:11px;color:var(--text-muted);min-width:18px">' + (ri+1) + '.</span>' +
+          '<input class="opt-text" type="text" value="' + escHtml(row.label||'') + '" placeholder="行项目内容" onchange="updateMatrixRow(' + qi + ',' + ri + ',this.value)" style="flex:1" />' +
+          '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeMatrixRow(' + qi + ',' + ri + ')">✕</button>' +
+        '</div>').join('') +
+        '<button type="button" style="padding:3px 10px;font-size:11px;background:#7C3AED;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addMatrixRow(' + qi + ')">＋ 添加行</button>' +
+      '</div>';
+    } else if (qType === 'parent-child') {
+      // 父子题：主选项 + 子选项
+      optionsHtml = '<div class="options-row" style="margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#0891B2;font-weight:600;margin-bottom:4px">🔗 主选项</div>' +
+        q.options.map((opt, oi) => '<div class="option-input-row">' +
+          '<div class="opt-label">' + String.fromCharCode(65+oi) + '</div>' +
+          '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateOptLabel(' + qi + ',' + oi + ',this.value)" />' +
+          '<input class="opt-score" type="number" value="' + opt.score + '" min="-10" max="10" step="1" onchange="updateOptScore(' + qi + ',' + oi + ',parseFloat(this.value))" />' +
+          '<span class="opt-score-label">分</span>' +
+        '</div>').join('') +
+      '</div>' +
+      '<div style="margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#0891B2;font-weight:600;margin-bottom:4px">📋 子选项（选中主选项后展开显示）</div>' +
+        (q.subOptions || []).map((sub, si) => '<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;padding:4px 8px;background:#E0F2FE;border-radius:4px;border-left:2px solid #0891B2">' +
+          '<span style="font-size:11px;color:#0891B2;font-weight:600;min-width:20px">' + (si+1) + '</span>' +
+          '<input class="opt-text" type="text" value="' + escHtml(sub.label||'') + '" placeholder="子选项内容" onchange="updateSubOption(' + qi + ',' + si + ',this.value)" style="flex:1" />' +
+          '<input class="opt-score" type="number" value="' + (sub.score !== undefined ? sub.score : 0) + '" min="-10" max="10" step="1" onchange="updateSubOptionScore(' + qi + ',' + si + ',parseFloat(this.value))" style="width:50px" />' +
+          '<span style="font-size:11px;color:var(--text-muted)">分</span>' +
+          '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeSubOption(' + qi + ',' + si + ')">✕</button>' +
+        '</div>').join('') +
+        '<button type="button" style="padding:3px 10px;font-size:11px;background:#0891B2;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addSubOption(' + qi + ')">＋ 添加子选项</button>' +
+      '</div>';
+    } else {
+      // 标准单选题
+      optionsHtml = '<div class="options-row">' +
+        q.options.map((opt, oi) => '<div class="option-input-row">' +
+          '<div class="opt-label">' + String.fromCharCode(65+oi) + '</div>' +
+          '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateOptLabel(' + qi + ',' + oi + ',this.value)" />' +
+          '<input class="opt-score" type="number" value="' + opt.score + '" min="-10" max="10" step="1" onchange="updateOptScore(' + qi + ',' + oi + ',parseFloat(this.value))" />' +
+          '<span class="opt-score-label">分</span>' +
+        '</div>').join('') +
+      '</div>';
+    }
+
+    return `
+    <div class="question-item" id="q-item-${qi}" style="${cardStyle}">
       <div class="question-item-header">
         <div class="q-num">${qi + 1}</div>
         <input class="q-text-input" type="text" value="${escHtml(q.content||'')}" placeholder="请输入题目内容" onchange="updateQContent(${qi}, this.value)" />
+        <select class="form-control" style="width:100px;height:28px;font-size:11px;padding:0 4px;font-weight:600;color:${typeColor};border-color:${typeColor}" onchange="updateQType(${qi}, this.value)" title="题目类型">
+          <option value="standard" ${qType==='standard'?'selected':''}>📝 单选题</option>
+          <option value="matrix" ${qType==='matrix'?'selected':''}>📊 矩阵题</option>
+          <option value="parent-child" ${qType==='parent-child'?'selected':''}>🔗 父子题</option>
+        </select>
         <select class="form-control" style="width:140px;height:28px;font-size:12px;padding:0 4px" onchange="updateTransition(${qi}, this.value)" title="过渡语模式">
           <option value="random" ${(q.transition||'random')==='random'?'selected':''}>🎲 随机(${poolPhases.total}条)</option>
-          <option value="phase:开始阶段" ${q.transition==='phase:开始阶段'?'selected':''}>🟢 开始阶段(${poolPhases.start}条)</option>
-          <option value="phase:中间阶段" ${q.transition==='phase:中间阶段'?'selected':''}>🔵 中间阶段(${poolPhases.middle}条)</option>
-          <option value="phase:结束阶段" ${q.transition==='phase:结束阶段'?'selected':''}>🟡 结束阶段(${poolPhases.end}条)</option>
+          <option value="phase:开始阶段" ${q.transition==='phase:开始阶段'?'selected':''}>🟢 开始(${poolPhases.start})</option>
+          <option value="phase:中间阶段" ${q.transition==='phase:中间阶段'?'selected':''}>🔵 中间(${poolPhases.middle})</option>
+          <option value="phase:结束阶段" ${q.transition==='phase:结束阶段'?'selected':''}>🟡 结束(${poolPhases.end})</option>
           <option value="none" ${q.transition==='none'?'selected':''}>🔇 无</option>
           <option value="custom" ${(q.transition&&q.transition!=='random'&&q.transition!=='none'&&!q.transition.startsWith('phase:'))?'selected':''}>✏️ 自定义</option>
         </select>
@@ -9175,15 +9408,7 @@ function renderQEditor() {
         <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">💬 自定义过渡语:</span>
         <input class="opt-text" type="text" value="${escHtml(q.transition)}" placeholder="输入自定义过渡语..." onchange="updateTransition(${qi}, this.value)" style="flex:1" />
       </div>` : ''}
-      <div class="options-row">
-        ${q.options.map((opt, oi) => `
-          <div class="option-input-row">
-            <div class="opt-label">${String.fromCharCode(65+oi)}</div>
-            <input class="opt-text" type="text" value="${escHtml(opt.label||'')}" placeholder="选项文字" onchange="updateOptLabel(${qi},${oi},this.value)" />
-            <input class="opt-score" type="number" value="${opt.score}" min="-10" max="10" step="1" onchange="updateOptScore(${qi},${oi},parseFloat(this.value))" />
-            <span class="opt-score-label">分</span>
-          </div>`).join('')}
-      </div>
+      ${optionsHtml}
       <!-- 维度选择 -->
       <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
         <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">📊 维度:</span>
@@ -9194,7 +9419,8 @@ function renderQEditor() {
         <input class="opt-text" type="text" value="" placeholder="新维度名称" id="dim-input-${qi}" style="width:120px;font-size:12px" onkeydown="if(event.key==='Enter'){event.preventDefault();addDimensionOption(${qi},this)}" />
         <button type="button" style="padding:4px 8px;font-size:11px;white-space:nowrap;background:var(--primary);color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addDimensionOption(${qi},document.getElementById('dim-input-${qi}'))">＋</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function escHtml(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -9212,6 +9438,69 @@ function formatTime(iso) {
 function updateQContent(qi, val) { currentQuestions[qi].content = val; document.getElementById('q-count').textContent = currentQuestions.length; }
 function updateOptLabel(qi, oi, val) { currentQuestions[qi].options[oi].label = val; }
 function updateOptScore(qi, oi, val) { currentQuestions[qi].options[oi].score = val; }
+
+// 题型切换
+function updateQType(qi, newType) {
+  var q = currentQuestions[qi];
+  var oldType = q.type || 'standard';
+  if (oldType === newType) return;
+  q.type = newType;
+  // 切换时初始化所需字段
+  if (newType === 'matrix' && !q.rows) {
+    q.rows = [{ id: 'r1', label: '行项目1' }, { id: 'r2', label: '行项目2' }];
+  }
+  if (newType === 'parent-child' && !q.subOptions) {
+    q.subOptions = [{ id: 's1', label: '子选项1' }, { id: 's2', label: '子选项2' }];
+  }
+  if (newType === 'standard') {
+    delete q.rows;
+    delete q.subOptions;
+    delete q.type;
+  }
+  renderQEditor();
+}
+
+// 矩阵题：行操作
+function addMatrixRow(qi) {
+  if (!currentQuestions[qi].rows) currentQuestions[qi].rows = [];
+  var rows = currentQuestions[qi].rows;
+  rows.push({ id: 'r' + (rows.length + 1), label: '' });
+  renderQEditor();
+}
+function removeMatrixRow(qi, ri) {
+  currentQuestions[qi].rows.splice(ri, 1);
+  renderQEditor();
+}
+function updateMatrixRow(qi, ri, val) {
+  currentQuestions[qi].rows[ri].label = val;
+}
+
+// 父子题：子选项操作
+function addSubOption(qi) {
+  if (!currentQuestions[qi].subOptions) currentQuestions[qi].subOptions = [];
+  var subs = currentQuestions[qi].subOptions;
+  subs.push({ id: 's' + (subs.length + 1), label: '', score: 0 });
+  renderQEditor();
+}
+function removeSubOption(qi, si) {
+  currentQuestions[qi].subOptions.splice(si, 1);
+  renderQEditor();
+}
+function updateSubOption(qi, si, val) {
+  currentQuestions[qi].subOptions[si].label = val;
+}
+function updateSubOptionScore(qi, si, val) {
+  currentQuestions[qi].subOptions[si].score = val;
+}
+
+// 标准题：添加选项
+function addOptToQuestion(qi) {
+  if (!currentQuestions[qi].options) currentQuestions[qi].options = [];
+  var opts = currentQuestions[qi].options;
+  var nextId = String.fromCharCode(65 + opts.length);
+  opts.push({ id: nextId, label: '', score: 0 });
+  renderQEditor();
+}
 function updateTransition(qi, val) {
   if (val === 'custom') {
     // 切换到自定义时，给一个默认文本并重新渲染
@@ -12056,9 +12345,16 @@ function opsLoadAiKeysFromServer() {
       opsRenderAiKeyForm(config);
     })
     .catch(function(err) {
-      body.innerHTML = '<div style="padding:16px;color:var(--warning);font-size:13px">⚠️ 读取 LNMP 服务端失败：' + escHtml(err.message)
-        + '<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">'
-        + '可手动填写 Key 后直接点击「保存到服务端」</div></div>';
+      console.warn('[opsLoadAiKeysFromServer] 读取服务端失败（本地开发环境预期行为）:', err.message);
+      // 降级：本地开发环境 LNMP 不可达，直接渲染空表单（含 API 地址配置项）
+      var emptyConfig = {
+        provider: 'dashscope',
+        dashscope: { apiKey: '', keyName: '', model: 'qwen-plus', fallbacks: [] },
+        ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' },
+        _serverKeys: []
+      };
+      opsAiKeyData = emptyConfig;
+      opsRenderAiKeyForm(emptyConfig);
     });
 }
 
@@ -12091,6 +12387,22 @@ function opsRenderKeyRow(id, value, canDelete, nameId, nameValue) {
 }
 
 /**
+ * 保存 API 服务器地址到 localStorage（psy_cloud_api_base）
+ */
+function opsSaveApiBase() {
+  var input = document.getElementById('ops-api-base');
+  var status = document.getElementById('ops-api-base-status');
+  if (!input) return;
+  var val = input.value.trim().replace(/\/+$/, '');
+  if (!val) {
+    status.innerHTML = '<span style="color:var(--danger)">⚠️ 地址不能为空</span>';
+    return;
+  }
+  localStorage.setItem('psy_cloud_api_base', val);
+  status.innerHTML = '<span style="color:var(--success)">✅ 已保存到 localStorage（' + escHtml(val) + '）</span>';
+}
+
+/**
  * 渲染 AI 密钥编辑表单（支持主 Key + 备用 Key 列表）
  * @param {object} data - ai-config.json 的内容
  */
@@ -12105,7 +12417,23 @@ function opsRenderAiKeyForm(data) {
   var olUrl = (data.ollama && data.ollama.baseUrl) || 'http://localhost:11434';
   var olModel = (data.ollama && data.ollama.model) || 'qwen2.5:7b';
 
+  // API 服务器地址（ psy_cloud_api_base ）
+  var apiBase = localStorage.getItem('psy_cloud_api_base') || '';
+
   var html = ''
+    // API 服务器地址
+    + '<div style="margin-bottom:16px;padding:12px 14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">'
+    + '  <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px">'
+    + '    <span>🌐 API 服务器地址 <span style="font-weight:400;color:var(--text-muted)">（psy_cloud_api_base）</span></span>'
+    + '    <button onclick="opsSaveApiBase()" class="ops-btn" style="font-size:11px;padding:3px 10px">💾 保存</button>'
+    + '  </label>'
+    + '  <input id="ops-api-base" type="text" value="' + escHtml(apiBase) + '" placeholder="http://101.43.43.125:3100" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;outline:none">'
+    + '  <div style="margin-top:6px;font-size:11px;color:var(--text-muted);line-height:1.6">'
+    + '    💡 用于 AI 一键配置（解析计分规则）和测评详情 AI 智能生成。本地开发填 <code>http://101.43.43.125:3100</code>，线上自动通过 LNMP 代理。'
+    + '  </div>'
+    + '  <div id="ops-api-base-status" style="margin-top:4px;font-size:11px"></div>'
+    + '</div>'
+
     // Provider 选择
     + '<div style="margin-bottom:16px">'
     + '  <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">服务商</label>'
@@ -13158,45 +13486,15 @@ function aiOneClickImport() {
 (function() {
   const SP_KEY = 'psy_sys_prompts';
   const SP_VERSION_KEY = 'psy_sys_prompts_v';
-  const SP_DATA_VERSION = 4; // bump when DEFAULT_PROMPTS changes significantly
+  const SP_DATA_VERSION = 9; // bump when DEFAULT_PROMPTS changes significantly
   const ICONS = ['🎯','📊','🧪','🔧','📝','💡','🔍','🤖','📋','💬','🧠','📈','⚙️','📝','🎭','✨'];
   const TEMPLATES = {
-    scoring: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量\n3. 提取维度/因子定义、全局指标、分数解释与划界标准\n4. 按标准格式输出，供直接粘贴导入',
+    scoring: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本（如原版 vs 中文修订版、完整版 vs 简版）。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量，避免将不同版本混淆\n3. 提取维度/因子定义、全局指标、分数解释与划界标准、筛查条件\n4. 记录反向计分题号（仅作参考，不写入计分公式）\n5. 识别特殊题型（矩阵题、父子题），并使用对应的计分格式\n6. 按标准格式输出，供我直接粘贴导入心理评估系统',
     csv: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目\n3. 检测是否存在题目异常\n4. 生成一个可直接下载的 .csv 文件\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写',
     blank: ''
   };
 
-  // 默认数据
-  const DEFAULT_PROMPTS = [
-    {
-      id: 'scoring', name: '计分规则提取提示词', icon: '🎯', note: '用于 AI 生成量表计分规则',
-      versions: [
-        { version: '1.0', status: 'old', note: '初始版本', date: '2026-04-10', content: '你是一位心理测量学专家，精通各类心理评估量表的计分方法。\n\n你的任务是：提取计分规则，按标准格式输出。' },
-        { version: '2.0', status: 'active', note: '完整版：版本确认 + 反向计分规则 + 输出格式规范 + 自检清单', date: '2026-04-26', content: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本（如原版 vs 中文修订版、完整版 vs 简版）。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量，避免将不同版本混淆\n3. 提取维度/因子定义、全局指标、分数解释与划界标准、筛查条件\n4. 记录反向计分题号（仅作参考，不写入计分公式）\n5. 按标准格式输出，供我直接粘贴导入心理评估系统\n\n你的输出分为两部分，按顺序输出：\n- 第一部分：摘要 — 用普通文本简要说明：量表名称、版本、题目数量、维度数量、量表类型（筛查/区分度/混合）、有无筛查条件。让我可以在粘贴前快速确认提取是否正确。\n- 第二部分：计分规则正文 — 紧接着输出标准格式的计分规则（以「[量表名称] 计分规则」开头）。\n\n以下是具体的提取规则和输出格式规范，请严格遵守。\n\n——————————————————————\n一、版本与题目数量确认（非常重要）\n——————————————————————\n\n量表手册可能包含多个版本（如原版 vs 中文修订版、完整版 vs 简版）。提取计分规则前，请先确认以下事项：\n\n1. 如果我在对话中告知了题目数量（如"实际导入 30 题"），严格按照该数量提取，只取对应版本的计分信息\n2. 如果我未告知，在摘要中标注"⚠️ 请确认：手册中包含 X 版/Y 版/Z 版等多个版本，以下提取基于最常见的 XX 版本（共 N 题），请核实是否与实际导入一致"\n3. 绝对不要将不同版本的题目合并为一个总量（如"实际30题+理想30题=60题"这种合并是错误的，应该只取实际使用的那一套题目）\n\n——————————————————————\n二、反向计分处理规则\n——————————————————————\n\n本系统的反向计分已在量表导入时预处理完毕（选项分值已翻转）。因此：\n\n1. 提取的反向计分信息仅作为参考记录，标注在"二、反向计分"部分即可\n2. 不要在任何计分公式或计算说明中体现"反向计分"步骤（如"需先反向计分再求和"这类描述必须删除）\n3. 维度/指标的定义和计算方法中，直接按正常方向描述即可（如"维度分 = 该维度所有题目得分求和"）\n\n示例：原文说"第5,9,13题需反向计分后求和"，你应输出：\n- 二、反向计分：第5, 9, 13题（已预处理，仅供参考）\n- 三、维度定义：维度分 = 该维度题目求和（不提反向计分）\n\n——————————————————————\n三、提取原则\n——————————————————————\n\n1. 只提取计分相关信息，忽略以下内容：\n   - 量表历史、编制背景、引文来源\n   - 信效度数据（Cronbach\'s α、重测信度、效度系数等）\n   - 参考文献列表\n   - 实施方法指导语、施测注意事项\n   - 题目全文（除非题目列表中包含维度-题目映射信息）\n\n2. 保持数值精确：所有划界分、变换系数、题目编号必须与原文完全一致，不要四舍五入或近似。\n\n3. 处理信息缺失：\n   - 如果原文没有提供某个维度的划界分，尝试回忆你知识库中的权威资料（如原量表编制论文、中文修订版论文、APA/心理测量学教材等）来补全。如果能找到可靠的划界分或常模分档标准，请补全并标注"（根据 XX 论文/常模补充）"\n   - 如果确实无法找到任何权威划界分，写"原文未提供划界分，且未查到可靠常模数据"\n   - 如果原文没有筛查条件，在第六部分明确写"无"\n   - 不要自行编造或推断原文中没有的分档标准，但可以基于权威文献补充\n\n4. 计分公式严格以原文为准（最高优先级，违反即不合格）：\n   - 如果原文明确说"求和"、"相加"、"总分"、"得分之和"，使用 SUM\n   - 如果原文明确说"平均"、"均分"、"均值"、"除以题数"，使用 AVG\n   - 如果原文未明确说明，但给出了分数范围和题数，可以通过反推判断（如"维度分范围 7-35，共 7 题，每题 1-5 分"→ SUM）\n   - ⚠️ 以下情况绝对不能使用 AVG（这是最常见的错误）：\n     * 原文只说维度求和，没有提到平均分 → 必须用 SUM，禁止自行添加 AVG 全局指标\n     * 手册统计描述中出现"均值 M=...""平均分"（这些是样本统计量，不是计分公式）\n     * 觉得维度间需要可比（是否标准化是量表作者的决定）\n     * 原文某处提到"每题平均 X 分"（这是描述性统计，不是计分公式）\n   - ⚠️ 原文没有提到全局指标（如"总分""综合分"）时，不要自行创建全局指标，只输出维度即可\n   - 如果拿不准，在摘要中标注"⚠️ 请确认：维度计分公式为 SUM/AVG"\n\n5. 表格数据要提取：如果维度-题号映射或划界分以表格形式呈现，转为文本格式输出。\n\n6. 维度/指标 key 命名：使用英文缩写作为 key（如 somatization、obsessive_compulsive），用下划线连接多个单词。在第五部分和第六部分引用时，必须使用此处定义的英文 key。\n\n7. 反向计分只记录不参与计算：反向计分题号仅列出供参考，所有维度/指标/全局指标的计分描述中不要出现"反向"字样。\n\n8. 题目数量以用户告知为准，不要自行推断：\n   - 严格按照用户告知的实际题目数量来组织维度题号映射\n   - 如果用户未告知题目数量，根据手册中最常见的版本提取，但必须在摘要中注明可能存在的版本差异\n   - 绝对不要将手册中提到的不同版本的题目合并\n\n——————————————————————\n四、输出格式规范\n——————————————————————\n\n请按以下结构输出，不要添加任何额外解释或格式化（不要 markdown 代码块、不要前言后语）：\n\n[量表名称] 计分规则\n\n一、基本信息\n- 题目数量：\n- 评分范围：（如 1-5 级、0-3 分等）\n- 量表类型：筛查量表 / 区分度量表（人格/特质/能力类，分数高低只代表特质强弱，无正常异常之分）/ 混合量表\n\n二、反向计分\n- 列出所有反向计分题号（如有），格式：第 X, Y, Z 题（已预处理，仅供参考）\n- 如无反向计分题，写"无"\n\n三、维度/因子定义\n列出每个维度（因子/子量表）的：\n- 维度名称（中文 + 英文缩写 key）\n- 包含的题目编号（连续范围用短横线，不连续用逗号）\n- 计分公式（求和 SUM / 平均 AVG）\n- 如有线性变换（如 ×1.25、粗分→标准分），注明变换公式\n- ⚠️ 不要写"需先反向计分"等步骤说明，直接写最终计算方式\n\n四、全局指标\n列出非维度的全局计算指标，每个指标注明：\n- 指标名称（中文 + 英文缩写 key）\n- 公式类型：SUM（求和）/ AVG（平均）/ COUNT_IF（条件计数）/ DERIVED（派生计算）\n- 对应题目范围（ALL 或具体题号，DERIVED 留空）\n- 条件（仅 COUNT_IF）：如 {">=": 2} 表示统计得分≥2的题目数\n- 派生表达式（仅 DERIVED）：如 "(总分-阴性项目数)/阳性项目数"\n- 如有线性变换，注明变换公式\n- ⚠️ 不要写"需先反向计分"等步骤说明\n\n五、分数解释与划界标准\n按维度和全局指标分别列出分档标准，每档包含：\n- 指标名称（使用英文 key）\n- 分值区间（min ~ max）\n- 等级标签\n- 解释说明文字\n\n区分度量表（人格类）的等级标签用中性词（低/中等/高），不要用"轻度/中度/重度"。\n\n六、筛查条件（如适用）\n- 筛查指标名称（使用英文 key）\n- 阳性判定条件（如 total_score > 160 或 positive_count > 43）\n- 条件间的逻辑关系（AND / OR）\n- 阳性标签、阴性标签\n- 如量表无筛查条件，写"无"\n\n——————————————————————\n五、输出前自检清单\n——————————————————————\n\n请按以下清单逐项自检后再输出：\n\n- [ ] 摘要已说明量表名称、版本、题目数量、维度数量、量表类型\n- [ ] 摘要已报告版本差异或异常情况（如无则说明"版本明确，无歧义"）\n- [ ] 所有数值（划界分、变换系数、题号）与原文完全一致\n- [ ] 计分公式（SUM/AVG）严格按原文提取，未因测量学指标中的均值/均数信息而误判，未自行添加原文未提及的全局指标\n- [ ] 如果原文未提供划界分，已尝试从权威文献/常模数据中补全，并标注来源\n- [ ] 反向计分题号已记录在"二、反向计分"部分\n- [ ] 所有维度/指标/全局指标的计分描述中不包含"反向"字样\n- [ ] 英文 key 命名一致，第五部分和第六部分的引用与第三部分定义匹配\n- [ ] 区分度量表的等级标签使用中性词（低/中等/高）\n- [ ] 筛查量表/混合量表的等级标签使用严重度词（正常/轻度/中度/重度）\n- [ ] 计分规则正文未包裹在 Markdown 代码块中（直接输出纯文本）\n\n——————————————————————\n\n以下是需要提取的手册原文：' }
-      ],
-      currentVersion: '2.0',
-      flowSteps: [
-        { num: '1', color: 'primary', title: '🤖 AI 一键配置', desc: '量表管理 → 选中量表 → AI 一键配置' },
-        { num: '2', color: 'primary', title: '📎 上传文档', desc: '上传 .docx/.txt/.md 手册文件，或直接粘贴文字' },
-        { num: '3', color: 'highlight', title: '✨ AI 提取 → 解析 → 导入', desc: 'AI 智能提取计分规则 → 检查结果 → 开始解析 → 导入量表' }
-      ]
-    },
-    {
-      id: 'csv', name: 'CSV 导入文件生成提示词', icon: '📊', note: '用于 AI 生成量表 CSV 导入文件',
-      versions: [
-        { version: '1.0', status: 'old', note: '初始版本，仅支持单量表', date: '2026-04-05', content: '你是一位心理测量学专家。\n\n你的任务是：从手册提取题目，生成 CSV。\n\nCSV 格式：category, q_number, question_text, options...' },
-        { version: '1.1', status: 'old', note: '增加选项 id 字段强制要求，优化异常检测规则', date: '2026-04-18', content: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范。\n\n你的任务是：提取题目，生成 CSV。\n\nCSV 格式：category, q_number, question_text, option_1_id, option_1_text, option_1_score, ...' },
-        { version: '2.0', status: 'active', note: '完整版：原文忠实规则 + 多量表识别 + 反向计分AI翻转 + 6类异常检测 + CSV格式规范', date: '2026-04-26', content: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表（可能以"附："、"附录"、"量表一"等形式分隔），也可能存在题目缺失、编号不连续、选项数量不统一、反向计分等实际情况。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息（名称、编码、分类、描述、指导语等）和全部题目（题号、题目内容、所属维度、选项及分值）\n   ⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写、意译、简化、润色、替换措辞或用自己的话重述\n3. 检测是否存在题目异常（缺失、重复、错乱、残缺等），并逐一向我报告\n4. ⭐ 生成一个可直接下载的 .csv 文件（不是在聊天中输出文字，而是生成一个真实的文件供我下载）\n\n你的输出分为两部分，按顺序执行：\n- 第一部分：摘要 — 先用普通文本简要告诉我：识别到几张量表、各多少题、发现哪些异常（若无异常也说明"未发现异常"）。\n- 第二部分：.csv 文件 — 然后生成一个 .csv 文件并提供下载链接。文件内容必须是逗号分隔的 CSV 数据行，以"量表名称,量表简称,量表编码,..."表头行开始。\n\n⚠️ 再次强调：第二部分必须是可下载的 .csv 文件，不是在聊天框里输出 CSV 文字。如果你无法生成文件，就将 CSV 内容用代码块包裹输出（但优先推荐生成文件）。\n\n以下是具体的处理规则和 CSV 格式规范，请严格遵守。\n\n═══════════════════════════════════════\n\n一、处理规则\n\n【0】原文忠实（最高优先级，违反即不合格）\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，这是一条不可违反的硬性规则。\n\n具体要求：\n- 题目内容：必须与手册原文中的文字完全一致，一个字都不能改\n- 选项文本：必须与手册原文中的选项文字完全一致\n- 允许的操作：删除题号前缀（如手册写"1.用温和友好的语气与我说话"，提取为"用温和友好的语气与我说话"）；删除题号后的空格和多余标点\n- 严禁的操作：改写、意译、简化、润色、替换同义词、用自己的话重述、将口语改为书面语、将长句拆为短句、合并相邻题目\n\n错误示例（以下行为全部禁止）：\n  手册原文：不想让我长大 → ❌ 不可改为"使我感到不自在"\n  手册原文：试图控制我做的每一件事 → ❌ 不可改为"使我难堪或当众受辱"\n  手册原文：经常对我微笑 → ❌ 不可改为"让我感到在家是个受欢迎的成员"\n  手册原文：似乎不明白我想要什么 → ❌ 不可改为"信任我"\n  手册原文：让我觉得自己是可有可无的 → ❌ 不可改为"对我的私事不感兴趣"\n  手册原文：从不夸奖我 → ❌ 不可改为"对我很亲切"\n\n如果你发现手册中的某个题目措辞有语病或不够通顺，也必须原文照搬，不要"修正"它。量表题目是经过心理测量学检验的标准化表述，任何修改都会破坏量表信效度。\n\n【1】多量表识别\n\n手册中可能包含多张量表，常见标识："附："、"附1："、"附2："、"附录一"、"附录二"、"量表一"、"量表二"、或章节标题中的量表名称。\n\n处理方式：\n- 逐一识别，每张量表生成一组连续数据行\n- 所有量表共用一个表头（只出现一次）\n- 每张量表第 1 行填写基本信息，其余题目行留空\n- 摘要中说明：共识别到 N 张量表：[名称列表]\n\n【2】版本确认\n\n若手册含多个版本（原版/修订版/简版）且我未指明版本，在摘要中提醒：⚠️ 手册含多个版本，本次基于[XX版本，共N题]，请确认。然后按其中一个版本输出。\n\n【3】题目数量\n\n若我在对话中注明了题目数，严格按该数量提取，不合并不扩展。\n\n【4】反向计分与分值方向\n\n分值方向的核心原则：正向表述的题目，选择"最符合/最严重"应得最高分；反向计分题翻转后也应满足这一原则。\n\n第一步：判断题目表述方向\n- 正向表述：题目描述的是"好的/ desirable/ 期望的"行为、品质或感受。选"非常符合"应得最高分，分值递增（如 0,1,2,3）\n  常见正向关键词：疼爱、亲切、温和、友好、关心、了解、信任、鼓励、支持、帮助、表扬、重视、喜欢、耐心\n- 负向表述：题目描述的是"不好的/ undesirable/ 不期望的"行为、品质或感受。这是反向计分题，需要翻转分值\n  常见负向关键词：冷漠、漠不关心、缺乏、没有、不自在、难堪、控制、干涉、担心过度\n- 判断方法：问自己"如果一个人在这道题上选了\'非常符合\'，这个人的状况是好的还是不好的？"好的 → 正向；不好的 → 负向（反向计分题）\n\n第二步：仅对负向表述（反向计分题）翻转分值，翻转公式：新分值 = 最小值 + 最大值 - 原始分值\n\n示例1（正向题，不翻转）：题目"对我很亲切"，分值 0,1,2,3。选"非常符合"说明父母很亲切，应得 3 分（最高分）→ 递增，不翻转 ✅\n示例2（正向题，不翻转）：题目"给我很多表扬"，分值 0,1,2,3。选"非常符合"说明父母常表扬，应得 3 分 → 不翻转 ✅\n示例3（反向题，需翻转）：题目"对我漠不关心"，原始分值 0,1,2,3 → 翻转后填 3,2,1,0。选"非常符合"说明父母漠不关心，应得 0 分（最低分）→ 需要翻转 ✅\n示例4（反向题，需翻转）：题目"使我感到什么事都做不好"，原始分值 0,1,2,3 → 翻转后填 3,2,1,0\n示例5（⚠️ 常见错误）：题目"用温和友好的语气与我说话"是正面表述（"温和友好"=好品质），不应翻转。如果翻转成 3,2,1,0 就错了，应该是 0,1,2,3\n示例6（⚠️ 常见错误）：题目"对我很亲切"是正面表述（"亲切"=好品质），不应翻转。翻转成 3,2,1,0 就错了\n\n第三步：所有题目的"反向计分"列统一填"否"（因为翻转已由你预处理完成）\n\n注意：仅翻转手册原文中明确标注或根据表述方向明确判断为反向计分的题目。不要翻转正向表述的题目。\n\n【5】异常检测（必须执行）\n\n逐一检查以下 6 类异常，发现任何一项都必须在摘要中报告：\n\n异常类型        判定条件                          处理方式\n─────────────────────────────────────────────────────────────────\n编号缺失        题号不连续（如 5 后直接 7）      跳过缺失题（不编造），报告中说明位置\n编号重复        同一题号出现多次                  后续重编为顺序编号，报告\n编号错乱        题号顺序不对但内容完整            按内容顺序重编 1,2,3...，列出原→新映射\n内容残缺        有题号但文字缺失或不完整          如实输出现有内容，报告\n选项缺失        题目存在但选项不完整              如实输出，空缺留空，报告\n维度不明        手册有维度列表但部分题无法归属    按内容推断，列出不确定的题号\n\n报告格式示例：\n⚠️ [量表名称] 题目异常：\n  - 缺失：第 7、13 题在原文中未找到，已跳过\n  - 重复：第 9 题出现两次，第二次重编为第 10 题\n  - 内容残缺：第 12 题仅有选项无题目文字\n\n═══════════════════════════════════════\n\n二、CSV 格式规范\n\n【表头】\n\n固定顺序如下，但选项列数按实际最多选项数决定（不固定为 5 个）：\n\n量表名称,量表简称,量表编码,所属分类,图标,主题色,预计时长(分钟),适用人群,量表描述,指导语,标签,状态,排序权重,题号,题目内容,维度,反向计分,选项A文本,选项A分值,选项B文本,选项B分值,[...按需继续到选项Z]\n\n规则：\n- 若最多只有 2 个选项，表头到"选项B分值"即止\n- 若最多有 7 个选项，表头延伸到"选项G分值"\n- 以所有量表所有题目中最多的选项数确定总列数\n\n【字段说明】\n\n列名              必填  规则\n─────────────────────────────────────────────────────────────────\n量表名称          是    完整名称，如"PHQ-9 抑郁症筛查量表"\n量表简称          否    缩写，如"PHQ-9"\n量表编码          是    仅字母+数字+下划线，全大写，如"PHQ9"、"FACES_CV"\n所属分类          是    只能填以下值之一：anxiety / depression / personality / comprehensive / stress / unknown。不要自行编造其他值（如 family、children、sleep 等）\n图标              否    单个 emoji，默认 📋\n主题色            否    十六进制，如"#4A90D9"，默认蓝色\n预计时长(分钟)    否    数字\n适用人群          否    文本\n量表描述          否    如含英文逗号须用英文双引号括起\n指导语            否    如含英文逗号须用英文双引号括起\n标签              否    中文逗号分隔\n状态              否    1（上架）或 2（草稿）\n排序权重          否    数字，越大越靠前\n题号              是    从 1 开始的整数\n题目内容          是    如含英文逗号须用英文双引号括起\n维度              否    维度/因子名称，留空归为未分类\n反向计分          固定  填"否"（分值已预处理翻转）\n选项X文本         是    第 X 个选项文字\n选项X分值         是    第 X 个选项分数，反向题已翻转\n\n【行规则】\n\n- 每行 = 一道题\n- 量表基本信息（前 13 列）只在每张量表的第 1 题行填写，其余行留空（逗号占位）\n- 多张量表连续输出，不重复表头\n\n【引号转义】\n\n- ⚠️ 只在字段内容中包含英文逗号（,）、英文双引号（"）或换行符时，才用英文双引号括起该字段。不含这些字符的字段**不要加双引号**。\n- 错误示例：用温和友好的语气与我说话 → """用温和友好的语气与我说话"""（❌ 不含英文逗号，不需要双引号）\n- 正确示例：用温和友好的语气与我说话 → 用温和友好的语气与我说话（✅ 直接写）\n- 正确示例：健康, 幸福 → "健康, 幸福"（✅ 含英文逗号，需要双引号）\n- 正确示例：他说"好" → "他说""好"""（✅ 含英文双引号，需要转义）\n- 中文逗号（，）和中文引号（""、\'\'）不需要处理，不需要加英文双引号\n\n【样式建议】\n\n颜色：焦虑 #F5A623 抑郁 #5B8DEF 人格 #7ED321 综合 #4A90D9 家庭 #C47EDB\n图标：焦虑😰 抑郁💙 人格🧠 综合🧬 家庭👨‍👩‍👧 青少年🌱 睡眠😴 创伤⚡ 认知🔬 其他📋\n\n═══════════════════════════════════════\n\n三、输出示例\n\n【示例 A：单量表，3 选项（PHQ-2）】\n\n量表名称,量表简称,量表编码,所属分类,图标,主题色,预计时长(分钟),适用人群,量表描述,指导语,标签,状态,排序权重,题号,题目内容,维度,反向计分,选项A文本,选项A分值,选项B文本,选项B分值,选项C文本,选项C分值\nPHQ-2抑郁筛查量表,PHQ-2,PHQ2,depression,💙,#5B8DEF,2,18岁以上,两题快速抑郁筛查工具。,在过去两周内，以下问题困扰您的频率？,抑郁筛查,1,10,1,做事时提不起劲或没有兴趣,,否,完全没有,0,有几天,1,几乎每天,2\n,,,,,,,,,,,,,,2,感到心情低落、沮丧或绝望,,否,完全没有,0,有几天,1,几乎每天,2\n\n【示例 B：含反向计分，4 选项（RSES 节选，分值 1~4）】\n\n量表名称,量表简称,量表编码,所属分类,图标,主题色,预计时长(分钟),适用人群,量表描述,指导语,标签,状态,排序权重,题号,题目内容,维度,反向计分,选项A文本,选项A分值,选项B文本,选项B分值,选项C文本,选项C分值,选项D文本,选项D分值\nRosenberg自尊量表,RSES,RSES,personality,🧠,#7ED321,5,18岁以上,评估自我价值感的经典量表。,请根据实际感受选择。,自尊,1,10,1,我感到自己是一个有价值的人,,否,非常不同意,1,不同意,2,同意,3,非常同意,4\n,,,,,,,,,,,,,,2,我觉得我有很多好的品质,,否,非常不同意,1,不同意,2,同意,3,非常同意,4\n,,,,,,,,,,,,,,3,总体而言我认为自己是一个失败者（反向）,,否,非常不同意,4,不同意,3,同意,2,非常同意,1\n,,,,,,,,,,,,,,4,我能像大多数人一样把事情做好,,否,非常不同意,1,不同意,2,同意,3,非常同意,4\n\n说明：第 3 题为反向计分题，分值已翻转（1→4, 2→3, 3→2, 4→1）。\n\n【示例 C：同一文件两张量表】\n\n量表名称,量表简称,量表编码,所属分类,图标,主题色,预计时长(分钟),适用人群,量表描述,指导语,标签,状态,排序权重,题号,题目内容,维度,反向计分,选项A文本,选项A分值,选项B文本,选项B分值,选项C文本,选项C分值,选项D文本,选项D分值\nPHQ-9抑郁症筛查量表,PHQ-9,PHQ9,depression,💙,#5B8DEF,5,18岁以上,九题抑郁症筛查工具。,以下问题困扰您的频率？,抑郁筛查,1,10,1,做事时提不起劲或没有兴趣,,否,完全没有,0,有几天,1,一半以上,2,几乎每天,3\n,,,,,,,,,,,,,,2,感到心情低落、沮丧或绝望,,否,完全没有,0,有几天,1,一半以上,2,几乎每天,3\nGAD-7焦虑障碍量表,GAD-7,GAD7,anxiety,😰,#F5A623,5,18岁以上,七题焦虑筛查工具。,以下问题困扰您的频率？,焦虑筛查,1,10,1,感觉紧张、焦虑或急切,,否,完全没有,0,有几天,1,一半以上,2,几乎每天,3\n,,,,,,,,,,,,,,2,不能停止或控制担忧,,否,完全没有,0,有几天,1,一半以上,2,几乎每天,3\n\n说明：两张量表共用表头，第二张直接接在第一张后面。\n\n═══════════════════════════════════════\n\n四、输出前自检清单\n\n输出前请逐项确认：\n□ ⭐ 每道题的题目内容和选项文本与手册原文完全一致（逐字照搬，未做任何改写）\n□ 摘要已说明识别到几张量表、各多少题\n□ 摘要已报告所有发现的异常（如无异常也请说明"未发现异常"）\n□ 表头列数与所有题目中最多选项数一致\n□ 反向计分题分值已翻转（仅负向表述的题目翻转），"反向计分"列填"否"\n□ 正向表述的题目分值未翻转（选"最符合/最严重"得最高分，分值递增）\n□ 每张量表仅第 1 行填写基本信息，其余行留空\n□ 所属分类只填 anxiety/depression/personality/comprehensive/stress/unknown 之一\n□ 含英文逗号的字段已用英文双引号括起，不含英文逗号的字段不加双引号\n□ 题号从 1 开始连续编号\n\n现在，请直接阅读我下方附带的量表手册原文，立即执行以下操作：\n\n第一步：先输出一段摘要（几句话即可，说明识别到几张量表、各多少题、有无异常）\n\n第二步：⭐ 生成一个 .csv 文件并提供下载\n- 将 CSV 数据写入一个 .csv 文件（文件名用量表名称，如"PHQ-9.csv"）\n- 必须是真实的 .csv 文件，可以直接下载打开，不是在聊天框里输出文字\n- 使用你的文件生成能力（File/Artifact/Code Interpreter 等工具）创建这个文件\n- 文件内容必须符合上方的 CSV 格式规范（以"量表名称,量表简称,量表编码,..."表头行开始，后面是逗号分隔的数据行）\n- 多张量表写在同一个文件中，共用一个表头\n\n不要等我说"开始"，不要问我任何问题，不要在聊天框里用文字描述 CSV 内容，必须直接生成可下载的 .csv 文件。\n\n[量表手册原文在下方]' }
-      ],
-      currentVersion: '2.0',
-      flowSteps: [
-        { num: '1', color: 'success', title: '📝 复制提示词', desc: '后台 → 系统提示词 → CSV 导入文件生成 → 点「📋 复制正文」' },
-        { num: '2', color: 'success', title: '📄 追加手册原文', desc: '在「[量表手册原文在下方]」后粘贴手册全文 + 补充关键信息（量表数量、题目数、反向计分题号）' },
-        { num: '3', color: 'success', title: '📥 获取 CSV 文件', desc: '核对摘要无误后下载 CSV 文件（或复制代码块另存为 .csv）' },
-        { num: '4', color: 'highlight-success', title: '📋 后台导入量表', desc: '后台量表管理 → 导入量表 → CSV 格式 → 粘贴 → 解析预览 → 确认导入' }
-      ]
-    }
-  ];
+  const DEFAULT_PROMPTS = window.DEFAULT_PROMPTS;
 
   let spData = [];
   let spCurrentType = 'scoring';

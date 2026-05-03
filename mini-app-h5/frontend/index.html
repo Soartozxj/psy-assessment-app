@@ -829,6 +829,67 @@
       font-size: 9px; color: rgba(91,143,185,0.5); z-index: 51;
     }
 
+    /* ===== 矩阵题样式 ===== */
+    #npc-matrix-form { margin-top: 10px; font-size: 12px; }
+    #npc-matrix-form table { width: 100%; border-collapse: collapse; }
+    #npc-matrix-form th, #npc-matrix-form td {
+      padding: 7px 4px; text-align: center;
+      border: 1px solid rgba(91,143,185,0.2);
+    }
+    #npc-matrix-form thead th {
+      background: rgba(91,143,185,0.1); font-weight: 600;
+      color: #3a5a6e; font-size: 11px;
+    }
+    #npc-matrix-form tbody td:first-child {
+      text-align: left; padding-left: 8px; color: #3a5a6e;
+      font-size: 12px; white-space: nowrap; max-width: 100px;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    #npc-matrix-form tbody tr { background: #fff; }
+    #npc-matrix-form tbody tr:nth-child(even) { background: #f8fbfd; }
+    #npc-matrix-form input[type="radio"] {
+      width: 18px; height: 18px; accent-color: #5b8fb9;
+      cursor: pointer;
+    }
+
+    /* ===== 父子题样式 ===== */
+    .npc-pc-options { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .npc-pc-main { cursor: pointer; }
+    .npc-pc-main .npc-option-btn { width: 100%; }
+    #npc-sub-options-area {
+      margin-top: 8px; padding: 10px; border-radius: 8px;
+      background: rgba(91,143,185,0.05);
+      border: 1px solid rgba(91,143,185,0.15);
+      display: none; /* 默认隐藏 */
+    }
+    #npc-sub-options-area.active { display: block; }
+    #npc-sub-options-area .sub-title {
+      font-size: 11px; color: #7a9bae; margin-bottom: 8px; font-weight: 600;
+    }
+    .npc-sub-option-wrap {
+      display: flex; align-items: flex-start; gap: 6px;
+      padding: 5px 0; cursor: pointer;
+    }
+    .npc-sub-option-wrap input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: #5b8fb9;
+      margin-top: 2px; cursor: pointer; flex-shrink: 0;
+    }
+    .npc-sub-option-wrap label {
+      font-size: 12px; color: #3a5a6e; line-height: 1.4; cursor: pointer;
+    }
+    .npc-sub-input-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 6px; padding-left: 22px;
+    }
+    .npc-sub-input-row input[type="text"] {
+      flex: 1; padding: 6px 10px; border: 1px solid rgba(91,143,185,0.3);
+      border-radius: 6px; font-size: 12px; color: #3a5a6e;
+      outline: none; background: #fff;
+    }
+    .npc-sub-input-row input[type="text"]:focus {
+      border-color: #5b8fb9; box-shadow: 0 0 0 2px rgba(91,143,185,0.15);
+    }
+
     /* ===== 模式切换按钮 ===== */
     .npc-mode-toggle {
       position: absolute; top: 30px; right: 10px; z-index: 70;
@@ -2361,7 +2422,7 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
       <div class="detail-npc-scene">
         <div class="npc-scene-bg"></div>
 <div class="npc-character-area">
-          <img class="npc-character-img" id="detail-counselor-img" src="assets/counselor.png" alt="心理咨询师"
+          <img class="npc-character-img" id="detail-counselor-img" src="counselor.png" alt="心理咨询师"
                onerror="this.style.display='none';">
         </div>
       </div>
@@ -2446,7 +2507,7 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
         <div class="npc-scene-bg"></div>
 <!-- 角色立绘 -->
         <div class="npc-character-area">
-          <img class="npc-character-img" src="assets/counselor.png" alt="心理咨询师"
+          <img class="npc-character-img" src="counselor.png" alt="心理咨询师"
                onerror="this.style.display='none';">
         </div>
 
@@ -2485,7 +2546,7 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
       <div class="detail-npc-scene" style="opacity:0.3">
         <div class="npc-scene-bg"></div>
 <div class="npc-character-area">
-          <img class="npc-character-img" id="result-counselor-img" src="assets/counselor.png" alt="心理咨询师"
+          <img class="npc-character-img" id="result-counselor-img" src="counselor.png" alt="心理咨询师"
                onerror="this.style.display='none';">
         </div>
       </div>
@@ -2560,7 +2621,7 @@ console.log('✅ 核心函数已提前定义，onclick事件不会报错');
       <div class="detail-npc-scene" style="opacity:0.35">
         <div class="npc-scene-bg"></div>
 <div class="npc-character-area">
-          <img class="npc-character-img" id="diag-counselor-img" src="assets/counselor.png" alt="心理咨询师"
+          <img class="npc-character-img" id="diag-counselor-img" src="counselor.png" alt="心理咨询师"
                onerror="this.style.display='none';">
         </div>
       </div>
@@ -3159,14 +3220,19 @@ function normalizeScaleData(scale) {
     // 答题须知：确保每个量表都有notice字段
     notice: scale.notice || getDefaultNotice(),
     // 题目数据：确保存在，如果不存在就使用默认题目
-    questions: (scale.questions || getDefaultQuestionsForScale(scale.id)).map((q, qi) => ({
-      ...q,
-      id: q.id || (qi + 1),
-      options: (q.options || []).map((o, oi) => ({
-        ...o,
-        id: o.id !== undefined ? o.id : String.fromCharCode(65 + oi)
-      }))
-    })),
+    questions: (scale.questions || getDefaultQuestionsForScale(scale.id)).map((q, qi) => {
+      return {
+        ...q,
+        id: q.id || (qi + 1),
+        options: (q.options || []).map((o, oi) => ({
+          ...o,
+          // 仅在 id 未定义时分配字母编号，已有 id（含数字 id 如 0/1）保留原值
+          id: o.id !== undefined && o.id !== null ? o.id : String.fromCharCode(65 + oi)
+        })),
+        // 确保 subOptions 也被保留（normalize 不应丢弃）
+        ...(q.subOptions ? { subOptions: q.subOptions } : {})
+      };
+    }),
     // 计分规则配置（保留原始数据，用于 ScoringEngine.calculate）
     scoring: scale.scoring || null,
     // 透传其他自定义字段（aiDiag、npcConfig、status 等）
@@ -3804,7 +3870,7 @@ function applyDetailNpcScene(scale) {
 
   // 重置立绘为内置默认
   if (charImg) {
-    charImg.src = 'assets/counselor.png';
+    charImg.src = 'counselor.png';
     charImg.style.display = '';
   }
 
@@ -3997,7 +4063,7 @@ function applyDiagNpcScene(scale) {
     charImg.style.display = resultCharImg.style.display;
   } else if (charImg) {
     // 结果页立绘也未就位，重置为默认
-    charImg.src = 'assets/counselor.png';
+    charImg.src = 'counselor.png';
     charImg.style.display = '';
   }
 
@@ -4042,7 +4108,7 @@ function applyResultNpcScene(scale) {
 
   // 重置立绘为内置默认（与详情页 applyDetailNpcScene 保持一致）
   if (charImg) {
-    charImg.src = 'assets/counselor.png';
+    charImg.src = 'counselor.png';
     charImg.style.display = '';
   }
 
@@ -4344,7 +4410,7 @@ function resolveNpcSetting(scale) {
 
   // 立绘：量表级 → 全局默认 → 内置
   var counselorId = (scale.npcConfig && scale.npcConfig.counselorId) || globalConfig.defaultCounselorId || '';
-  var counselorImage = 'assets/counselor.png'; // 最终兜底
+  var counselorImage = 'counselor.png'; // 最终兜底
 
   // 咨询师元信息：从 counselors 数组中查找
   var counselorData = null;
@@ -4834,6 +4900,11 @@ function npcSubmitLastAnswer(q, opt, index) {
 }
 
 function npcShowOptions(q) {
+  // 新题型分发
+  if (q.type === 'matrix') { npcShowMatrixOptions(q); return; }
+  if (q.type === 'parent-child') { npcShowParentChildOptions(q); return; }
+
+  // 原有逻辑：普通单选
   var area = document.getElementById('npc-options-area');
   area.innerHTML = '';
   q.options.forEach(function(o, index) {
@@ -4847,6 +4918,224 @@ function npcShowOptions(q) {
   area.classList.add('active');
   // 更新确认按钮文案（最后一题）
   updateConfirmButtonState();
+}
+
+// ===== 矩阵题渲染 =====
+function npcShowMatrixOptions(q) {
+  var area = document.getElementById('npc-options-area');
+  area.innerHTML = '';
+  area.classList.add('active');
+
+  var wrap = document.createElement('div');
+  wrap.id = 'npc-matrix-form';
+
+  // 构建表格
+  var table = document.createElement('table');
+
+  // 表头：空列 + 各列选项
+  var thead = document.createElement('thead');
+  var headRow = document.createElement('tr');
+  var thEmpty = document.createElement('th');
+  thEmpty.textContent = '';
+  headRow.appendChild(thEmpty);
+  (q.options || []).forEach(function(opt) {
+    var th = document.createElement('th');
+    th.textContent = opt.label || '';
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  // 表体：每行一个 row
+  var tbody = document.createElement('tbody');
+  (q.rows || []).forEach(function(row) {
+    var tr = document.createElement('tr');
+    var tdLabel = document.createElement('td');
+    tdLabel.textContent = row.label || row.id;
+    tdLabel.title = row.label || row.id;
+    tr.appendChild(tdLabel);
+
+    (q.options || []).forEach(function(opt, colIdx) {
+      var td = document.createElement('td');
+      var radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'matrix_row_' + row.id;
+      radio.value = colIdx;
+      radio.addEventListener('click', function() {
+        // 保存选择
+        if (!window._matrixAnswers) window._matrixAnswers = {};
+        if (!window._matrixAnswers[q.id]) window._matrixAnswers[q.id] = {};
+        window._matrixAnswers[q.id][row.id] = colIdx;
+        // 检查是否所有行已选
+        var rows = q.rows || [];
+        var answered = Object.keys(window._matrixAnswers[q.id]).length;
+        if (answered >= rows.length) {
+          // 标记为已填充，启用确认按钮
+          npcSelectedOpt = { _matrixFilled: true, _qId: q.id };
+          var confirmBtn = document.getElementById('npc-confirm-btn');
+          if (confirmBtn) confirmBtn.disabled = false;
+          var hint = document.getElementById('npc-no-select-hint');
+          if (hint) hint.classList.add('faded');
+        }
+      });
+      td.appendChild(radio);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  area.appendChild(wrap);
+
+  // 初始化矩阵答案存储
+  if (!window._matrixAnswers) window._matrixAnswers = {};
+  if (!window._matrixAnswers[q.id]) window._matrixAnswers[q.id] = {};
+
+  updateConfirmButtonState();
+}
+
+// ===== 父子题渲染 =====
+function npcShowParentChildOptions(q) {
+  var area = document.getElementById('npc-options-area');
+  area.innerHTML = '';
+  area.classList.add('active');
+
+  var pcWrap = document.createElement('div');
+  pcWrap.className = 'npc-pc-options';
+
+  // 初始化父子题答案存储
+  if (!window._pcAnswers) window._pcAnswers = {};
+  window._pcAnswers[q.id] = { main: null, subs: [], subFill: {} };
+
+  // 主选项（单选）
+  (q.options || []).forEach(function(opt) {
+    var btn = document.createElement('div');
+    btn.className = 'npc-option-btn npc-pc-main';
+    btn.setAttribute('data-pc-main', opt.id);
+    var letter = opt.id !== undefined ? opt.id : '';
+    btn.innerHTML = '<span class="npc-option-letter">' + letter + '</span><span>' + opt.label + '</span>';
+    btn.addEventListener('click', function() {
+      // 清除所有主选项选中状态
+      var all = pcWrap.querySelectorAll('.npc-option-btn.npc-pc-main');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('selected');
+      btn.classList.add('selected');
+      window._pcAnswers[q.id].main = opt.id;
+
+      // 处理子选项区
+      var subArea = document.getElementById('npc-sub-options-area');
+      if (opt.hasChildren) {
+        // 展开/显示子选项区
+        if (!subArea) {
+          subArea = _createSubOptionsArea(q);
+          area.appendChild(subArea);
+        }
+        subArea.classList.add('active');
+        // 初始状态：如果还没选任何子选项，不能确认
+        _updatePcConfirmState(q);
+      } else if (opt.isTerminal) {
+        // 终端选项（如"无任何来源"）：隐藏子选项区，直接可确认
+        if (subArea) subArea.classList.remove('active');
+        npcSelectedOpt = { _pcFilled: true, _qId: q.id };
+        var confirmBtn = document.getElementById('npc-confirm-btn');
+        if (confirmBtn) confirmBtn.disabled = false;
+        var hint = document.getElementById('npc-no-select-hint');
+        if (hint) hint.classList.add('faded');
+      }
+    });
+    pcWrap.appendChild(btn);
+  });
+
+  area.appendChild(pcWrap);
+  updateConfirmButtonState();
+}
+
+function _createSubOptionsArea(q) {
+  var wrap = document.createElement('div');
+  wrap.id = 'npc-sub-options-area';
+
+  var title = document.createElement('div');
+  title.className = 'sub-title';
+  title.textContent = '请选择所有适用的来源：';
+  wrap.appendChild(title);
+
+  (q.subOptions || []).forEach(function(sub) {
+    var row = document.createElement('div');
+    row.className = 'npc-sub-option-wrap';
+
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = sub.id;
+    checkbox.id = 'npc-sub-' + sub.id;
+
+    var label = document.createElement('label');
+    label.htmlFor = 'npc-sub-' + sub.id;
+    label.textContent = sub.label || sub.id;
+
+    row.appendChild(checkbox);
+    row.appendChild(label);
+    wrap.appendChild(row);
+
+    // 如果有 hasInput，添加输入框行
+    if (sub.hasInput) {
+      checkbox.addEventListener('change', function() {
+        // 同步创建/显示输入框
+        var inputRow = wrap.querySelector('.npc-sub-input-row');
+        if (checkbox.checked) {
+          if (!inputRow) {
+            inputRow = document.createElement('div');
+            inputRow.className = 'npc-sub-input-row';
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'npc-sub-other-input';
+            input.placeholder = '请填写具体内容';
+            input.addEventListener('input', function() {
+              window._pcAnswers[q.id].subFill[sub.id] = input.value;
+            });
+            inputRow.appendChild(input);
+            wrap.appendChild(inputRow);
+          }
+          inputRow.style.display = 'flex';
+        } else if (inputRow) {
+          inputRow.style.display = 'none';
+          window._pcAnswers[q.id].subFill[sub.id] = '';
+        }
+        _updatePcConfirmState(q);
+      });
+    }
+
+    checkbox.addEventListener('change', function() {
+      // 更新子选项答案
+      var subs = window._pcAnswers[q.id].subs;
+      if (checkbox.checked) {
+        if (subs.indexOf(sub.id) < 0) subs.push(sub.id);
+      } else {
+        var idx = subs.indexOf(sub.id);
+        if (idx >= 0) subs.splice(idx, 1);
+      }
+      _updatePcConfirmState(q);
+    });
+  });
+
+  return wrap;
+}
+
+function _updatePcConfirmState(q) {
+  var pcData = window._pcAnswers ? window._pcAnswers[q.id] : null;
+  if (!pcData) return;
+  // 选了"下列来源"（hasChildren）时，至少要选一个子选项才能确认
+  if (pcData.main !== null && pcData.main !== 0 && pcData.main !== '0') {
+    if (pcData.subs.length > 0) {
+      npcSelectedOpt = { _pcFilled: true, _qId: q.id };
+      var confirmBtn = document.getElementById('npc-confirm-btn');
+      if (confirmBtn) confirmBtn.disabled = false;
+      var hint = document.getElementById('npc-no-select-hint');
+      if (hint) hint.classList.add('faded');
+    } else {
+      npcSelectedOpt = null;
+      var confirmBtn2 = document.getElementById('npc-confirm-btn');
+      if (confirmBtn2) confirmBtn2.disabled = true;
+    }
+  }
 }
 
 // 沉浸模式下，打字完成后调用此函数滑入选项和确认按钮
@@ -4926,16 +5215,32 @@ function npcConfirmAnswer() {
   var q = currentAssessScale.questions[currentQuestionIndex];
   var opt = npcSelectedOpt;
 
-  // 记录答案（兼容选项有 id 和无 id 两种情况）
-  var optValue = (opt.id !== undefined && opt.id !== null) ? opt.id : q.options.indexOf(opt);
-  answers[q.id] = optValue;
+  // ===== 新题型答案收集 =====
+  if (opt._matrixFilled) {
+    // 矩阵题：答案为 { rowId: colIdx, ... }
+    answers[q.id] = window._matrixAnswers ? (window._matrixAnswers[q.id] || {}) : {};
+  } else if (opt._pcFilled) {
+    // 父子题：答案为 { main, subs, subFill }
+    var pcData = window._pcAnswers ? window._pcAnswers[q.id] : null;
+    if (pcData) {
+      answers[q.id] = {
+        main: pcData.main,
+        subs: pcData.subs ? pcData.subs.slice() : [],
+        subFill: pcData.subFill ? Object.assign({}, pcData.subFill) : {}
+      };
+    }
+  } else {
+    // 原有逻辑：普通选项
+    var optValue = (opt.id !== undefined && opt.id !== null) ? opt.id : q.options.indexOf(opt);
+    answers[q.id] = optValue;
+  }
 
   // 禁用选项
   var area = document.getElementById('npc-options-area');
-  var all = area.querySelectorAll('.npc-option-btn');
-  for (var i = 0; i < all.length; i++) {
-    all[i].style.pointerEvents = 'none';
-  }
+  area.querySelectorAll('.npc-option-btn, input[type="radio"], input[type="checkbox"]').forEach(function(el) {
+    el.style.pointerEvents = 'none';
+    if (el.tagName === 'INPUT') el.disabled = true;
+  });
 
   // 隐藏确认按钮
   var confirmBar = document.getElementById('npc-confirm-bar');
@@ -6190,7 +6495,7 @@ async function _loadQrImage() {
     img.crossOrigin = 'anonymous';
     img.onload = function() { _qrImgCache = img; resolve(img); };
     img.onerror = function() { resolve(null); };
-    img.src = 'assets/miniprogram-qr.png';
+    img.src = 'miniprogram-qr.png';
   });
 }
 
@@ -8663,7 +8968,7 @@ try {
 (function() {
   console.log('🔄 开始加载asset-storage.js');
   const assetScript = document.createElement('script');
-  assetScript.src = '../asset-storage.js?v=' + Date.now();
+  assetScript.src = 'asset-storage.js?v=' + Date.now();
   assetScript.onload = function() {
     console.log('✅ asset-storage.js加载完成');
   };
@@ -8674,18 +8979,18 @@ try {
 
   console.log('🔄 开始加载shared-data.js');
   const script = document.createElement('script');
-  script.src = '../shared-data.js?v=' + Date.now();
+  script.src = 'shared-data.js?v=' + Date.now();
   script.onload = function() {
     console.log('✅ shared-data.js加载完成');
 
     // 加载 cloud-data.js（云端适配层）
     const cloudScript = document.createElement('script');
-      cloudScript.src = '../cloud-data.js?v=' + Date.now();
+      cloudScript.src = 'cloud-data.js?v=' + Date.now();
       cloudScript.onload = function() {
       console.log('✅ cloud-data.js加载完成, 模式:', window.CloudEnv ? window.CloudEnv.mode : 'unknown');
       // 加载 cloud-api.js（云托管 HTTP 通信模块）
       const apiScript = document.createElement('script');
-      apiScript.src = '../cloud-api.js?v=3.3&t=' + Date.now();
+      apiScript.src = 'cloud-api.js?v=3.3&t=' + Date.now();
       apiScript.onload = function() {
         console.log('✅ cloud-api.js加载完成');
         // WebView 模式下记录 API 地址
@@ -8713,7 +9018,7 @@ try {
       document.head.appendChild(apiScript);
       // 加载计分引擎
       const seScript = document.createElement('script');
-      seScript.src = '../scoring-engine.js?v=2';
+      seScript.src = 'scoring-engine.js?v=2';
       seScript.onload = function() { console.log('✅ scoring-engine.js加载完成'); };
       seScript.onerror = function() { console.warn('⚠️ scoring-engine.js加载失败，将使用降级计分'); };
       document.head.appendChild(seScript);
@@ -8723,7 +9028,7 @@ try {
       console.warn('⚠️ cloud-data.js加载失败，使用纯本地模式');
       // cloud-data.js 加载失败不阻塞，继续使用本地模式
       const seScript = document.createElement('script');
-      seScript.src = '../scoring-engine.js?v=2';
+      seScript.src = 'scoring-engine.js?v=2';
       seScript.onload = function() { console.log('✅ scoring-engine.js加载完成'); };
       seScript.onerror = function() { console.warn('⚠️ scoring-engine.js加载失败，将使用降级计分'); };
       document.head.appendChild(seScript);
@@ -8735,7 +9040,7 @@ try {
     console.error('❌ shared-data.js加载失败');
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f44336;color:white;padding:10px;text-align:center;z-index:9999;';
-    errorDiv.innerHTML = 'shared-data.js文件加载失败。请确保文件存在且服务器正常运行。路径：../shared-data.js';
+    errorDiv.innerHTML = 'shared-data.js文件加载失败。请确保文件存在且服务器正常运行。路径：shared-data.js';
     document.body.appendChild(errorDiv);
   };
   document.head.appendChild(script);

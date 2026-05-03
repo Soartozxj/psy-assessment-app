@@ -710,9 +710,11 @@ async function callAi(messages) {
     if (parent && typeof parent.callAi === 'function') {
       return await parent.callAi(messages, { maxTokens: 8000, temperature: 0.1 });
     }
-    // fallback：如果父窗口不可用，直接调用 LNMP /api/ai-diagnose
+    // fallback：父窗口不可用时，使用配置的 API 服务器地址
     try {
-      const res = await fetch('/api/ai-diagnose', {
+      var apiBase = (localStorage.getItem('psy_cloud_api_base') || '').replace(/\/+$/, '');
+      if (!apiBase) throw new Error('未配置 API 服务器地址（psy_cloud_api_base）');
+      const res = await fetch(apiBase + '/api/ai-diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: 'dashscope', model: cfg.dashscope.model || 'qwen-plus', messages, maxTokens: 8000, temperature: 0.1 })
@@ -845,6 +847,23 @@ function getDefaultPromptText() {
 - 如果某个维度有自己的 interpretation（维度级别），也要在顶层再输出一份
 - 如果原文未提供某维度/指标的划界分，则不输出该维度/指标的 interpretation（不要编造）
 
+【text 解释说明文字撰写规范（重要）】
+每条 interpretation 的 text 字段是对该分数档的具体解释，不是标签的复述。撰写时须包含以下信息维度（按原文可用内容取舍，但禁止空洞表述）：
+
+1. 心理/行为特征：该分数段对应的具体心理状态或行为表现
+   ✅ "频繁出现头痛、胸闷等躯体症状，可能存在持续的焦虑或压力反应"
+   ❌ "躯体化得分较高"（这是标签复述，不是解释）
+
+2. 严重程度定位：该等级在什么情况下需要关注或干预（筛查量表必写）
+   ✅ "建议进行专业心理评估，排除焦虑障碍可能"
+   ❌ "需要关注"
+
+3. 辅助说明：如果原文有关于该分档的进一步描述（如临床意义、发生率等），应一并纳入
+
+- 如果原始提取文本中已有详细解释，忠实照搬
+- 如果原始提取只有等级标签（如"正常""轻度"），需根据维度含义补充具体的心理特征描述
+- text 长度建议 30~80 字，过短（<15 字）视为不合格
+
 ═══════════════════════════════════════════
 三、公式类型与严格使用规则
 ═══════════════════════════════════════════
@@ -926,9 +945,9 @@ function getDefaultPromptText() {
     }
   ],
   "interpretation": [
-    { "metric": "total_score", "min": 0, "max": 15, "level": "normal", "label": "正常", "color": "#43A047", "text": "..." },
-    { "metric": "total_score", "min": 16, "max": 25, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "..." },
-    { "metric": "total_score", "min": 26, "max": 40, "level": "moderate", "label": "中度及以上", "color": "#E53935", "text": "..." }
+    { "metric": "total_score", "min": 0, "max": 15, "level": "normal", "label": "正常", "color": "#43A047", "text": "当前未发现明显的心理困扰症状，日常社会功能良好，暂无需专业干预" },
+    { "metric": "total_score", "min": 16, "max": 25, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "存在一定程度的心理困扰，可能表现为偶发的焦虑、情绪低落或睡眠问题，建议关注自我调节与压力管理" },
+    { "metric": "total_score", "min": 26, "max": 40, "level": "moderate", "label": "中度及以上", "color": "#E53935", "text": "心理困扰较为显著，已对社会功能或日常生活造成明显影响，建议尽早进行专业心理评估与咨询" }
   ],
   "screening": {
     "conditions": [
@@ -962,18 +981,40 @@ function getDefaultPromptText() {
   ],
   "metrics": [],
   "interpretation": [
-    { "metric": "trait_a", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "..." },
-    { "metric": "trait_a", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "..." },
-    { "metric": "trait_a", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "..." },
-    { "metric": "trait_b", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "..." },
-    { "metric": "trait_b", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "..." },
-    { "metric": "trait_b", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "..." }
+    { "metric": "trait_a", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质A方面表现较低，日常中较少展现该特质相关的行为模式" },
+    { "metric": "trait_a", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质A处于中等水平，在多数情境下能适度展现该特质" },
+    { "metric": "trait_a", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质A表现突出，在各类情境中均能明显体现该特质的行为倾向" },
+    { "metric": "trait_b", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质B方面表现较低，日常中较少展现该特质相关的行为模式" },
+    { "metric": "trait_b", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质B处于中等水平，在多数情境下能适度展现该特质" },
+    { "metric": "trait_b", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质B表现突出，在各类情境中均能明显体现该特质的行为倾向" }
   ],
   "screening": null
 }
 
 ═══════════════════════════════════════════
-六、输出要求
+六、特殊题型说明（矩阵题 / 父子题）
+═══════════════════════════════════════════
+
+如果原始手册中包含以下特殊题型，在 dimensions.items 中正常按题号引用即可，计分引擎会自动检测答案格式进行特殊处理。
+
+【矩阵题（matrix）】题目需要被评估者对多个维度（行）分别评分。
+- 数据结构：{ type: "matrix", rows: [{id, label},...], options: [{id, label, score},...] }
+- 答案格式：{ 题号: { 行ID: 列索引, ... } }
+- 计分方式：所有行选中分数求和
+- 最大分 = 行数 × 最大列分
+- items 中按题号正常引用，无需特殊处理
+
+【父子题（parent-child）】题目有主选项和子选项的层级结构。
+- 数据结构：{ type: "parent-child", options: [{id, label, hasChildren?, isTerminal?}], subOptions: [{id, label, hasInput?}] }
+- 答案格式：{ 题号: { main: 主选项ID, subs: [子选项ID列表] } }
+- 计分方式：主选项选"无任何来源"=0分，否则=选中的子选项数量
+- 最大分 = subOptions.length
+- items 中按题号正常引用，无需特殊处理
+
+⚠️ 如果量表包含矩阵题或父子题，请在 dimensions.items 中正常列出题号。计分引擎会根据题目数据结构自动识别并采用对应的计分逻辑。
+
+═══════════════════════════════════════════
+七、输出要求
 ═══════════════════════════════════════════
 
 1. 只输出纯 JSON，不包含 markdown 代码块标记（不要 \`\`\`json）
@@ -1326,6 +1367,30 @@ function normalizeAndVerify() {
     countIfs.forEach(m => { report += '<span class="tag tag-orange" style="margin-right:4px;">' + escHtml(m.label) + ' ' + JSON.stringify(m.condition) + '</span>'; });
     report += '</div>';
   }
+
+  // 特殊题型检测（从当前编辑中的量表数据检测）
+  try {
+    const currentScaleStr = document.getElementById('scale-questions-input');
+    if (currentScaleStr) {
+      const scaleData = JSON.parse(currentScaleStr.value || '{}');
+      const questions = scaleData.questions || [];
+      const specialTypes = [];
+      questions.forEach((q, i) => {
+        if (q.type === 'matrix') {
+          const maxCol = Math.max(...(q.options||[]).map(o => o.score || 0));
+          specialTypes.push('Q' + (i+1) + '(matrix, ' + (q.rows||[]).length + '行×' + (q.options||[]).length + '列, 最大' + ((q.rows||[]).length * maxCol) + '分)');
+        } else if (q.type === 'parent-child') {
+          specialTypes.push('Q' + (i+1) + '(parent-child, ' + (q.subOptions||[]).length + '子选项, 最大' + (q.subOptions||[]).length + '分)');
+        }
+      });
+      if (specialTypes.length > 0) {
+        report += '<div style="margin-top:8px;font-size:12px;color:var(--text-sec);">特殊题型检测：';
+        specialTypes.forEach(t => { report += '<span class="tag tag-blue" style="margin-right:4px;">' + t + '</span>'; });
+        report += '<br><span style="font-size:11px;color:#888;">计分引擎已支持矩阵题和父子题，items 中按题号正常引用即可。</span>';
+        report += '</div>';
+      }
+    }
+  } catch(e) { /* 忽略解析错误 */ }
 
   // 标准化 JSON 预览
   report += '<div style="margin-top:16px;"><div class="result-section-title">{ } 标准化 JSON（可直接写入量表 scoring 字段）</div>';
