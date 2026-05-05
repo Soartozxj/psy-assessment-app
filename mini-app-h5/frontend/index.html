@@ -686,8 +686,6 @@
     .npc-character-img {
       height: 100%; object-fit: contain;
       transform: scale(1.2);
-      filter: drop-shadow(0 0 15px rgba(0,0,0,0.12));
-      /* animation: npcBreathe 4s ease-in-out infinite; -- WebView 中 infinite 动画持续 GPU 重绘，已禁用 */
     }
     @keyframes npcBreathe {
       0%, 100% { transform: translateY(0); }
@@ -4902,7 +4900,9 @@ function npcSubmitLastAnswer(q, opt, index) {
 function npcShowOptions(q) {
   // 新题型分发
   if (q.type === 'matrix') { npcShowMatrixOptions(q); return; }
+  if (q.type === 'grouped') { npcShowGroupedOptions(q); return; }
   if (q.type === 'parent-child') { npcShowParentChildOptions(q); return; }
+  if (q.type === 'text') { npcShowTextQuestion(q); return; }
 
   // 原有逻辑：普通单选
   var area = document.getElementById('npc-options-area');
@@ -4916,6 +4916,88 @@ function npcShowOptions(q) {
     area.appendChild(btn);
   });
   area.classList.add('active');
+
+  // 添加 hasInput 输入框容器（初始隐藏，选中对应选项后显示）
+  var hasAnyInput = q.options.some(function(o) { return o.hasInput; });
+  if (hasAnyInput) {
+    var inputContainer = document.createElement('div');
+    inputContainer.id = 'npc-fill-input-container';
+    inputContainer.style.cssText = 'display:none;margin-top:12px;padding:10px 14px;background:rgba(255,255,255,0.7);border-radius:10px;';
+    inputContainer.innerHTML = '<input type="text" id="npc-fill-input" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:14px;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;opacity:1;background:#fff;" placeholder="请填写具体内容">';
+    area.appendChild(inputContainer);
+  }
+
+  // 更新确认按钮文案（最后一题）
+  updateConfirmButtonState();
+}
+
+// ===== 独立文字题渲染（type: 'text'）=====
+function npcShowTextQuestion(q) {
+  var area = document.getElementById('npc-options-area');
+  area.innerHTML = '';
+  area.classList.add('active');
+
+  var placeholder = q.placeholder || q.inputPlaceholder || '请详细描述...';
+  var maxLen = q.maxLength || 500;
+  var required = q.required !== false; // 默认必填
+
+  // textarea 容器
+  var wrap = document.createElement('div');
+  wrap.id = 'npc-text-wrap';
+  wrap.style.cssText = 'margin-top:12px;padding:10px 14px;background:rgba(255,255,255,0.7);border-radius:10px;';
+
+  var textarea = document.createElement('textarea');
+  textarea.id = 'npc-text-input';
+  textarea.style.cssText = 'width:100%;border:1px solid #ddd;border-radius:6px;padding:10px;font-size:14px;resize:none;box-sizing:border-box;line-height:1.6;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;opacity:1;background:#fff;';
+  textarea.placeholder = placeholder;
+  textarea.maxLength = maxLen;
+  textarea.rows = 4;
+
+  // 恢复之前填写的内容
+  var prevText = answers[q.id];
+  if (typeof prevText === 'string') textarea.value = prevText;
+
+  // 字数统计
+  var counter = document.createElement('div');
+  counter.id = 'npc-text-counter';
+  counter.style.cssText = 'text-align:right;font-size:12px;color:#999;margin-top:4px;';
+  counter.textContent = textarea.value.length + ' / ' + maxLen;
+
+  textarea.addEventListener('input', function() {
+    var len = textarea.value.length;
+    counter.textContent = len + ' / ' + maxLen;
+    // 控制确认按钮状态
+    var confirmBtn = document.getElementById('npc-confirm-btn');
+    if (confirmBtn) {
+      if (required && textarea.value.trim().length === 0) {
+        confirmBtn.disabled = true;
+      } else {
+        confirmBtn.disabled = false;
+      }
+    }
+    // 标记为"已选择"（让 npcConfirmAnswer 放行）
+    if (textarea.value.trim().length > 0) {
+      npcSelectedOpt = { _isText: true };
+    } else {
+      npcSelectedOpt = null;
+    }
+    // 淡化提示
+    var hint = document.getElementById('npc-no-select-hint');
+    if (hint && textarea.value.trim().length > 0) hint.classList.add('faded');
+    else if (hint) hint.classList.remove('faded');
+  });
+
+  wrap.appendChild(textarea);
+  wrap.appendChild(counter);
+  area.appendChild(wrap);
+
+  // 如果非必填，一上来就启用确认按钮
+  if (!required) {
+    npcSelectedOpt = { _isText: true };
+    var confirmBtn = document.getElementById('npc-confirm-btn');
+    if (confirmBtn) confirmBtn.disabled = false;
+  }
+
   // 更新确认按钮文案（最后一题）
   updateConfirmButtonState();
 }
@@ -4994,6 +5076,571 @@ function npcShowMatrixOptions(q) {
   updateConfirmButtonState();
 }
 
+// allowRepeat 渲染：可动态添加条目（双状态：idle 主页 / editing 编辑页）
+function _renderAllowRepeat(q, area) {
+  // iOS WebView 原生样式修复
+  if (!document.getElementById('_repeatInputFix')) {
+    var fixCss = document.createElement('style');
+    fixCss.id = '_repeatInputFix';
+    fixCss.textContent = '.npc-repeat-row input[type="text"],.npc-repeat-row select,.npc-grouped-card select,#npc-fill-input,#npc-text-input{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important;opacity:1!important;-webkit-appearance:none!important;appearance:none!important;}';
+    document.head.appendChild(fixCss);
+  }
+  var repeatData = window._repeatData = window._repeatData || {};
+  if (!repeatData[q.id]) {
+    repeatData[q.id] = [];
+  }
+
+  var editing = window._allowRepeatEditing && window._allowRepeatEditing[q.id];
+  if (editing) {
+    _renderRepeatEditForm(q, area);
+  } else {
+    _renderRepeatIdleView(q, area);
+  }
+}
+
+// ===== allowRepeat 状态1：idle 页（+ 添加事件 / 不添加事件 / 确认并提交）=====
+function _renderRepeatIdleView(q, area) {
+  // 强制恢复底部确认栏状态（防止编辑页残留状态污染）
+  var confirmBar = document.getElementById('npc-confirm-bar');
+  var cfmBtn = document.getElementById('npc-confirm-btn');
+  var cfmText = document.getElementById('npc-confirm-text');
+  if (confirmBar) confirmBar.classList.add('visible');
+  if (cfmBtn) {
+    // 恢复原始 onclick
+    if (window._repeatSavedOnclick) {
+      cfmBtn.onclick = window._repeatSavedOnclick;
+    } else {
+      // 兜底：直接绑定 npcConfirmAnswer
+      cfmBtn.onclick = npcConfirmAnswer;
+    }
+    delete window._repeatSavedOnclick;
+    // ⚠️ 强制禁用，由 _updateRepeatCfm 决定最终状态
+    cfmBtn.disabled = true;
+    npcSelectedOpt = null;
+  }
+  if (cfmText) cfmText.textContent = '确认并提交';
+  
+  area.innerHTML = '';
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'padding:4px 0;text-align:center;';
+
+  var repeatData = window._repeatData || {};
+  var addedCount = (repeatData[q.id] || []).length;
+
+  // 已添加事件计数提示
+  if (addedCount > 0) {
+    var counter = document.createElement('div');
+    counter.style.cssText = 'font-size:12px;color:var(--primary);margin-bottom:8px;';
+    counter.textContent = '已添加 ' + addedCount + ' 条事件';
+    wrapper.appendChild(counter);
+  }
+
+  // + 添加事件 按钮
+  var addBtn = document.createElement('button');
+  addBtn.textContent = '+ 添加' + (q.repeatLabel || '事件');
+  addBtn.style.cssText = 'width:100%;padding:12px;border:2px dashed #ccc;border-radius:10px;background:none;font-size:15px;color:var(--primary);cursor:pointer;';
+  addBtn.onclick = function() {
+    window._allowRepeatEditing = window._allowRepeatEditing || {};
+    window._allowRepeatEditing[q.id] = true;
+    _renderAllowRepeat(q, area);
+  };
+  wrapper.appendChild(addBtn);
+
+  // 不添加事件 勾选框
+  var skipWrap = document.createElement('div');
+  skipWrap.style.cssText = 'margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;';
+  var skipId = 'repeat-skip-' + q.id;
+  var skipCheck = document.createElement('input');
+  skipCheck.type = 'checkbox';
+  skipCheck.id = skipId;
+  skipCheck.style.cssText = 'width:16px;height:16px;accent-color:var(--primary);cursor:pointer;';
+  skipCheck.onchange = function() { _updateRepeatCfm(q); };
+  var skipLabel = document.createElement('label');
+  skipLabel.htmlFor = skipId;
+  skipLabel.textContent = '不添加事件，直接提交';
+  skipLabel.style.cssText = 'font-size:13px;color:var(--text);cursor:pointer;';
+  skipWrap.appendChild(skipCheck);
+  skipWrap.appendChild(skipLabel);
+  wrapper.appendChild(skipWrap);
+
+  area.appendChild(wrapper);
+  _updateRepeatCfm(q);
+}
+
+// ===== allowRepeat 状态2：编辑页（表单 + 复用 npc-confirm-bar 作为"确认并继续"按钮）=====
+function _renderRepeatEditForm(q, area) {
+  area.innerHTML = '';
+  var newItem = { name: '' };
+
+  // 已有事件计数
+  var repeatData = window._repeatData || {};
+  var addedCount = (repeatData[q.id] || []).length;
+  var eventLabel = '第 ' + (addedCount + 1) + ' 个' + (q.repeatLabel || '事件');
+
+  var form = document.createElement('div');
+  form.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:10px;padding:16px;color:#1a1a1a;';
+
+  // 事件序号标签（iOS WebView 兼容 text-fill-color）
+  var eventTag = document.createElement('div');
+  eventTag.textContent = eventLabel;
+  eventTag.style.cssText = 'font-size:14px;color:var(--primary);-webkit-text-fill-color:var(--primary);font-weight:600;margin-bottom:12px;padding:4px 0;';
+  form.appendChild(eventTag);
+
+  // 事件名称输入框
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = q.repeatLabel || '事件名称';
+  nameInput.style.cssText = 'width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:12px;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;opacity:1;background:#fff;';
+  nameInput.oninput = function() { newItem.name = this.value; };
+  form.appendChild(nameInput);
+
+  // 各分组下拉框
+  (q.groups || []).forEach(function(group) {
+    var grpWrap = document.createElement('div');
+    grpWrap.style.cssText = 'margin-bottom:10px;';
+
+    var label = document.createElement('div');
+    label.textContent = group.label;
+    label.style.cssText = 'font-size:12px;color:var(--text-sec);margin-bottom:4px;';
+    grpWrap.appendChild(label);
+
+    var select = document.createElement('select');
+    select.setAttribute('autocomplete', 'off');
+    select.style.cssText = 'width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;opacity:1;background:#fff;';
+
+    var ph = document.createElement('option');
+    ph.value = ''; ph.textContent = '请选择'; ph.disabled = true; ph.selected = true;
+    select.appendChild(ph);
+
+    (group.options || []).forEach(function(opt) {
+      var o = document.createElement('option');
+      o.value = opt.id; o.textContent = opt.label || opt.id;
+      select.appendChild(o);
+    });
+
+    select.onchange = function() {
+      newItem[group.id] = this.value;
+      if (q.formula === 'multiply' && q.groups && q.groups.length >= 3) {
+        _updateRepeatRowGates(form, q, newItem);
+      }
+    };
+    grpWrap.appendChild(select);
+    form.appendChild(grpWrap);
+  });
+
+  // 初始化闸门
+  if (q.formula === 'multiply' && q.groups && q.groups.length >= 3) {
+    setTimeout(function() { _updateRepeatRowGates(form, q, newItem); }, 0);
+  }
+
+  area.appendChild(form);
+
+  // 复用底部 npc-confirm-bar 作为"确认并继续"按钮（phone-shell 内始终可见）
+  var confirmBar = document.getElementById('npc-confirm-bar');
+  var cfmBtn = document.getElementById('npc-confirm-btn');
+  var cfmText = document.getElementById('npc-confirm-text');
+  if (confirmBar) {
+    confirmBar.classList.add('visible');
+    // 仅首次进入编辑态时保存原始 onclick
+    if (!window._repeatSavedOnclick && cfmBtn) {
+      window._repeatSavedOnclick = cfmBtn.onclick || npcConfirmAnswer;
+    }
+  }
+  if (cfmBtn) {
+    cfmBtn.onclick = function() {
+      var rd = window._repeatData || {};
+      if (newItem.name || (q.groups && q.groups.length > 0 && newItem[q.groups[0].id])) {
+        if (!rd[q.id]) rd[q.id] = [];
+        rd[q.id].push(newItem);
+        console.log('[repeat] 保存事件 qid=' + q.id + ' 已保存=' + rd[q.id].length + ' 条');
+      } else {
+        console.log('[repeat] 跳过保存（无数据）');
+      }
+      window._allowRepeatEditing = window._allowRepeatEditing || {};
+      delete window._allowRepeatEditing[q.id];
+      _renderAllowRepeat(q, area);
+    };
+    cfmBtn.disabled = false;
+    npcSelectedOpt = { _groupedFilled: true, _qId: q.id };
+  }
+  if (cfmText) cfmText.textContent = '确认并继续';
+  // updateConfirmButtonState 会改文字和 is-last 样式，我们覆盖回来
+  updateConfirmButtonState();
+  if (cfmText) cfmText.textContent = '确认并继续';
+  if (cfmBtn) cfmBtn.classList.remove('is-last'); // 编辑页始终蓝色
+  console.log('[repeat] 渲染编辑表单 第' + (addedCount + 1) + '个 qid=' + q.id + ' 已有=' + addedCount + '条');
+}
+
+// ===== 更新确认并提交按钮状态（idle 页） =====
+function _updateRepeatCfm(q) {
+  var repeatData = window._repeatData || {};
+  var items = repeatData[q.id] || [];
+  var hasEvents = items.filter(function(item) { return item.name || item[q.groups[0].id]; }).length > 0;
+  var skipChecked = document.getElementById('repeat-skip-' + q.id);
+  var skipped = skipChecked && skipChecked.checked;
+
+  var cfmBtn = document.getElementById('npc-confirm-btn');
+  if (cfmBtn) {
+    console.log('[repeat] _updateRepeatCfm hasEvents=' + hasEvents + ' skipped=' + skipped + ' items=' + JSON.stringify(items));
+    if (skipped) {
+      cfmBtn.disabled = false;
+      npcSelectedOpt = { _groupedFilled: true, _qId: q.id };
+    } else {
+      cfmBtn.disabled = true;
+      npcSelectedOpt = null;
+    }
+    updateConfirmButtonState();
+  }
+}
+
+
+// ===== 分组下拉题渲染 =====
+function npcShowGroupedOptions(q) {
+  // ⚠️ iOS WebView 原生样式修复（与 _renderAllowRepeat 共用同一个 style 标签）
+  if (!document.getElementById('_repeatInputFix')) {
+    var fixCss = document.createElement('style');
+    fixCss.id = '_repeatInputFix';
+    fixCss.textContent = '.npc-repeat-row input[type="text"],.npc-repeat-row select,.npc-grouped-card select,#npc-fill-input,#npc-text-input{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important;opacity:1!important;-webkit-appearance:none!important;appearance:none!important;}';
+    document.head.appendChild(fixCss);
+  }
+  var area = document.getElementById('npc-options-area');
+  area.innerHTML = '';
+  area.classList.add('active');
+
+  var card = document.createElement('div');
+  card.className = 'npc-grouped-card';
+  card.style.cssText = 'background:rgba(255,255,255,0.7);border-radius:12px;padding:16px;';
+
+  // 初始化答案
+  if (!window._groupedAnswers) window._groupedAnswers = {};
+  if (!window._groupedAnswers[q.id]) window._groupedAnswers[q.id] = {};
+
+  // 恢复之前的选择（allowRepeat 由 _renderAllowRepeat → _updateRepeatCfm 自行管理确认按钮）
+  if (!q.allowRepeat && answers[q.id] && typeof answers[q.id] === 'object') {
+    window._groupedAnswers[q.id] = Object.assign({}, answers[q.id]);
+    npcSelectedOpt = { _groupedFilled: true, _qId: q.id };
+    var cfm = document.getElementById('npc-confirm-btn');
+    if (cfm) cfm.disabled = false;
+  }
+
+  // allowRepeat: 可重复添加的条目题
+  if (q.allowRepeat) {
+    _renderAllowRepeat(q, area);
+    return;
+  }
+
+  var allGroups = q.groups || [];
+  allGroups.forEach(function(group) {
+    var row = document.createElement('div');
+    row.style.cssText = 'margin-bottom:12px;';
+
+    var label = document.createElement('div');
+    label.textContent = group.label || group.id;
+    label.style.cssText = 'font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;';
+    row.appendChild(label);
+
+    var select = document.createElement('select');
+    select.setAttribute('autocomplete', 'off');
+    select.style.cssText = 'width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;opacity:1;background:#fff;appearance:none;-webkit-appearance:none;';
+    select.setAttribute('data-group-id', group.id);
+
+    // 占位选项
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '请选择';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+
+    (group.options || []).forEach(function(opt) {
+      var option = document.createElement('option');
+      option.value = opt.id;
+      option.textContent = (opt.label || opt.id) + ((opt.score !== undefined) ? '' : '');
+      select.appendChild(option);
+    });
+
+    // 恢复选中
+    if (window._groupedAnswers[q.id][group.id] !== undefined) {
+      select.value = window._groupedAnswers[q.id][group.id];
+    }
+
+    select.addEventListener('change', function() {
+      window._groupedAnswers[q.id][group.id] = this.value;
+      
+      // 乘法模式：两级联动闸门
+      //   L1: groups[0](发生时间) → 控制 BCD
+      //   L2: groups[2](影响程度) → 控制 D，仅当 L1>0 时
+      var _isMultiply = q.formula === 'multiply';
+      if (_isMultiply && q.groups && q.groups.length >= 3) {
+        _updateMultiplyGates(card, q);
+      }
+      
+      // 检查确认按钮
+      _checkGroupedFilled(card, q);
+    });
+
+    row.appendChild(select);
+    card.appendChild(row);
+  });
+  
+  // 乘法模式：初始化闸门状态
+  if (q.formula === 'multiply' && allGroups.length >= 3) {
+    _updateMultiplyGates(card, q);
+  }
+
+  area.appendChild(card);
+  updateConfirmButtonState();
+}
+
+// 乘法模式两级闸门更新
+function _updateMultiplyGates(card, q) {
+  var gs = q.groups;
+  var _idxA = 0, _idxC = Math.min(2, gs.length - 2); // C 是倒数第二个
+  var _idxD = gs.length - 1; // D 是最后一个
+  
+  var _valA = window._groupedAnswers[q.id][gs[_idxA].id];
+  var _scoreA = _getGroupOptScore(q, _idxA, _valA);
+  
+  // 获取所有 select 元素
+  var _allSels = {};
+  card.querySelectorAll('select[data-group-id]').forEach(function(s) {
+    _allSels[s.getAttribute('data-group-id')] = s;
+  });
+  
+  function _gray(gid) { var s = _allSels[gid]; if (!s) return; s.disabled = true; s.style.opacity = '0.35'; s.style.pointerEvents = 'none'; var r = s.closest('div'); if (r) r.style.opacity = '0.35'; }
+  function _lit(gid)  { var s = _allSels[gid]; if (!s) return; s.disabled = false; s.style.opacity = ''; s.style.pointerEvents = ''; var r = s.closest('div'); if (r) r.style.opacity = ''; }
+  function _autoFill(gid) {
+    if (!window._groupedAnswers[q.id][gid] && gs.find(function(g){return g.id===gid;}) && gs.find(function(g){return g.id===gid;}).options.length > 0) {
+      window._groupedAnswers[q.id][gid] = gs.find(function(g){return g.id===gid;}).options[0].id;
+    }
+    var s = _allSels[gid]; if (s && window._groupedAnswers[q.id][gid]) s.value = window._groupedAnswers[q.id][gid];
+  }
+  
+  // 清除跳过提示
+  var _skip = card.querySelector('.grouped-skip-note');
+  
+  if (!_valA) {
+    // A 未选：BCD 全部灰
+    for (var i = 1; i < gs.length; i++) _gray(gs[i].id);
+    if (_skip) _skip.textContent = '';
+  } else if (_scoreA === 0) {
+    // A=0(未发生)：BCD 自动补+灰
+    for (var i = 1; i < gs.length; i++) { _autoFill(gs[i].id); _gray(gs[i].id); }
+    if (!_skip) { _skip = document.createElement('div'); _skip.className = 'grouped-skip-note'; _skip.style.cssText = 'font-size:12px;color:#059669;padding:4px 0;text-align:center;'; card.appendChild(_skip); }
+    _skip.textContent = '该事件未经历，其余维度已自动跳过';
+  } else {
+    // A>0：B 和 C 点亮
+    for (var i = 1; i <= _idxC; i++) _lit(gs[i].id);
+    if (_skip) _skip.textContent = '';
+    
+    // 检查 C
+    var _valC = window._groupedAnswers[q.id][gs[_idxC].id];
+    var _scoreC = _getGroupOptScore(q, _idxC, _valC);
+    
+    if (!_valC) {
+      // C 未选 → D 灰
+      _gray(gs[_idxD].id);
+    } else if (_scoreC === 0) {
+      // C=0(无影响) → D 自动补+灰
+      _autoFill(gs[_idxD].id);
+      _gray(gs[_idxD].id);
+    } else {
+      // C>0 → D 点亮
+      _lit(gs[_idxD].id);
+    }
+  }
+}
+
+// 获取 group 选项分值
+function _getGroupOptScore(q, groupIndex, optId) {
+  if (optId === undefined || optId === null || optId === '') return null;
+  var group = (q.groups || [])[groupIndex];
+  if (!group || !group.options) return null;
+  var opt = group.options.find(function(o) { return o.id === optId; });
+  return opt ? (opt.score || 0) : null;
+}
+
+// 检查 grouped 是否全部填写，更新确认按钮
+function _checkGroupedFilled(card, q) {
+  var allFilled = true;
+  (q.groups || []).forEach(function(g) {
+    if (!window._groupedAnswers[q.id][g.id]) allFilled = false;
+  });
+  if (allFilled) {
+    npcSelectedOpt = { _groupedFilled: true, _qId: q.id };
+    var cfmBtn = document.getElementById('npc-confirm-btn');
+    if (cfmBtn) cfmBtn.disabled = false;
+    var hint = document.getElementById('npc-no-select-hint');
+    if (hint) hint.classList.add('faded');
+  }
+}
+
+// 可重复题中某一行的闸门联动（与单项 grouped 逻辑一致）
+function _updateRepeatRowGates(row, q, item) {
+  var gs = q.groups;
+  var _idxA = 0, _idxC = Math.min(2, gs.length - 2), _idxD = gs.length - 1;
+  
+  var _allSels = {};
+  row.querySelectorAll('select').forEach(function(s, i) {
+    if (i < gs.length) _allSels[gs[i].id] = s;
+  });
+  
+  function _gray(gid) { var s = _allSels[gid]; if (!s) return; s.disabled = true; s.style.opacity = '0.35'; s.style.pointerEvents = 'none'; var r = s.closest('div'); if (r) r.style.opacity = '0.35'; }
+  function _lit(gid)  { var s = _allSels[gid]; if (!s) return; s.disabled = false; s.style.opacity = ''; s.style.pointerEvents = ''; var r = s.closest('div'); if (r) r.style.opacity = ''; }
+  function _autoFill(gid) {
+    var g = gs.find(function(x){return x.id===gid;});
+    if (!item[gid] && g && g.options.length > 0) item[gid] = g.options[0].id;
+    var s = _allSels[gid]; if (s) s.value = item[gid] || '';
+  }
+  
+  var _valA = item[gs[_idxA].id];
+  var _scoreA = _getGroupOptScore(q, _idxA, _valA);
+  
+  if (!_valA) {
+    for (var i = 1; i < gs.length; i++) _gray(gs[i].id);
+  } else if (_scoreA === 0) {
+    for (var i = 1; i < gs.length; i++) { _autoFill(gs[i].id); _gray(gs[i].id); }
+  } else {
+    for (var i = 1; i <= _idxC; i++) _lit(gs[i].id);
+    var _valC = item[gs[_idxC].id];
+    var _scoreC = _getGroupOptScore(q, _idxC, _valC);
+    if (!_valC) { _gray(gs[_idxD].id); }
+    else if (_scoreC === 0) { _autoFill(gs[_idxD].id); _gray(gs[_idxD].id); }
+    else { _lit(gs[_idxD].id); }
+  }
+}
+
+
+// ===== 多维矩阵渲染 =====
+function npcShowMatrixMultiOptions(q) {
+  var area = document.getElementById('npc-options-area');
+  area.innerHTML = '';
+  area.classList.add('active');
+
+  var wrap = document.createElement('div');
+  wrap.id = 'npc-matrix-multi-form';
+  wrap.style.cssText = 'overflow-x:auto;-webkit-overflow-scrolling:touch;';
+
+  var table = document.createElement('table');
+  table.style.cssText = 'width:100%;border-collapse:collapse;font-size:12px;min-width:600px;';
+
+  // 表头：行标签 + 各列（每列下再分选项）
+  var thead = document.createElement('thead');
+  var headRow1 = document.createElement('tr');
+  var thEmpty = document.createElement('th');
+  thEmpty.textContent = '';
+  thEmpty.style.cssText = 'padding:6px 8px;border:1px solid #e0e0e0;background:#f5f5f5;position:sticky;left:0;z-index:2;';
+  headRow1.appendChild(thEmpty);
+  var headRow2 = document.createElement('tr');
+  var thEmpty2 = document.createElement('th');
+  thEmpty2.textContent = '';
+  thEmpty2.style.cssText = 'padding:6px 8px;border:1px solid #e0e0e0;background:#f5f5f5;position:sticky;left:0;z-index:2;';
+  headRow2.appendChild(thEmpty2);
+
+  (q.columns || []).forEach(function(col) {
+    var th1 = document.createElement('th');
+    th1.textContent = col.label || col.id;
+    th1.setAttribute('colspan', col.options ? col.options.length : 1);
+    th1.style.cssText = 'padding:6px 4px;border:1px solid #e0e0e0;background:#e8f0fe;font-size:11px;text-align:center;';
+    headRow1.appendChild(th1);
+
+    (col.options || []).forEach(function(opt) {
+      var th2 = document.createElement('th');
+      th2.textContent = opt.label || '';
+      th2.title = opt.label || '';
+      th2.style.cssText = 'padding:4px 2px;border:1px solid #e0e0e0;background:#f8f8f8;font-size:10px;text-align:center;max-width:60px;overflow:hidden;text-overflow:ellipsis;';
+      headRow2.appendChild(th2);
+    });
+  });
+  thead.appendChild(headRow1);
+  thead.appendChild(headRow2);
+  table.appendChild(thead);
+
+  // 表体：每行一个事件
+  var tbody = document.createElement('tbody');
+  (q.rows || []).forEach(function(row) {
+    var tr = document.createElement('tr');
+    var tdLabel = document.createElement('td');
+    tdLabel.textContent = row.label || row.id;
+    tdLabel.title = row.label || row.id;
+    tdLabel.style.cssText = 'padding:8px;border:1px solid #e0e0e0;font-size:12px;background:#fff;position:sticky;left:0;z-index:1;max-width:140px;overflow:hidden;text-overflow:ellipsis;';
+    tr.appendChild(tdLabel);
+
+    (q.columns || []).forEach(function(col) {
+      (col.options || []).forEach(function(opt, optIdx) {
+        var td = document.createElement('td');
+        td.style.cssText = 'padding:4px;border:1px solid #e0e0e0;text-align:center;';
+        var radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'mm_' + q.id + '_' + row.id + '_' + col.id;
+        radio.value = optIdx;
+        radio.style.cssText = 'width:14px;height:14px;';
+
+        // 恢复之前的选中状态
+        if (window._matrixMultiAnswers && window._matrixMultiAnswers[q.id] && window._matrixMultiAnswers[q.id][row.id]) {
+          if (window._matrixMultiAnswers[q.id][row.id][col.id] === optIdx) {
+            radio.checked = true;
+          }
+        }
+
+        radio.addEventListener('click', function() {
+          
+  // 恢复之前的选择
+  if (answers[q.id] && typeof answers[q.id] === 'object') {
+    Object.keys(answers[q.id]).forEach(function(rowId) {
+      if (!window._matrixMultiAnswers[q.id]) window._matrixMultiAnswers[q.id] = {};
+      window._matrixMultiAnswers[q.id][rowId] = Object.assign({}, answers[q.id][rowId]);
+    });
+    var answeredCount = q.rows ? q.rows.filter(function(r) { return window._matrixMultiAnswers[q.id][r.id]; }).length : 0;
+    if (answeredCount > 0) {
+      npcSelectedOpt = { _matrixMultiFilled: true, _qId: q.id };
+      var cfmBtn = document.getElementById('npc-confirm-btn');
+      if (cfmBtn) cfmBtn.disabled = false;
+      var hnt = document.getElementById('npc-no-select-hint');
+      if (hnt) hnt.classList.add('faded');
+    }
+  }
+  if (!window._matrixMultiAnswers) window._matrixMultiAnswers = {};
+          if (!window._matrixMultiAnswers[q.id]) window._matrixMultiAnswers[q.id] = {};
+          if (!window._matrixMultiAnswers[q.id][row.id]) window._matrixMultiAnswers[q.id][row.id] = {};
+          window._matrixMultiAnswers[q.id][row.id][col.id] = optIdx;
+
+          // 检查是否所有行列都已选
+          var allAnswered = true;
+          var rs = q.rows || [];
+          var cs = q.columns || [];
+          for (var ri = 0; ri < rs.length; ri++) {
+            var rowAns = window._matrixMultiAnswers[q.id][rs[ri].id];
+            for (var ci = 0; ci < cs.length; ci++) {
+              if (!rowAns || rowAns[cs[ci].id] === undefined) { allAnswered = false; break; }
+            }
+            if (!allAnswered) break;
+          }
+          if (allAnswered) {
+            npcSelectedOpt = { _matrixMultiFilled: true, _qId: q.id };
+            var cfm = document.getElementById('npc-confirm-btn');
+            if (cfm) cfm.disabled = false;
+            var hnt = document.getElementById('npc-no-select-hint');
+            if (hnt) hnt.classList.add('faded');
+          }
+        });
+        td.appendChild(radio);
+        tr.appendChild(td);
+      });
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  area.appendChild(wrap);
+
+  // 初始化
+  if (!window._matrixMultiAnswers) window._matrixMultiAnswers = {};
+  if (!window._matrixMultiAnswers[q.id]) window._matrixMultiAnswers[q.id] = {};
+
+  updateConfirmButtonState();
+}
+
 // ===== 父子题渲染 =====
 function npcShowParentChildOptions(q) {
   var area = document.getElementById('npc-options-area');
@@ -5005,7 +5652,7 @@ function npcShowParentChildOptions(q) {
 
   // 初始化父子题答案存储
   if (!window._pcAnswers) window._pcAnswers = {};
-  window._pcAnswers[q.id] = { main: null, subs: [], subFill: {} };
+  window._pcAnswers[q.id] = { main: null, subs: q.subSelect === 'single' ? null : [], subFill: {} };
 
   // 主选项（单选）
   (q.options || []).forEach(function(opt) {
@@ -5023,16 +5670,22 @@ function npcShowParentChildOptions(q) {
 
       // 处理子选项区
       var subArea = document.getElementById('npc-sub-options-area');
-      if (opt.hasChildren) {
-        // 展开/显示子选项区
-        if (!subArea) {
-          subArea = _createSubOptionsArea(q);
-          area.appendChild(subArea);
-        }
+      // 选项级 subOptions 优先，否则用题目级 subOptions（向下兼容）
+      var subOpts = opt.subOptions || q.subOptions || [];
+      // hasChildren 未设置但存在子选项时，自动推断
+      var hasChildren = opt.hasChildren === true || (opt.hasChildren === undefined && opt.isTerminal === undefined && subOpts.length > 0);
+      if (hasChildren && subOpts.length > 0) {
+        // 每次切换主选项时重建子选项区（支持不同选项不同子列表）
+        if (subArea) { subArea.parentNode.removeChild(subArea); subArea = null; }
+        // 重置子选项选中状态
+        window._pcAnswers[q.id].subs = q.subSelect === 'single' ? null : [];
+        window._pcAnswers[q.id].subFill = {};
+        subArea = _createSubOptionsArea(q, subOpts);
+        area.appendChild(subArea);
         subArea.classList.add('active');
         // 初始状态：如果还没选任何子选项，不能确认
         _updatePcConfirmState(q);
-      } else if (opt.isTerminal) {
+      } else if (opt.isTerminal || (!hasChildren && subOpts.length === 0)) {
         // 终端选项（如"无任何来源"）：隐藏子选项区，直接可确认
         if (subArea) subArea.classList.remove('active');
         npcSelectedOpt = { _pcFilled: true, _qId: q.id };
@@ -5049,21 +5702,23 @@ function npcShowParentChildOptions(q) {
   updateConfirmButtonState();
 }
 
-function _createSubOptionsArea(q) {
+function _createSubOptionsArea(q, subOpts) {
   var wrap = document.createElement('div');
   wrap.id = 'npc-sub-options-area';
+  var isSingle = q.subSelect === 'single';
 
   var title = document.createElement('div');
   title.className = 'sub-title';
-  title.textContent = '请选择所有适用的来源：';
+  title.textContent = isSingle ? '请选择一项：' : '请选择所有适用的来源：';
   wrap.appendChild(title);
 
-  (q.subOptions || []).forEach(function(sub) {
+  (subOpts || []).forEach(function(sub) {
     var row = document.createElement('div');
     row.className = 'npc-sub-option-wrap';
 
     var checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
+    checkbox.type = isSingle ? 'radio' : 'checkbox';
+    checkbox.name = isSingle ? 'npc-sub-' + q.id : '';
     checkbox.value = sub.id;
     checkbox.id = 'npc-sub-' + sub.id;
 
@@ -5105,12 +5760,17 @@ function _createSubOptionsArea(q) {
 
     checkbox.addEventListener('change', function() {
       // 更新子选项答案
-      var subs = window._pcAnswers[q.id].subs;
-      if (checkbox.checked) {
-        if (subs.indexOf(sub.id) < 0) subs.push(sub.id);
+      var pcData = window._pcAnswers[q.id];
+      if (isSingle) {
+        pcData.subs = checkbox.checked ? sub.id : null;
       } else {
-        var idx = subs.indexOf(sub.id);
-        if (idx >= 0) subs.splice(idx, 1);
+        var subs = pcData.subs;
+        if (checkbox.checked) {
+          if (subs.indexOf(sub.id) < 0) subs.push(sub.id);
+        } else {
+          var idx = subs.indexOf(sub.id);
+          if (idx >= 0) subs.splice(idx, 1);
+        }
       }
       _updatePcConfirmState(q);
     });
@@ -5122,9 +5782,10 @@ function _createSubOptionsArea(q) {
 function _updatePcConfirmState(q) {
   var pcData = window._pcAnswers ? window._pcAnswers[q.id] : null;
   if (!pcData) return;
-  // 选了"下列来源"（hasChildren）时，至少要选一个子选项才能确认
+  // 选了"下列来源"（hasChildren）时，检查子选项是否满足要求
   if (pcData.main !== null && pcData.main !== 0 && pcData.main !== '0') {
-    if (pcData.subs.length > 0) {
+    var hasSub = q.subSelect === 'single' ? (pcData.subs !== null && pcData.subs !== '') : (Array.isArray(pcData.subs) && pcData.subs.length > 0);
+    if (hasSub) {
       npcSelectedOpt = { _pcFilled: true, _qId: q.id };
       var confirmBtn = document.getElementById('npc-confirm-btn');
       if (confirmBtn) confirmBtn.disabled = false;
@@ -5175,6 +5836,25 @@ function npcSelectOption(q, opt, area, btn) {
     confirmBtn.disabled = false;
   }
 
+  // hasInput：显示/隐藏输入框
+  var inputContainer = document.getElementById('npc-fill-input-container');
+  var fillInput = document.getElementById('npc-fill-input');
+  if (inputContainer) {
+    if (opt.hasInput) {
+      inputContainer.style.display = '';
+      if (fillInput) {
+        fillInput.placeholder = opt.inputPlaceholder || '请填写具体内容';
+        // 恢复之前填写的内容（如果有的话）
+        var q = currentAssessScale.questions[currentQuestionIndex];
+        var prevFill = answers[q.id + '_fill'];
+        if (prevFill) fillInput.value = prevFill;
+        else fillInput.value = '';
+      }
+    } else {
+      inputContainer.style.display = 'none';
+    }
+  }
+
   // 淡化未选择提示（不隐藏，保持空间稳定）
   var hint = document.getElementById('npc-no-select-hint');
   if (hint) hint.classList.add('faded');
@@ -5216,7 +5896,36 @@ function npcConfirmAnswer() {
   var opt = npcSelectedOpt;
 
   // ===== 新题型答案收集 =====
-  if (opt._matrixFilled) {
+  if (opt._isText) {
+    // 独立文字题（type: 'text'）：直接存文本内容
+    var textInput = document.getElementById('npc-text-input');
+    var textVal = textInput ? textInput.value.trim() : '';
+    answers[q.id] = textVal;
+    console.log('[textQuestion] 题目', q.id, '填写内容:', textVal || '(空)');
+  } else if (opt._groupedFilled) {
+    // 分组下拉题
+    var gd = window._groupedAnswers ? window._groupedAnswers[q.id] : null;
+    // allowRepeat: 检查是否有 repeat 数据
+    var rd = window._repeatData ? window._repeatData[q.id] : null;
+    if (rd && Array.isArray(rd)) {
+      // allowRepeat：过滤空行；如果是「不添加事件」跳过，rd 为空数组
+      answers[q.id] = rd.filter(function(item) { return item.name || item[q.groups[0].id]; });
+    } else if (gd) {
+      // 单条目 grouped
+      answers[q.id] = gd;
+    } else {
+      answers[q.id] = {};
+    }
+  } else if (opt._matrixMultiFilled) {
+    // 多维矩阵：答案为 { rowId: { colId: colIdx, ... }, ... }
+    var mmData = window._matrixMultiAnswers ? window._matrixMultiAnswers[q.id] : null;
+    if (mmData) {
+      answers[q.id] = {};
+      Object.keys(mmData).forEach(function(rowId) {
+        answers[q.id][rowId] = Object.assign({}, mmData[rowId]);
+      });
+    }
+  } else if (opt._matrixFilled) {
     // 矩阵题：答案为 { rowId: colIdx, ... }
     answers[q.id] = window._matrixAnswers ? (window._matrixAnswers[q.id] || {}) : {};
   } else if (opt._pcFilled) {
@@ -5230,14 +5939,21 @@ function npcConfirmAnswer() {
       };
     }
   } else {
-    // 原有逻辑：普通选项
+    // 普通选项（含 hasInput 支持）
     var optValue = (opt.id !== undefined && opt.id !== null) ? opt.id : q.options.indexOf(opt);
     answers[q.id] = optValue;
+
+    // hasInput：保存用户填写的文字
+    if (opt.hasInput) {
+      var fillInput = document.getElementById('npc-fill-input');
+      answers[q.id + '_fill'] = fillInput ? fillInput.value.trim() : '';
+      console.log('[hasInput] 题目', q.id, '填写内容:', answers[q.id + '_fill']);
+    }
   }
 
-  // 禁用选项
+  // 禁用选项（包括 hasInput 输入框）
   var area = document.getElementById('npc-options-area');
-  area.querySelectorAll('.npc-option-btn, input[type="radio"], input[type="checkbox"]').forEach(function(el) {
+  area.querySelectorAll('.npc-option-btn, input[type="radio"], input[type="checkbox"], #npc-fill-input, #npc-text-input').forEach(function(el) {
     el.style.pointerEvents = 'none';
     if (el.tagName === 'INPUT') el.disabled = true;
   });
@@ -5423,6 +6139,22 @@ function switchNpcMode(mode) {
     if (prevAnswer !== undefined) {
       // 延迟等选项渲染完成后恢复选中
       setTimeout(function() {
+        // 文字题：恢复 textarea 内容
+        if (q.type === 'text') {
+          var textarea = document.getElementById('npc-text-input');
+          if (textarea && typeof prevAnswer === 'string') {
+            textarea.value = prevAnswer;
+            var counter = document.getElementById('npc-text-counter');
+            if (counter) counter.textContent = prevAnswer.length + ' / ' + (q.maxLength || 500);
+            npcSelectedOpt = { _isText: true };
+            var confirmBtn = document.getElementById('npc-confirm-btn');
+            if (confirmBtn) confirmBtn.disabled = false;
+            var hint = document.getElementById('npc-no-select-hint');
+            if (hint) hint.classList.add('hidden');
+          }
+          return;
+        }
+
         var btns = area.querySelectorAll('.npc-option-btn');
         for (var i = 0; i < btns.length; i++) {
           var opt = q.options[i];
@@ -5434,6 +6166,17 @@ function switchNpcMode(mode) {
             if (confirmBtn) confirmBtn.disabled = false;
             var hint = document.getElementById('npc-no-select-hint');
             if (hint) hint.classList.add('hidden');
+
+            // 恢复 fillText（如果选项有 hasInput）
+            if (opt.hasInput) {
+              var inputContainer = document.getElementById('npc-fill-input-container');
+              var fillInput = document.getElementById('npc-fill-input');
+              if (inputContainer) inputContainer.style.display = '';
+              if (fillInput) {
+                fillInput.placeholder = opt.inputPlaceholder || '请填写具体内容';
+                fillInput.value = answers[q.id + '_fill'] || '';
+              }
+            }
             break;
           }
         }
@@ -6150,6 +6893,57 @@ function goBackFromAiDiag() {
   }
 }
 
+// 将 grouped/allowRepeat 题型的 answers 编码值（如 g_time:"C"）转为人类可读标签（如"1年内"）
+// 避免 AI 在报告中输出原始编码值
+function _humanizeAnswers(answers, scale) {
+  if (!answers || !scale || !scale.questions) return answers || {};
+  // 构建编码→标签映射表
+  var labelMaps = {};
+  var hasGrouped = false;
+  (scale.questions || []).forEach(function(q) {
+    if (q.type === 'grouped' && q.groups) {
+      hasGrouped = true;
+      labelMaps[q.id] = {};
+      q.groups.forEach(function(g) {
+        labelMaps[q.id][g.id] = {};
+        (g.options || []).forEach(function(o) {
+          if (o.label) labelMaps[q.id][g.id][o.id] = o.label;
+        });
+      });
+    }
+  });
+  if (!hasGrouped) return answers; // 无分组题则原样返回
+  var result = {};
+  Object.keys(answers).forEach(function(qid) {
+    var val = answers[qid];
+    var maps = labelMaps[qid];
+    if (!maps) { result[qid] = val; return; } // 非分组题不动
+    if (Array.isArray(val)) {
+      // allowRepeat：事件数组，每个元素也需转换
+      result[qid] = val.map(function(item) {
+        var mapped = {};
+        Object.keys(item).forEach(function(k) {
+          if (k === 'name' || !maps[k]) { mapped[k] = item[k]; }
+          else { mapped[k] = (maps[k] && maps[k][item[k]]) ? maps[k][item[k]] : item[k]; }
+        });
+        return mapped;
+      });
+    } else if (typeof val === 'object' && val !== null) {
+      // 单个分组答案
+      var mapped = {};
+      Object.keys(val).forEach(function(k) {
+        if (maps[k] && maps[k][val[k]]) { mapped[k] = maps[k][val[k]]; }
+        else { mapped[k] = val[k]; }
+      });
+      result[qid] = mapped;
+    } else {
+      result[qid] = val;
+    }
+  });
+  console.log('[humanizeAnswers] 已转换 grouped 题型编码→标签');
+  return result;
+}
+
 // 在独立诊断页发起 AI 诊断
 async function requestAiDiagnosis() {
   if (!currentAssessScale) return;
@@ -6198,18 +6992,28 @@ async function requestAiDiagnosis() {
       .replace(/\{score\}/g, scoreData.totalScore || 0)
       .replace(/\{level\}/g, scoreData.levelName || '未知')
       .replace(/\{dimensions\}/g, JSON.stringify(scoreData.dims || []))
-      .replace(/\{answers\}/g, JSON.stringify(answers || {}));
+      .replace(/\{answers\}/g, JSON.stringify(_humanizeAnswers(answers, s) || {}));
 
-    // 强制追加格式约束（确保 AI 只输出纯 Markdown，不输出 HTML）
-    systemPrompt += '\n\n【⚠️ 输出格式强制要求】\n' +
-      '你只能使用以下 Markdown 语法，严禁使用任何 HTML 标签：\n' +
-      '- 粗体用 **文字** ，斜体用 *文字*\n' +
-      '- 标题用 ## 或 ### 开头，分隔线用独占一行的 ---\n' +
-      '- 列表用 - 或数字编号 1. 2. 3. 开头\n' +
-      '- 引用语用 > 开头\n' +
-      '- **严禁**使用 <div>、<span>、<br>、<table>、<strong> 等 HTML 标签\n' +
-      '- **严禁**使用 | 列 | 列 | Markdown 表格语法\n' +
-      '- 如需呈现对比信息，请用列表或粗体标题+文字描述替代表格';
+    // 强制追加格式约束（从 prompts/输出格式.md 读取，确保 AI 只输出纯 Markdown）
+    var formatConstraint = '';
+    var prompts = window.DEFAULT_PROMPTS || [];
+    var fmt = prompts.find(function(p) { return p.id === 'output-format'; });
+    if (fmt && fmt.versions && fmt.versions.length > 0) {
+      formatConstraint = fmt.versions[fmt.versions.length - 1].content;
+    }
+    // Fallback 硬编码（WebView 中 DEFAULT_PROMPTS 可能未加载）
+    if (!formatConstraint) {
+      formatConstraint = '【⚠️ 输出格式强制要求】\n' +
+        '你只能使用以下 Markdown 语法，严禁使用任何 HTML 标签：\n' +
+        '- 粗体用 **文字** ，斜体用 *文字*\n' +
+        '- 标题用 ## 或 ### 开头，分隔线用独占一行的 ---\n' +
+        '- 列表用 - 或数字编号 1. 2. 3. 开头\n' +
+        '- 引用语用 > 开头\n' +
+        '- **严禁**使用 <div>、<span>、<br>、<table>、<strong> 等 HTML 标签\n' +
+        '- **严禁**使用 | 列 | 列 | Markdown 表格语法\n' +
+        '- 如需呈现对比信息，请用列表或粗体标题+文字描述替代表格';
+    }
+    systemPrompt += '\n\n' + formatConstraint;
 
     var messages = [
       { role: 'system', content: systemPrompt }
@@ -6831,6 +7635,8 @@ var _ttsLoading = false;
 function _convertReportToSpeechText(mdText) {
   if (!mdText) return '';
   var text = mdText;
+  // 移除 Emoji（视觉标注，不应被 TTS 朗读）
+  text = text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B50}\u{2934}-\u{2BFF}\u{FE00}-\u{FEFF}\u{200D}]/gu, '');
   // 去掉 Markdown 标记
   text = text.replace(/^#{1,4}\s+/gm, '');           // 标题
   text = text.replace(/\*\*(.+?)\*\*/g, '$1');        // 粗体 **text**
@@ -7102,7 +7908,7 @@ async function callAiFromFrontend(messages) {
   if (!cfg && window.SharedData && typeof SharedData.getAiConfig === 'function') {
     cfg = SharedData.getAiConfig();
   }
-  if (!cfg) cfg = { provider: 'dashscope', dashscope: { model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+  if (!cfg) cfg = { provider: 'dashscope', dashscope: { model: 'qwen-plus' }, deepseek: { model: 'deepseek-v4-flash' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
 
   var provider = cfg.provider || 'dashscope';
 
@@ -7119,18 +7925,28 @@ async function callAiFromFrontend(messages) {
     return data.message && data.message.content ? data.message.content : '';
   }
 
-  // DashScope 模式：统一走服务端代理（API Key 不暴露到前端）
+  // DashScope / DeepSeek 模式：统一走服务端代理（API Key 不暴露到前端）
   // WebView → CloudBase 云端代理，浏览器 → LNMP 服务端代理
   if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
-    console.log('[AI Diag] 走 CloudBase 云端代理');
-    var model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
-    return window.CloudData.callAi(messages, { provider: 'dashscope', model: model, temperature: temp, maxTokens: maxTokens });
+    var model;
+    if (provider === 'deepseek') {
+      model = (cfg.deepseek && cfg.deepseek.model) || 'deepseek-v4-flash';
+    } else {
+      model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
+    }
+    console.log('[AI Diag] 走 CloudBase 云端代理，provider=' + provider);
+    return window.CloudData.callAi(messages, { provider: provider, model: model, temperature: temp, maxTokens: maxTokens });
   }
 
   if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
-    console.log('[AI Diag] 走 LNMP 服务端代理');
-    var model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
-    return window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', model: model, temperature: temp, maxTokens: maxTokens });
+    var model;
+    if (provider === 'deepseek') {
+      model = (cfg.deepseek && cfg.deepseek.model) || 'deepseek-v4-flash';
+    } else {
+      model = (cfg.dashscope && cfg.dashscope.model) || 'qwen-plus';
+    }
+    console.log('[AI Diag] 走 LNMP 服务端代理，provider=' + provider);
+    return window.CloudAPI.aiDiagnose(messages, { provider: provider, model: model, temperature: temp, maxTokens: maxTokens });
   }
 
   throw new Error('系统服务未配置，请联系管理员');

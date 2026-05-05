@@ -1816,7 +1816,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
     .fb-detail-actions { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
   </style>
-<script src="default-prompts.js?v=6"></script>
+<script src="default-prompts.js?v=19"></script>
 </head>
 <body>
 
@@ -2246,6 +2246,10 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
                 <input type="radio" name="ai-provider" value="dashscope" onchange="switchAiProvider('dashscope')" style="margin:0;">
                 <span>☁️</span> DashScope（阿里云）
               </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:12px 20px;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;" id="provider-deepseek">
+                <input type="radio" name="ai-provider" value="deepseek" onchange="switchAiProvider('deepseek')" style="margin:0;">
+                <span>🔮</span> DeepSeek
+              </label>
               <label style="display:flex;align-items:center;gap:8px;padding:12px 20px;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;" id="provider-ollama">
                 <input type="radio" name="ai-provider" value="ollama" onchange="switchAiProvider('ollama')" style="margin:0;">
                 <span>🏠</span> Ollama（本地）
@@ -2278,6 +2282,36 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
               <div style="padding:10px 14px;background:linear-gradient(135deg,#e8f4fd,#f0e6ff);border-radius:8px;font-size:12px;color:var(--text-sec);line-height:1.6;">
                 📌 API Key 已统一由服务端管理，前端不再持有密钥。<br>
                 如需配置/修改 Key，请前往「运维工具 → AI 密钥管理」操作。
+              </div>
+            </div>
+          </div>
+
+          <div id="ai-deepseek-config" style="display:none;margin-bottom:20px;">
+            <div style="background:var(--bg);padding:20px;border-radius:8px;border:1px solid var(--border);">
+              <div style="font-size:14px;font-weight:600;margin-bottom:16px;">🔮 DeepSeek 配置</div>
+              <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:6px;">模型名称</label>
+                <select id="dk-model" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                  <option value="deepseek-v4-flash" selected>deepseek-v4-flash（推荐，32K输出）</option>
+                  <option value="deepseek-chat">deepseek-chat（旧版，8K输出）</option>
+                  <option value="deepseek-reasoner">deepseek-reasoner（深度推理 R1）</option>
+                </select>
+              </div>
+              <!-- 服务端 Key 状态（脱敏显示，不可编辑） -->
+              <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:6px;">🔑 API Key 状态</label>
+                <div id="ai-key-status-panel-deepseek" style="padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-muted);min-height:40px;">
+                  点击"刷新状态"查询服务端 Key 配置
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                  <button class="btn btn-default" onclick="refreshAiKeyStatus('lnmp','deepseek')" style="flex:1;font-size:12px;padding:8px">🌐 刷新 LNMP 状态</button>
+                  <button class="btn btn-default" onclick="refreshAiKeyStatus('cloud','deepseek')" style="flex:1;font-size:12px;padding:8px">☁️ 刷新 CloudBase 状态</button>
+                </div>
+              </div>
+              <div style="padding:10px 14px;background:linear-gradient(135deg,#e8f4fd,#f0e6ff);border-radius:8px;font-size:12px;color:var(--text-sec);line-height:1.6;">
+                📌 API Key 已统一由服务端管理，前端不再持有密钥。<br>
+                如需配置/修改 Key，请前往「运维工具 → AI 密钥管理」操作。<br>
+                🔗 DeepSeek API 文档：<a href="https://platform.deepseek.com/api-docs" target="_blank" style="color:var(--primary)">platform.deepseek.com</a>
               </div>
             </div>
           </div>
@@ -2608,7 +2642,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
                 <span class="ops-card-icon">🔑</span>
                 <div>
                   <div class="ops-card-title">AI 密钥管理</div>
-                  <div class="ops-card-sub">配置 DashScope API Key（主 + 3 备用）· 保存到 LNMP + CloudBase 双端</div>
+                  <div class="ops-card-sub">配置 DashScope / DeepSeek API Key · 保存到 LNMP + CloudBase 双端</div>
                 </div>
                 <button class="ops-btn" onclick="opsLoadAiKeysFromServer()">📂 从服务端加载</button>
                 <button class="ops-btn" onclick="opsCheckServerKeys()" style="font-size:11px;padding:4px 10px">🌐 双端状态</button>
@@ -2951,6 +2985,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
       <div class="sp-tpl-chips">
         <div class="sp-tpl-chip" data-tpl="scoring" onclick="spFillTemplate('scoring')"><span>🎯</span> 计分规则提取</div>
         <div class="sp-tpl-chip" data-tpl="csv" onclick="spFillTemplate('csv')"><span>📊</span> CSV 导入文件生成</div>
+        <div class="sp-tpl-chip" data-tpl="json" onclick="spFillTemplate('json')"><span>📋</span> JSON 导入文件生成</div>
         <div class="sp-tpl-chip" data-tpl="blank" onclick="spFillTemplate('blank')"><span>📝</span> 空白模板</div>
       </div>
       <div class="form-group">
@@ -3059,7 +3094,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
                     <div class="edit-preview-progress-bar"><div class="edit-preview-progress-fill" style="width:33%"></div></div>
                     <div class="edit-preview-progress-info">3 / 9</div>
                     <div class="edit-preview-mode-toggle"><span class="edit-mode-btn active">沉浸</span><span class="edit-mode-btn">普通</span></div>
-                    <div class="edit-preview-char-area"><img class="edit-preview-char-img" id="edit-preview-char-img" src="../frontend/assets/counselor.png" alt="咨询师" /></div>
+                    <div class="edit-preview-char-area"><img class="edit-preview-char-img" id="edit-preview-char-img" src="counselor.png" alt="咨询师" /></div>
                     <div class="edit-preview-nameplate"><span class="edit-np-name" id="edit-preview-np-name">咨询师</span><span class="edit-np-title">「每一种感受，都值得被温柔以待」</span></div>
                     <div class="edit-preview-dialog-box">
                       <div class="edit-preview-dialog-frame">
@@ -3798,7 +3833,7 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
       <!-- 步骤1: 选择格式 -->
       <div id="import-step-1">
         <p style="color: var(--text-sec); margin-bottom: 20px;">请选择要导入的数据文件格式：</p>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
           <div class="import-format-card selected" data-format="json" onclick="selectImportFormat('json')" style="padding: 20px; border: 2px solid var(--primary); border-radius: 12px; cursor: pointer; text-align: center; background: var(--primary-light);">
             <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
             <div style="font-weight: 600; color: var(--text);">JSON 格式</div>
@@ -3813,6 +3848,11 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
             <div style="font-size: 32px; margin-bottom: 8px;">📈</div>
             <div style="font-weight: 600; color: var(--text);">Excel 格式</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">.xlsx 格式</div>
+          </div>
+          <div class="import-format-card" data-format="ai" onclick="selectImportFormat('ai')" style="padding: 20px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
+            <div style="font-weight: 600; color: var(--text);">AI 智能生成</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">上传文档，AI 自动生成</div>
           </div>
         </div>
         <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
@@ -3887,6 +3927,62 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
         </div>
       </div>
       
+      <!-- 步骤2b: AI 智能生成 -->
+      <div id="import-step-ai" style="display: none;">
+        <!-- 1. 上传源文档（可选） -->
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 8px;">
+            上传量表手册（可选）
+          </label>
+          <input type="file" id="ai-source-file" accept=".txt,.md,.docx,.pdf" onchange="handleAiFileSelect(event)"
+                 style="font-size: 13px; color: var(--text);" />
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            支持 .txt / .md / .docx；不上传则直接在下方输入文本
+          </div>
+        </div>
+
+        <!-- 2. 粘贴文本内容（必填） -->
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 8px;">
+            量表说明文本 <span style="color:var(--danger)">*</span>
+          </label>
+          <textarea id="ai-source-text" rows="8"
+                    style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:13px; line-height:1.6; resize:vertical;"
+                    placeholder="请粘贴量表手册内容，或上传文件后自动填充..."></textarea>
+        </div>
+
+        <!-- 3. 提示词版本选择 -->
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 8px;">
+            提示词版本
+          </label>
+          <select id="ai-prompt-version"
+                  style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; outline:none; background:#fff;">
+          </select>
+          <div id="ai-prompt-preview"
+               style="margin-top:8px; padding:10px; background:var(--bg); border-radius:8px; font-size:11px; color:var(--text-muted); line-height:1.6; max-height:300px; overflow-y:auto; white-space:pre-wrap; display:none;"></div>
+        </div>
+
+        <!-- 4. 高级选项 -->
+        <details style="margin-bottom: 20px;">
+          <summary style="cursor:pointer; font-size:13px; color:var(--text-sec);">高级选项</summary>
+          <div style="padding:12px; background:var(--bg); border-radius:8px; margin-top:8px;">
+            <label style="font-size:13px; color:var(--text-sec);">
+              Temperature: <span id="ai-temp-value">0.3</span>
+            </label>
+            <input type="range" id="ai-temperature" min="0" max="1" step="0.1" value="0.3"
+                   oninput="document.getElementById('ai-temp-value').textContent=this.value"
+                   style="width:100%; margin-top:4px;" />
+          </div>
+        </details>
+
+        <!-- 操作按钮 -->
+        <div style="display:flex; gap:10px; justify-content:space-between;">
+          <button class="btn btn-default" onclick="goToStep1()">上一步</button>
+          <button class="btn btn-primary" id="ai-generate-btn" onclick="generateScaleByAi()">🤖 AI 生成量表</button>
+        </div>
+      </div>
+      
       <!-- 步骤3: 预览确认 -->
       <div id="import-step-3" style="display: none;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -3910,6 +4006,13 @@ if (typeof AssetStorage !== 'undefined' && !AssetStorage.getCachedDataURL) {
           </div>
         </div>
         
+        <div style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 13px; font-weight: 500; color: var(--text-sec);">📄 JSON 数据</span>
+            <button class="btn btn-small" style="font-size: 12px; padding: 4px 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer;" onclick="copyImportJson()">📋 一键复制</button>
+          </div>
+          <textarea id="import-json-display" readonly style="width: 100%; height: 180px; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 12px; resize: vertical; background: var(--bg); color: var(--text); line-height: 1.6;"></textarea>
+        </div>
         <div id="preview-errors" style="display: none; background: #FFF2F0; border: 1px solid var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 16px; max-height: 150px; overflow-y: auto;">
           <div style="font-size: 13px; font-weight: 500; color: var(--danger); margin-bottom: 8px;">❌ 错误列表</div>
           <div id="error-list" style="font-size: 12px; color: var(--text-sec); line-height: 1.8;"></div>
@@ -5335,14 +5438,25 @@ function resetImportState() {
   const fileInfo = document.getElementById('file-info');
   if (fileInfo) fileInfo.style.display = 'none';
   
+  // 重置 AI 生成相关
+  const aiSourceText = document.getElementById('ai-source-text');
+  if (aiSourceText) aiSourceText.value = '';
+  const aiSourceFile = document.getElementById('ai-source-file');
+  if (aiSourceFile) aiSourceFile.value = '';
+  const aiPreview = document.getElementById('ai-prompt-preview');
+  if (aiPreview) { aiPreview.style.display = 'none'; aiPreview.textContent = ''; }
+  
   // 重置步骤样式
   document.querySelectorAll('.step-item').forEach(item => {
     item.style.background = 'var(--bg)';
     item.style.border = '1px solid var(--border)';
     item.style.color = 'var(--text-muted)';
   });
-  document.querySelector('.step-item[data-step="1"]').style.background = 'var(--primary)';
-  document.querySelector('.step-item[data-step="1"]').style.color = '#fff';
+  const step1Item = document.querySelector('.step-item[data-step="1"]');
+  if (step1Item) {
+    step1Item.style.background = 'var(--primary)';
+    step1Item.style.color = '#fff';
+  }
 }
 
 // 关闭导入模态框
@@ -5378,7 +5492,8 @@ function selectImportFormat(format) {
   const formatHints = {
     json: '<strong>JSON格式</strong>：系统的标准数据格式，包含完整的量表结构和题目数据。建议优先使用此格式。',
     csv: '<strong>CSV格式</strong>：逗号分隔值格式，可用Excel打开编辑。适合简单的量表数据导入。请确保文件编码为UTF-8。',
-    excel: '<strong>Excel格式</strong>：.xlsx格式，Microsoft Excel文件。包含一个"量表数据"工作表和"格式说明"工作表。'
+    excel: '<strong>Excel格式</strong>：.xlsx格式，Microsoft Excel文件。包含一个"量表数据"工作表和"格式说明"工作表。',
+    ai: '<strong>AI 智能生成</strong>：粘贴量表手册内容，由 AI 自动生成标准 JSON 格式的量表数据。需要配置 AI 服务。'
   };
   if (formatDesc) {
     formatDesc.innerHTML = formatHints[format] || formatHints.json;
@@ -5389,33 +5504,46 @@ function selectImportFormat(format) {
 function goToStep1() {
   document.getElementById('import-step-1').style.display = 'block';
   document.getElementById('import-step-2').style.display = 'none';
+  document.getElementById('import-step-ai').style.display = 'none';
   document.getElementById('import-step-3').style.display = 'none';
   updateStepIndicators(1);
 }
 
 function goToStep2() {
   document.getElementById('import-step-1').style.display = 'none';
-  document.getElementById('import-step-2').style.display = 'block';
+  document.getElementById('import-step-2').style.display = 'none';
+  document.getElementById('import-step-ai').style.display = 'none';
   document.getElementById('import-step-3').style.display = 'none';
-  
+
+  if (currentImportFormat === 'ai') {
+    // AI 智能生成步骤
+    document.getElementById('import-step-ai').style.display = 'block';
+    renderAiPromptVersions();
+    updateStepIndicators(2);
+    return;
+  }
+
+  // 原文件上传步骤
+  document.getElementById('import-step-2').style.display = 'block';
+
   // 更新格式提示
   const fileFormatHint = document.getElementById('file-format-hint');
   const csvHint = document.getElementById('csv-hint');
   const jsonOptions = document.getElementById('json-options');
-  
+
   if (fileFormatHint) {
-    fileFormatHint.textContent = currentImportFormat === 'json' ? '(.json)' : 
-                                 currentImportFormat === 'csv' ? '(.csv)' : '(.xlsx)';
+    fileFormatHint.textContent = currentImportFormat === 'json' ? '(.json)' :
+                                   currentImportFormat === 'csv' ? '(.csv)' : '(.xlsx)';
   }
-  
+
   if (csvHint) {
     csvHint.style.display = currentImportFormat === 'csv' ? 'block' : 'none';
   }
-  
+
   if (jsonOptions) {
     jsonOptions.style.display = currentImportFormat === 'json' ? 'block' : 'none';
   }
-  
+
   updateStepIndicators(2);
 }
 
@@ -5447,6 +5575,432 @@ function updateStepIndicators(currentStep) {
     }
   });
 }
+// ========== AI 智能生成相关函数 ==========
+
+// 渲染 AI 提示词版本下拉框
+function renderAiPromptVersions() {
+  const sel = document.getElementById('ai-prompt-version');
+  if (!sel) return;
+  sel.innerHTML = '';
+
+  // DEFAULT_PROMPTS 是数组 [{id:'csv',...},{id:'json',...},{id:'scoring',...}]
+  // 找到 id='json' 的条目，取其 versions 数组
+  const jsonPrompts = Array.isArray(window.DEFAULT_PROMPTS)
+    ? (window.DEFAULT_PROMPTS.find(p => p.id === 'json') || {}).versions || []
+    : [];
+  if (jsonPrompts.length === 0) {
+    sel.innerHTML = '<option value="">暂无提示词模板</option>';
+    return;
+  }
+
+  jsonPrompts.forEach((pt, idx) => {
+    const label = pt.version || ('版本 ' + (idx + 1));
+    const note = pt.note ? ' - ' + pt.note : '';
+    const selFlag = pt.status === 'active' ? ' (当前使用)' : '';
+    sel.options.add(new Option(label + note + selFlag, idx));
+  });
+
+  // 默认选中 status='active' 的版本
+  const activeIdx = jsonPrompts.findIndex(pt => pt.status === 'active');
+  sel.selectedIndex = activeIdx >= 0 ? activeIdx : jsonPrompts.length - 1;
+
+  // 预览选中版本的提示词
+  sel.onchange = function() {
+    const pt = jsonPrompts[this.value];
+    const preview = document.getElementById('ai-prompt-preview');
+    if (pt && preview) {
+      preview.style.display = 'block';
+      preview.textContent = pt.content || '（提示词内容为空）';
+    }
+  };
+
+  // 触发一次 onchange 显示预览
+  if (sel.onchange) sel.onchange();
+}
+
+// 处理 AI 生成步骤的文件上传
+function handleAiFileSelect(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  // .docx 文件需要 JSZip 解压提取文本
+  if (file.name && file.name.toLowerCase().endsWith('.docx')) {
+    if (typeof JSZip === 'undefined') {
+      // 动态加载 JSZip（双 CDN fallback）
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js';
+      s.onload = function() { _readDocxWithJSZip(file); };
+      s.onerror = function() {
+        var s2 = document.createElement('script');
+        s2.src = 'https://cdn.bootcdn.net/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s2.onload = function() { _readDocxWithJSZip(file); };
+        s2.onerror = function() { showToast('JSZip 库加载失败，请检查网络后重试', 'error'); };
+        document.head.appendChild(s2);
+      };
+      document.head.appendChild(s);
+    } else {
+      _readDocxWithJSZip(file);
+    }
+    return;
+  }
+
+  // txt / md / 其他文本文件
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var ta = document.getElementById('ai-source-text');
+    if (ta) ta.value = ev.target.result;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// 解析 docx 文件为纯文本（JSZip 解压 → XML 提取）
+function _readDocxWithJSZip(file) {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    JSZip.loadAsync(ev.target.result).then(function(zip) {
+      return zip.file('word/document.xml').async('string');
+    }).then(function(xmlStr) {
+      var text = _parseDocxXmlToText(xmlStr);
+      var ta = document.getElementById('ai-source-text');
+      if (ta) ta.value = text;
+    }).catch(function(err) {
+      console.error('[AI Import] docx parse error:', err);
+      showToast('docx 文件解析失败：' + (err.message || '未知错误'), 'error');
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// 从 docx 的 document.xml 提取纯文本
+function _parseDocxXmlToText(xmlStr) {
+  // 优先：表格 + 段落解析
+  var text = '';
+  try {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(xmlStr, 'application/xml');
+
+    // 提取表格
+    var tables = doc.getElementsByTagName('w:tbl');
+    for (var t = 0; t < tables.length; t++) {
+      var rows = tables[t].getElementsByTagName('w:tr');
+      for (var r = 0; r < rows.length; r++) {
+        var cells = rows[r].getElementsByTagName('w:tc');
+        var rowData = [];
+        for (var c = 0; c < cells.length; c++) {
+          var cellText = '';
+          var runs = cells[c].getElementsByTagName('w:t');
+          for (var ri = 0; ri < runs.length; ri++) {
+            cellText += runs[ri].textContent || '';
+          }
+          rowData.push(cellText);
+        }
+        text += rowData.join('\t') + '\n';
+      }
+      text += '\n';
+    }
+
+    // 提取段落
+    var paras = doc.getElementsByTagName('w:p');
+    var paraTexts = [];
+    for (var p = 0; p < paras.length; p++) {
+      // 跳过在表格内的段落
+      var parent = paras[p].parentNode;
+      var inTable = false;
+      while (parent) {
+        if (parent.tagName === 'w:tbl' || parent.nodeName === 'w:tbl') { inTable = true; break; }
+        parent = parent.parentNode;
+      }
+      if (inTable) continue;
+
+      var pText = '';
+      var pRuns = paras[p].getElementsByTagName('w:t');
+      for (var pr = 0; pr < pRuns.length; pr++) {
+        pText += pRuns[pr].textContent || '';
+      }
+      if (pText.trim()) paraTexts.push(pText);
+    }
+    if (paraTexts.length > 0) text += paraTexts.join('\n');
+  } catch(e) {
+    // Fallback：暴力正则提取
+    console.warn('[AI Import] XML parse failed, fallback to regex:', e);
+    text = '';
+    var matches = xmlStr.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
+    if (matches) {
+      for (var i = 0; i < matches.length; i++) {
+        var m = matches[i].match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/);
+        if (m) text += m[1];
+      }
+    }
+  }
+
+  // 处理 WPS 前缀 ns0:
+  if (!text || text.trim().length < 10) {
+    text = '';
+    var xmlFixed = xmlStr.replace(/ns0:/g, 'w:');
+    var matches2 = xmlFixed.match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
+    if (matches2) {
+      for (var j = 0; j < matches2.length; j++) {
+        var m2 = matches2[j].match(/<w:t[^>]*>([\s\S]*?)<\/w:t>/);
+        if (m2) text += m2[1];
+      }
+    }
+  }
+
+  return text.trim();
+}
+
+// AI 生成量表主函数
+async function generateScaleByAi() {
+  const sourceText = (document.getElementById('ai-source-text') || {}).value || '';
+  if (!sourceText.trim()) {
+    showToast('请先输入量表说明文本（可上传文件自动填充）', 'warning');
+    return;
+  }
+
+  const sel = document.getElementById('ai-prompt-version');
+  const jsonPrompts = Array.isArray(window.DEFAULT_PROMPTS)
+    ? (window.DEFAULT_PROMPTS.find(p => p.id === 'json') || {}).versions || []
+    : [];
+  const ptIdx = sel ? parseInt(sel.value) : jsonPrompts.length - 1;
+  const promptObj = jsonPrompts[ptIdx] || {};
+  const promptContent = promptObj.content || '';
+  if (!promptContent) {
+    showToast('提示词模板为空，请先在「系统提示词」Tab 中配置 JSON 导入文件生成提示词', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('ai-generate-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ AI 生成中...'; }
+  showToast('AI 正在分析量表手册并生成 JSON 数据，请稍候...', 'info');
+
+  try {
+    const messages = [{ role: 'user', content: promptContent + '\n\n【量表手册内容】\n' + sourceText }];
+      const temperature = parseFloat((document.getElementById('ai-temperature') || {}).value || '0.3');
+      // 从 AI 配置 UI 读取当前选中的 provider
+      const aiProviderRadio = document.querySelector('input[name="ai-provider"]:checked');
+      const cfg = getAiConfig();
+      const provider = (aiProviderRadio && aiProviderRadio.value) || cfg.provider || 'dashscope';
+      const model = (provider === 'deepseek' ? cfg.deepseek.model : cfg.dashscope.model) || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'qwen-plus');
+      console.log('[AI Generate Scale] 调用参数:', { provider, model, temperature });
+      const rawResult = await callAi(messages, { temperature: temperature, provider: provider, model: model, maxTokens: 32000 });
+      console.log('[AI Generate Scale] callAi 完成，类型=' + typeof rawResult + '，长度=' + ((rawResult || '').length));
+      let result = rawResult;
+
+    if (!result || !result.trim()) {
+      console.error('[AI Generate Scale] result 为空');
+      showToast('AI 未返回有效内容，请重试', 'error');
+      return;
+    }
+
+    // 兼容 callAi 返回对象的情况
+    if (typeof result === 'object') {
+      console.log('[AI Generate Scale] result 是对象，尝试提取字段');
+      result = result.content || result.text || result.data || result.message || JSON.stringify(result);
+    }
+    if (typeof result !== 'string') { console.log('[AI Generate Scale] result 转字符串'); result = String(result); }
+
+    // 解析 JSON（处理 ```json ... ``` 包裹）
+    let jsonStr = result.trim();
+    console.log('[AI Generate Scale] 开始解析 JSON，内容前缀：' + jsonStr.substring(0, 200));
+    // 方法1：正则提取完整代码块
+    const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) { console.log('[AI Generate Scale] 提取到代码块，长度=' + codeBlockMatch[1].trim().length); jsonStr = codeBlockMatch[1].trim(); }
+    // 方法2（fallback）：大 JSON 可能匹配失败，直接截掉首尾标记
+    if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\s*/, '').replace(/\s*```\s*$/, '');
+      console.log('[AI Generate Scale] fallback 截掉首尾标记，长度=' + jsonStr.length);
+    }
+
+    let scales = null;
+
+    // 策略1：直接解析
+    try {
+      scales = JSON.parse(jsonStr);
+      console.log('[AI Generate Scale] 策略1成功，类型=' + (Array.isArray(scales) ? 'array' : typeof scales));
+      console.log('[AI Generate Scale] scales 长度=' + (Array.isArray(scales) ? scales.length : 'N/A'));
+      if (Array.isArray(scales) && scales.length > 0) {
+        console.log('[AI Generate Scale] 第一个量表字段：', Object.keys(scales[0]).join(', '));
+        if (scales[0].questions && scales[0].questions.length > 0) console.log('[AI Generate Scale] 第一题字段：', Object.keys(scales[0].questions[0]).join(', '));
+      }
+    } catch(e) {
+      console.warn('[AI Generate Scale] 策略1失败：', e.message);
+      // 策略2：智能提取 JSON 数组（找第一个 [ 到最后一个 ]）
+      const firstBracket = jsonStr.indexOf('[');
+      const lastBracket = jsonStr.lastIndexOf(']');
+      if (firstBracket !== -1 && lastBracket > firstBracket) {
+        const candidate = jsonStr.substring(firstBracket, lastBracket + 1);
+        try { scales = JSON.parse(candidate); console.log('[AI Generate Scale] 策略2成功'); } catch(e2) { console.warn('[AI Generate Scale] 策略2失败：', e2.message); }
+      }
+
+      // 策略3：智能提取 JSON 对象（找第一个 { 到最后一个 }）
+      if (!scales) {
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBrace = jsonStr.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          const candidate = jsonStr.substring(firstBrace, lastBrace + 1);
+          try { scales = JSON.parse(candidate); console.log('[AI Generate Scale] 策略3成功'); } catch(e3) { console.warn('[AI Generate Scale] 策略3失败：', e3.message); }
+        }
+      }
+    }
+
+    if (!scales) {
+      console.error('[AI Generate Scale] 所有 JSON 解析策略均失败，AI 原始返回（前3000字）：', result.substring(0, 3000));
+      showToast('AI 未返回有效的 JSON 数据，请检查 AI 响应或调整提示词后重试', 'error');
+      // 在页面上显示 AI 原始返回，方便调试
+      const aiSourceText = document.getElementById('ai-source-text');
+      if (aiSourceText) {
+        aiSourceText.value = '【AI 原始返回】\n' + result;
+        console.log('[AI Generate Scale] 已在页面显示 AI 原始返回');
+      } else {
+        console.error('[AI Generate Scale] ai-source-text 元素未找到！');
+      }
+      return;
+    }
+
+    if (!Array.isArray(scales)) scales = [scales];
+
+    // 兼容处理：normalize 字段名和类型
+    console.log('[AI Generate Scale] 开始字段兼容处理...');
+    scales.forEach((s, i) => {
+      if (!s.name) console.warn('[AI Generate Scale] scales[' + i + '] ⚠️ 缺少 name');
+      if (s.questions && !Array.isArray(s.questions)) {
+        console.warn('[AI Generate Scale] scales[' + i + '].questions 不是数组，类型=' + Object.prototype.toString.call(s.questions));
+        try { s.questions = JSON.parse(s.questions); } catch(e) {}
+      }
+      if (!s.questions || !Array.isArray(s.questions)) {
+        console.warn('[AI Generate Scale] scales[' + i + '].questions 无效，设为空数组');
+        s.questions = [];
+      }
+      s.questions.forEach((q, qi) => {
+        if (q.text !== undefined && q.content === undefined) {
+          q.content = q.text; delete q.text;
+        }
+        if (!q.content) console.warn('[AI Generate Scale] scales[' + i + '].questions[' + qi + '] ⚠️ 缺少 content/text');
+      });
+    });
+    console.log('[AI Generate Scale] 字段兼容处理完成');
+
+    // 🔧 暴力标准化：保证所有数据都能通过验证
+    console.log('[AI Generate Scale] 开始暴力标准化，scales 中有', scales.length, '个对象');
+    scales.forEach((s, i) => {
+      // 确保 name 存在
+      if (!s.name) { console.warn('[AI Generate Scale] scales[' + i + '] 缺少 name，自动补全'); s.name = '未命名量表_' + (i + 1); }
+      // 确保 questions 是数组
+      if (!Array.isArray(s.questions)) {
+        console.warn('[AI Generate Scale] scales[' + i + '].questions 不是数组（类型=' + typeof s.questions + '），尝试修复');
+        if (typeof s.questions === 'string') {
+          try { s.questions = JSON.parse(s.questions); } catch(e) {}
+        }
+        if (s.questions && typeof s.questions === 'object' && !Array.isArray(s.questions)) {
+          s.questions = Object.values(s.questions);
+        }
+      }
+      if (!Array.isArray(s.questions)) { s.questions = []; }
+      // 确保每题有 content
+      s.questions.forEach((q, qi) => {
+        if (q.text && !q.content) { q.content = q.text; delete q.text; }
+        if (!q.content) { console.warn('[AI Generate Scale] questions[' + qi + '] 缺少 content，自动补全'); q.content = '（题目内容缺失）'; }
+        // 确保每题有 options
+        if (!Array.isArray(q.options)) { q.options = []; }
+      });
+      // matrix-multi → grouped 自动拆分
+      var newQuestions = [];
+      var autoSplitCount = 0;
+      s.questions.forEach(function(q, qi) {
+        if (q.type === 'matrix-multi' && q.rows && q.rows.length > 0 && q.columns) {
+          // 分离补充项行和非补充项行
+          var normalRows = [];
+          var extraRows = [];
+          q.rows.forEach(function(row) {
+            if (row.label && (row.label.includes('自行补充') || row.label.includes('请依次填写') || row.label.match(/^[（(]/))) {
+              extraRows.push(row);
+            } else {
+              normalRows.push(row);
+            }
+          });
+          // 正常行：每行拆成独立 grouped 题
+          normalRows.forEach(function(row, ri) {
+            autoSplitCount++;
+            newQuestions.push({
+              id: newQuestions.length + 1,
+              type: 'grouped',
+              content: row.label || row.id,
+              dimension: q.dimension || q.content || '',
+              groups: q.columns.map(function(col) {
+                return { id: col.id, label: col.label, options: col.options };
+              })
+            });
+          });
+          // 补充项：合并为一道 allowRepeat 的 grouped 题
+          if (extraRows.length > 0) {
+            newQuestions.push({
+              id: newQuestions.length + 1,
+              type: 'grouped',
+              allowRepeat: true,
+              content: q.dimension === '补充填写项' ? q.content : '其他事件（可自行添加）',
+              repeatLabel: '事件名称',
+              repeatMin: 0,
+              groups: q.columns.map(function(col) {
+                return { id: col.id, label: col.label, options: col.options };
+              })
+            });
+            console.log('[AI Generate Scale] 补充项 → allowRepeat grouped (' + extraRows.length + ' 行)');
+          }
+          console.log('[AI Generate Scale] Q' + (qi+1) + ': ' + normalRows.length + ' normal + ' + extraRows.length + ' extra');
+        } else {
+          newQuestions.push(q);
+        }
+      });
+      if (autoSplitCount > 0) {
+        s.questions = newQuestions;
+        s.questionCount = newQuestions.length;
+        console.log('[AI Generate Scale] scales[' + i + '] 已拆分 ' + autoSplitCount + ' 道 grouped 题');
+      }
+      // _sharedGroups 展开：AI 用共享模板节省 token，客户端展开回完整格式
+      if (s._sharedGroups && s.questions) {
+        var _shared = JSON.parse(JSON.stringify(s._sharedGroups));
+        var _expCount = 0;
+        s.questions.forEach(function(q) {
+          if (q.type === 'grouped' && !q.groups) {
+            q.groups = JSON.parse(JSON.stringify(_shared));
+            _expCount++;
+          }
+        });
+        delete s._sharedGroups;
+        if (_expCount > 0) console.log('[AI Generate Scale] scales[' + i + '] _sharedGroups 展开: ' + _expCount + ' 道题');
+      }
+      // 自动合并补充/空白题：检测连续补充题 → 合并为 1 个 allowRepeat
+      if (s.questions && s.questions.length > 0) {
+        var mergeResult = _autoMergeSupplementQuestions(s.questions);
+        if (mergeResult.merged) {
+          s.questions = mergeResult.questions;
+          s.questionCount = s.questions.length;
+          console.log('[AutoMerge] scales[' + i + '] ' + s.name + ': 合并 ' + mergeResult.count + ' 道补充题为 1 个 allowRepeat');
+        }
+      }
+    });
+    console.log('[AI Generate Scale] 暴力标准化完成');
+
+    // 不再过滤，全部接受
+    const valid = scales;
+    console.log('[AI Generate Scale] valid=', valid.length);
+
+    // 写入全局变量，复用现有预览逻辑
+    console.log('[AI Generate Scale] 验证通过，准备显示预览');
+    parsedImportData = valid;
+    const validationResult = validateImportData(valid);
+    displayPreview(validationResult);
+    console.log('[AI Generate Scale] displayPreview() 完成, 跳转 step3');
+    goToStep3();
+    console.log('[AI Generate Scale] ✅ goToStep3() 完成');
+  } catch(e) {
+    console.error('[AI Generate Scale]', e);
+    showToast('AI 生成失败：' + (e.message || '未知错误'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🤖 AI 生成量表'; }
+  }
+}
+
 
 // 文件拖拽处理
 function handleDragOver(e) {
@@ -5555,12 +6109,12 @@ function downloadImportTemplate() {
 
 function downloadJSONTemplate() {
   const template = {
-    version: '1.0',
-    description: '星蓝心镜系统量表数据导入模板',
+    version: '2.0',
+    description: '星蓝心镜系统量表数据导入模板 — 支持标准题/矩阵题/父子题/文字题/hasInput填空',
     fields: {
       required: ['name', 'code', 'category'],
-      optional: ['shortName', 'desc', 'emoji', 'color', 'duration', 'questionCount', 'tags', 'instruction', 'applicablePeople', 'status', 'sortOrder'],
-      questions: 'questions数组，每个题目包含content和options数组'
+      optional: ['shortName', 'desc', 'emoji', 'color', 'duration', 'tags', 'instruction', 'applicablePeople', 'status', 'sortOrder'],
+      questions: 'questions数组，每个题目可含 type/options/rows/subOptions/hasInput 等字段'
     },
     categories: {
       anxiety: '焦虑评估',
@@ -5578,7 +6132,6 @@ function downloadJSONTemplate() {
         emoji: '😔',
         color: '#5B8DEF',
         duration: 5,
-        questionCount: 9,
         desc: 'PHQ-9是临床上常用的抑郁症筛查工具，共9个题目。',
         instruction: '在过去两周里，您是否被以下问题困扰？',
         tags: ['抑郁筛查', '临床常用'],
@@ -5586,13 +6139,29 @@ function downloadJSONTemplate() {
         status: 1,
         sortOrder: 10,
         questions: [
-          { id: 1, content: '做事时提不起劲或没有兴趣', options: [{ label: '完全没有', score: 0 }, { label: '有几天', score: 1 }, { label: '一半以上', score: 2 }, { label: '几乎每天', score: 3 }] },
-          { id: 2, content: '感到心情低落、沮丧或绝望', options: [{ label: '完全没有', score: 0 }, { label: '有几天', score: 1 }, { label: '一半以上', score: 2 }, { label: '几乎每天', score: 3 }] }
+          { id: 1, content: '做事时提不起劲或没有兴趣', options: [{ id: 'A', label: '完全没有', score: 0 }, { id: 'B', label: '有几天', score: 1 }, { id: 'C', label: '一半以上', score: 2 }, { id: 'D', label: '几乎每天', score: 3 }] },
+          { id: 2, content: '感到心情低落、沮丧或绝望', options: [{ id: 'A', label: '完全没有', score: 0 }, { id: 'B', label: '有几天', score: 1 }, { id: 'C', label: '一半以上', score: 2 }, { id: 'D', label: '几乎每天', score: 3 }] },
+          { id: 3, content: '请描述最近让您困扰的一件事', type: 'text', placeholder: '请详细描述...', maxLength: 500, required: false },
+          { id: 4, content: '您最主要的压力来源是什么？', options: [{ id: 'A', label: '工作', score: 1 }, { id: 'B', label: '家庭', score: 1 }, { id: 'C', label: '其他', score: 0, hasInput: true, inputPlaceholder: '请填写' }] }
+        ]
+      },
+      {
+        name: '社交焦虑量表示例',
+        shortName: 'SAS-DEMO',
+        code: 'SAS_DEMO',
+        category: 'anxiety',
+        emoji: '😰',
+        color: '#F5A623',
+        duration: 10,
+        desc: '矩阵题和父子题示例。',
+        questions: [
+          { id: 1, content: '在社交场合中，您对以下情况的焦虑程度', type: 'matrix', dimension: '社交焦虑', rows: [{ id: 'row_1', label: '在陌生人面前说话' }, { id: 'row_2', label: '在公共场合吃东西' }], options: [{ id: 'A', label: '完全没有', score: 1 }, { id: 'B', label: '偶尔', score: 2 }, { id: 'C', label: '经常', score: 3 }, { id: 'D', label: '总是', score: 4 }] },
+          { id: 2, content: '过去一年中，您是否经历过以下压力事件？', type: 'parent-child', options: [{ id: 'A', label: '无', score: 0 }, { id: 'B', label: '有', score: 1 }], subOptions: [{ id: 'sub_1', label: '工作压力' }, { id: 'sub_2', label: '家庭矛盾' }, { id: 'sub_3', label: '其他', hasInput: true, inputPlaceholder: '请填写' }] }
         ]
       }
     ]
   };
-  
+
   const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -6384,6 +6953,15 @@ function validateImportData(scales) {
     
     scale.duration = parseInt(scale.duration) || 10;
     
+    // 自动合并补充/空白题为 allowRepeat（导入数据统一处理）
+    if (scale.questions && scale.questions.length > 0) {
+      var mergeResult = _autoMergeSupplementQuestions(scale.questions);
+      if (mergeResult.merged) {
+        scale.questions = mergeResult.questions;
+        scale._autoMerged = mergeResult.count; // 标记（用于预览提示）
+      }
+    }
+    
     // 题目数量：优先使用 questions 数组长度，然后使用 questionCount
     scale.questionCount = (scale.questions && scale.questions.length > 0)
       ? scale.questions.length
@@ -6427,6 +7005,70 @@ function validateImportData(scales) {
   });
   
   return { validated, errors, warnings };
+}
+
+// ===== 自动合并补充/空白题为 allowRepeat =====
+// 检测连续出现的"补充/空白/自行填写"题，合并为 1 个 allowRepeat 题
+function _autoMergeSupplementQuestions(questions) {
+  var suppPattern = /补充|空白|其它事件|自行添加|自行补充|可自行|补充填写/;
+  var merged = false;
+  var count = 0;
+  
+  // 第一遍：找出所有补充题索引
+  var suppGroups = []; // [{startIdx, endIdx, groups}]
+  var i = 0;
+  while (i < questions.length) {
+    var q = questions[i];
+    var content = q.content || q.text || '';
+    if (content.match(suppPattern)) {
+      var start = i;
+      // 检查 groups（用于后续合并判断）
+      var groups = q.groups || [];
+      i++;
+      // 连续补充题（内容也匹配模式）
+      while (i < questions.length) {
+        var nq = questions[i];
+        var nc = (nq.content || nq.text || '');
+        if (nc.match(suppPattern)) { i++; }
+        else break;
+      }
+      if (i > start + 1) {
+        // 有多道连续补充题 → 需要合并
+        suppGroups.push({ start: start, end: i, groups: groups });
+      }
+    }
+    i++;
+  }
+  
+  if (suppGroups.length === 0) return { merged: false, questions: questions, count: 0 };
+  
+  // 从后往前处理（避免索引偏移）
+  for (var g = suppGroups.length - 1; g >= 0; g--) {
+    var sg = suppGroups[g];
+    var blockCount = sg.end - sg.start;
+    // 使用第一道补充题的 groups 作为合并后的 groups
+    var firstQ = questions[sg.start];
+    var mergedQ = {
+      id: firstQ.id,
+      content: firstQ.content || firstQ.text || '可自行补充生活事件',
+      type: 'grouped',
+      allowRepeat: true,
+      formula: 'multiply', // LES 类量表默认乘法模式
+      groups: JSON.parse(JSON.stringify(firstQ.groups || [])),
+      options: firstQ.options || []
+    };
+    // 替换：删除 sg.start 到 sg.end-1，插入 mergedQ
+    questions.splice(sg.start, blockCount, mergedQ);
+    count += blockCount;
+  }
+  
+  if (count > 0) {
+    // 重新编号
+    questions.forEach(function(q, idx) { q.id = idx + 1; });
+    merged = true;
+  }
+  
+  return { merged: merged, questions: questions, count: count };
 }
 
 // 根据量表名称智能生成标签
@@ -6546,6 +7188,39 @@ function displayPreview(validationResult) {
       confirmBtn.textContent = '确认导入';
     }
   }
+  
+  // 填充 JSON 展示区
+  const jsonTa = document.getElementById('import-json-display');
+  if (jsonTa) {
+    try {
+      jsonTa.value = JSON.stringify(validated, null, 2);
+    } catch(e) {
+      jsonTa.value = 'JSON 序列化失败: ' + e.message;
+    }
+  }
+}
+
+// 一键复制 JSON 数据
+function copyImportJson() {
+  const ta = document.getElementById('import-json-display');
+  if (!ta || !ta.value) { showToast('暂无 JSON 数据', 'warning'); return; }
+  try {
+    navigator.clipboard.writeText(ta.value)
+      .then(() => showToast('✅ JSON 数据已复制到剪贴板', 'success'))
+      .catch(() => fallbackCopy(ta));
+  } catch(e) {
+    fallbackCopy(ta);
+  }
+}
+function fallbackCopy(ta) {
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try {
+    document.execCommand('copy');
+    showToast('✅ JSON 数据已复制到剪贴板', 'success');
+  } catch(e2) {
+    showToast('复制失败，请手动选择复制', 'error');
+  }
 }
 
 // 预览待导入量表的题目详情（弹窗）
@@ -6564,6 +7239,10 @@ function previewImportScaleQuestions(index) {
           typeTag = '<span style="font-size:11px;color:#7C3AED;background:#F3E8FF;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">📊 矩阵题</span>';
         } else if (q.type === 'parent-child') {
           typeTag = '<span style="font-size:11px;color:#0891B2;background:#ECFEFF;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">🔗 父子题</span>';
+        } else if (q.type === 'grouped') {
+          typeTag = '<span style="font-size:11px;color:#059669;background:#ECFDF5;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">📋 分组下拉</span>';
+        } else if (q.type === 'text') {
+          typeTag = '<span style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">📝 文字题</span>';
         }
         const reverseTag = q.reverse
           ? '<span style="font-size:11px;color:#D0021B;background:#FFF2F0;padding:2px 8px;border-radius:10px;margin-left:6px;white-space:nowrap;">🔄 反向计分</span>'
@@ -6609,6 +7288,23 @@ function previewImportScaleQuestions(index) {
                 </div>`).join('') + '</div>'
             : '';
           optionsHtml = mainOpts + subsHtml;
+        } else if (q.type === 'grouped' && q.groups) {
+          // 分组下拉题：每组一个下拉框
+          var _isMult = q.formula === 'multiply';
+          optionsHtml = '<div style="margin-top:8px;">';
+          if (_isMult) {
+            optionsHtml += '<div style="font-size:11px;color:#059669;background:#ECFDF5;padding:4px 10px;border-radius:4px;margin-bottom:6px;">📐 乘法计分 — 第一组控制其余组（选0分则跳过）；影响程度控制持续时间（选0分则跳过）</div>';
+          }
+          q.groups.forEach(function(group) {
+            var _hasZero = (group.options || []).some(function(o) { return o.score === 0; });
+            var _rowStyle = _hasZero ? 'border-left:3px solid #F97316;' : '';
+            optionsHtml += '<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:var(--bg);border-radius:6px;' + _rowStyle + '">';
+            optionsHtml += '<span style="font-size:12px;font-weight:500;color:var(--text-sec);min-width:60px;">' + escHtml(group.label) + '</span>';
+            optionsHtml += '<span style="flex:1;font-size:12px;color:var(--text-muted);">下拉选项：' + (group.options || []).map(function(o){return o.label||o.id;}).join(' / ') + '</span>';
+            if (_hasZero) optionsHtml += '<span style="font-size:10px;color:#F97316;">← 0分则跳过后续</span>';
+            optionsHtml += '</div>';
+          });
+          optionsHtml += '</div>';
         } else {
           // 标准单选题
           optionsHtml = (q.options || []).map((opt, oi) => `
@@ -6619,8 +7315,8 @@ function previewImportScaleQuestions(index) {
             </div>`).join('');
         }
 
-        const cardBorder = q.reverse ? '1px solid #FFB3B3' : (q.type === 'matrix' ? '1px solid #D8B4FE' : q.type === 'parent-child' ? '1px solid #A5F3FC' : '1px solid var(--border)');
-        const cardBg = q.reverse ? 'background:#FFFAFA;' : (q.type === 'matrix' ? 'background:#FAF5FF;' : q.type === 'parent-child' ? 'background:#F0FDFA;' : '');
+        const cardBorder = q.reverse ? '1px solid #FFB3B3' : (q.type === 'matrix' ? '1px solid #D8B4FE' : q.type === 'grouped' ? '1px solid #6EE7B7' : q.type === 'parent-child' ? '1px solid #A5F3FC' : '1px solid var(--border)');
+        const cardBg = q.reverse ? 'background:#FFFAFA;' : (q.type === 'matrix' ? 'background:#FAF5FF;' : q.type === 'grouped' ? 'background:#ECFDF5;' : q.type === 'parent-child' ? 'background:#F0FDFA;' : '');
         return `
           <div style="border:${cardBorder};border-radius:8px;padding:12px;margin-bottom:10px;${cardBg}">
             <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
@@ -7840,14 +8536,18 @@ const AI_CONFIG_KEY = 'psy_ai_config';
 
 function getAiConfig() {
   try {
-    return JSON.parse(localStorage.getItem(AI_CONFIG_KEY)) || { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+    return JSON.parse(localStorage.getItem(AI_CONFIG_KEY)) || { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, deepseek: { model: 'deepseek-v4-flash' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
   } catch(e) {
-    return { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
+    return { provider: 'dashscope', dashscope: { apiKey: '', model: 'qwen-plus' }, deepseek: { model: 'deepseek-v4-flash' }, ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' } };
   }
 }
 
 function loadAiConfig() {
   const cfg = getAiConfig();
+  // 确保各 provider 配置对象存在
+  if (!cfg.dashscope) cfg.dashscope = { apiKey: '', model: 'qwen-plus' };
+  if (!cfg.deepseek) cfg.deepseek = { model: 'deepseek-v4-flash' };
+  if (!cfg.ollama) cfg.ollama = { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' };
   // 设置 provider radio
   const radios = document.querySelectorAll('input[name="ai-provider"]');
   radios.forEach(r => { r.checked = r.value === cfg.provider; });
@@ -7856,6 +8556,9 @@ function loadAiConfig() {
   if (dsKey) dsKey.value = cfg.dashscope.apiKey || '';
   const dsModel = document.getElementById('ds-model');
   if (dsModel) dsModel.value = cfg.dashscope.model || 'qwen-plus';
+  // DeepSeek
+  const dkModel = document.getElementById('dk-model');
+  if (dkModel) dkModel.value = cfg.deepseek.model || 'deepseek-v4-flash';
   // Ollama
   const olUrl = document.getElementById('ol-base-url');
   if (olUrl) olUrl.value = cfg.ollama.baseUrl || 'http://localhost:11434';
@@ -7867,21 +8570,30 @@ function loadAiConfig() {
 
 function switchAiProvider(provider) {
   const dsPanel = document.getElementById('ai-dashscope-config');
+  const dkPanel = document.getElementById('ai-deepseek-config');
   const olPanel = document.getElementById('ai-ollama-config');
   const dsLabel = document.getElementById('provider-dashscope');
+  const dkLabel = document.getElementById('provider-deepseek');
   const olLabel = document.getElementById('provider-ollama');
   const activeBorder = '2px solid var(--primary)';
   const normalBorder = '2px solid var(--border)';
+  // 全部隐藏
+  if (dsPanel) dsPanel.style.display = 'none';
+  if (dkPanel) dkPanel.style.display = 'none';
+  if (olPanel) olPanel.style.display = 'none';
+  if (dsLabel) dsLabel.style.borderColor = normalBorder;
+  if (dkLabel) dkLabel.style.borderColor = normalBorder;
+  if (olLabel) olLabel.style.borderColor = normalBorder;
+  // 显示当前
   if (provider === 'dashscope') {
     if (dsPanel) dsPanel.style.display = '';
-    if (olPanel) olPanel.style.display = 'none';
-    if (dsLabel) dsLabel.style.borderColor = 'var(--primary)';
-    if (olLabel) olLabel.style.borderColor = 'var(--border)';
+    if (dsLabel) dsLabel.style.borderColor = activeBorder;
+  } else if (provider === 'deepseek') {
+    if (dkPanel) dkPanel.style.display = '';
+    if (dkLabel) dkLabel.style.borderColor = activeBorder;
   } else {
-    if (dsPanel) dsPanel.style.display = 'none';
     if (olPanel) olPanel.style.display = '';
-    if (dsLabel) dsLabel.style.borderColor = 'var(--border)';
-    if (olLabel) olLabel.style.borderColor = 'var(--primary)';
+    if (olLabel) olLabel.style.borderColor = activeBorder;
   }
 }
 
@@ -7893,15 +8605,16 @@ function _getAdminSecretHeaders() {
 }
 
 /** 刷新服务端 Key 状态（单端），在"AI 接口配置"面板中使用 */
-function refreshAiKeyStatus(server) {
-  var panel = document.getElementById('ai-key-status-panel');
+function refreshAiKeyStatus(server, provider) {
+  provider = provider || 'dashscope';
+  var panel = document.getElementById('ai-key-status-panel' + (provider === 'deepseek' ? '-deepseek' : ''));
   if (!panel) return;
   panel.innerHTML = '⏳ 查询中...';
 
   var url;
   var fetchOpts = {};
   if (server === 'cloud') {
-    var cloudBase = localStorage.getItem('psy_cloud_api_base') || '';
+    var cloudBase = localStorage.getItem('psy_cloud_api_base') || window.location.origin || '';
     if (!cloudBase) { panel.innerHTML = '<span style="color:var(--warning)">未配置 Cloud API 地址</span>'; return; }
     url = cloudBase + '/api/ai-config?_t=' + Date.now() + '&openid=' + encodeURIComponent(NPC_ADMIN_OPENID);
   } else {
@@ -7913,12 +8626,23 @@ function refreshAiKeyStatus(server) {
   fetch(url, fetchOpts)
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
-      if (!data.data || data.data.count === 0) {
+      // 兼容新旧格式：新格式 { dashscope: {...}, deepseek: {...} }，旧格式 { count, keys }
+      var providerData;
+      if (data.data && data.data[provider]) {
+        providerData = data.data[provider];
+      } else if (data.data && data.data.count !== undefined) {
+        // 旧格式兼容
+        providerData = { count: data.data.count, keys: data.data.keys };
+      } else {
+        panel.innerHTML = '<span style="color:var(--warning)">' + label + ': 无数据</span>';
+        return;
+      }
+      if (!providerData || providerData.count === 0) {
         panel.innerHTML = '<span style="color:var(--danger)">' + label + ': 无 API Key，请在「运维工具 → AI 密钥管理」配置</span>';
         return;
       }
-      var html = '<div style="font-weight:600;margin-bottom:6px;color:var(--primary)">' + label + ' · ' + data.data.count + ' 个 Key</div>';
-      (data.data.keys || []).forEach(function(k) {
+      var html = '<div style="font-weight:600;margin-bottom:6px;color:var(--primary)">' + label + ' · ' + providerData.count + ' 个 Key</div>';
+      (providerData.keys || []).forEach(function(k) {
         html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0;font-size:12px">'
           + '<span>' + (k.active ? '🟢' : '⚪') + '</span>'
           + '<span style="font-family:monospace">' + k.key + '</span>'
@@ -7944,13 +8668,16 @@ function saveAiConfig() {
     dashscope: {
       model: document.getElementById('ds-model')?.value || 'qwen-plus'
     },
+    deepseek: {
+      model: document.getElementById('dk-model')?.value || 'deepseek-v4-flash'
+    },
     ollama: {
       baseUrl: document.getElementById('ol-base-url')?.value || 'http://localhost:11434',
       model: document.getElementById('ol-model')?.value || 'qwen2.5:7b'
     }
   };
   localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(cfg));
-  showToast('success', 'AI 配置已保存');
+  showToast('AI 配置已保存', 'success');
 }
 
 /**
@@ -7992,15 +8719,15 @@ async function testAiConnection() {
 
   try {
     let responseText = '';
-    if (provider === 'dashscope') {
-      // DashScope: 走服务端代理（不再前端直连）
-      const model = document.getElementById('ds-model')?.value || cfg.dashscope?.model || 'qwen-plus';
-      const apiBase = localStorage.getItem('psy_cloud_api_base') || '';
+    if (provider === 'dashscope' || provider === 'deepseek') {
+      const modelEl = document.getElementById(provider === 'deepseek' ? 'dk-model' : 'ds-model');
+      const model = modelEl?.value || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'qwen-plus');
+      const apiBase = localStorage.getItem('psy_cloud_api_base') || window.location.origin || '';
       if (!apiBase) throw new Error('请先配置 Cloud API 地址（在"数据同步"页）');
       const res = await fetch(apiBase + '/api/ai-diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: 'dashscope', model, messages: [{ role: 'user', content: '请回复"连接成功"四个字' }], maxTokens: 20, temperature: 0 })
+        body: JSON.stringify({ provider: provider, model, messages: [{ role: 'user', content: '请回复"连接成功"四个字' }], maxTokens: 20, temperature: 0 })
       });
       const data = await res.json();
       if (!res.ok || data.code !== 0) throw new Error(data.message || 'HTTP ' + res.status);
@@ -8046,27 +8773,58 @@ async function callAi(messages, options) {
   const temperature = (options && options.temperature !== undefined) ? options.temperature : 0.1;
   const provider = (options && options.provider) || cfg.provider;
 
-  if (provider === 'dashscope') {
+  if (provider === 'dashscope' || provider === 'deepseek') {
+    // 本地测试模式：apiBase 指向本地时，跳过 CloudAPI 直连本地服务
+    var _apiBase = (localStorage.getItem('psy_cloud_api_base') || '').replace(/\/+$/, '');
+    if (_apiBase && _apiBase.indexOf('127.0.0.1') !== -1) {
+      console.log('[Admin AI] 本地测试模式，直连 ' + _apiBase);
+      var model = (options && options.model) || (provider === 'deepseek' ? cfg.deepseek.model : cfg.dashscope.model) || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'qwen-plus');
+      var body = { provider: provider, model: model, messages: messages, maxTokens: maxTokens, temperature: temperature };
+      console.log('[callAi] 发送请求体:', JSON.stringify(body).substring(0, 200));
+      // 前端 300 秒超时（LES 等大 JSON 生成需要较长时间）
+      const _ctrl = new AbortController();
+      const _timer = setTimeout(() => _ctrl.abort(), 300000);
+      try {
+      var res = await fetch(_apiBase + '/api/ai-diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: provider, model: model, messages: messages, maxTokens: maxTokens, temperature: temperature }),
+        signal: _ctrl.signal
+      });
+      } catch(err) {
+        clearTimeout(_timer);
+        console.error('[callAi] fetch 异常:', err);
+        if (err.name === 'AbortError') throw new Error('请求超时（300秒），AI 服务未响应，建议切换到 deepseek-v4-flash 模型');
+        throw err;
+      }
+      clearTimeout(_timer);
+      console.log('[callAi] 收到响应 HTTP=' + res.status + '，开始解析 JSON...');
+      if (!res.ok) throw new Error('AI 服务请求失败: HTTP ' + res.status);
+      var data = await res.json();
+      console.log('[callAi] 解析完成，code=' + data.code + '，data长度=' + ((data.data || '').length));
+      if (data.code !== 0) throw new Error(data.message || 'AI 调用失败');
+      return data.data || '';
+    }
     // 走服务端代理
     if (window.CloudEnv && window.CloudEnv.isCloud && window.CloudData && window.CloudData.callAi) {
       console.log('[Admin AI] 使用云端 AI 代理调用');
-      return await window.CloudData.callAi(messages, { temperature: temperature, maxTokens: maxTokens });
+      return await window.CloudData.callAi(messages, { provider: provider, temperature: temperature, maxTokens: maxTokens });
     }
     if (window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
       console.log('[Admin AI] 使用 CloudAPI 服务端代理');
-      return await window.CloudAPI.aiDiagnose(messages, { provider: 'dashscope', temperature: temperature, maxTokens: maxTokens });
+      return await window.CloudAPI.aiDiagnose(messages, { provider: provider, temperature: temperature, maxTokens: maxTokens });
     }
     // fallback：直接调用 LNMP /api/ai-diagnose
     console.log('[Admin AI] 使用 LNMP /api/ai-diagnose 直接调用');
-    var apiBase = (localStorage.getItem('psy_cloud_api_base') || '').replace(/\/+$/, '');
+    var apiBase = (localStorage.getItem('psy_cloud_api_base') || window.location.origin || '').replace(/\/+$/, '');
     if (!apiBase) {
       throw new Error('未配置 API 服务器地址（psy_cloud_api_base），请在"运维工具 → AI 密钥管理"中设置 API 地址');
     }
-    var model = (options && options.model) || cfg.dashscope.model || 'qwen-plus';
+    var model = (options && options.model) || (provider === 'deepseek' ? cfg.deepseek.model : cfg.dashscope.model) || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'qwen-plus');
     var res = await fetch(apiBase + '/api/ai-diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider: 'dashscope', model: model, messages: messages, maxTokens: maxTokens, temperature: temperature })
+      body: JSON.stringify({ provider: provider, model: model, messages: messages, maxTokens: maxTokens, temperature: temperature })
     });
     if (!res.ok) throw new Error('AI 服务请求失败: HTTP ' + res.status);
     var data = await res.json();
@@ -8090,84 +8848,20 @@ async function callAi(messages, options) {
 // ====================================================
 let currentAiDiagScaleId = null;
 
-// ========== AI 生成规则（Meta Prompt）—— 只读展示，不可修改 ==========
-
-var DEFAULT_META_PROMPT = '你是一个心理测评系统的 Prompt 工程师。请根据以下量表的完整信息，生成一段 AI 测评详情的 System Prompt。\n'
-  + '\n'
-  + '{scaleContext}\n'
-  + '\n'
-  + '【生成要求】\n'
-  + '1. 生成的 Prompt 必须包含可用变量：{scaleName} {score} {level} {dimensions} {answers}\n'
-  + '2. 角色设定为专业心理评估咨询师\n'
-  + '3. 输出结构要求：综合评估 → 维度分析 → 改善建议 → 注意事项\n'
-  + '4. 充分利用上述量表的维度含义和解释规则，使测评分析内容具有针对性\n'
-  + '5. 结合题文理解各维度测量的具体行为/心理特征\n'
-  + '6. 不给出明确医学诊断，强调"仅供参考，不构成医疗诊断"\n'
-  + '7. 语气专业但温暖，避免冷冰冰的术语堆砌\n'
-  + '8. 建议要有针对性，不要泛泛而谈\n'
-  + '9. 只输出 Prompt 本身，不要输出任何其他解释或前缀\n'
-  + '\n'
-  + '【变量格式说明（写入 Prompt 时必须保留）】\n'
-  + '生成的 System Prompt 中将使用以下 5 个变量，运行时会被实际数据替换。\n'
-  + '请确保 Prompt 模板中正确引用这些变量：\n'
-  + '\n'
-  + '• {scaleName} — 字符串，量表名称（如"家庭亲密度与适应性量表"）\n'
-  + '• {score} — 数字，测评总分（如 182）\n'
-  + '• {level} — 字符串，总分等级标签（如"良好"、"需关注"）\n'
-  + '• {dimensions} — JSON 数组，各维度得分详情，结构如下：\n'
-  + '  [{"name":"维度名","score":12,"pct":75.0,"max":16,"color":"#4CAF50","levelLabel":"良好","levelText":"该维度得分处于良好水平","hasInterp":true}, ...]\n'
-  + '  其中：name=维度名，score=维度分，pct=得分百分比(0-100)，max=满分，color=等级颜色(十六进制)，levelLabel=等级标签，levelText=等级解释，hasInterp=是否有解释规则\n'
-  + '• {answers} — JSON 对象，用户的作答详情。格式因题型而异：\n'
-  + '  标准题：{"1":0,"2":2} 表示第1题选第1个选项(index=0)，第2题选第3个选项(index=2)\n'
-  + '  矩阵题：{"5":{"row_1":0,"row_2":2}} 表示第5题各行的选项index\n'
-  + '  父子题：{"6":{"main":0,"subs":[1,3],"subFill":{}}} 表示第6题主选项index=0，勾选了子选项index 1和3\n'
-  + '  若量表仅含标准题，则所有值均为数字（选项index），无嵌套对象\n'
-  + '\n'
-  + '【⚠️ 输出格式约束（极其重要，必须写入 Prompt 中）】\n'
-  + '你生成的 Prompt 必须包含以下格式约束段落，确保 AI 诊断输出为纯 Markdown 格式：\n'
-  + '\n'
-  + '━━━━━━━━━━━━━━━━━━━━\n'
-  + '【输出格式要求】\n'
-  + '你只能使用以下 Markdown 语法输出报告，严禁使用任何 HTML 标签：\n'
-  + '\n'
-  + '✅ 允许使用的格式：\n'
-  + '- **粗体**：用 \\\\*\\\\*文字\\\\*\\\\* 包裹\n'
-  + '- *斜体*：用 \\\\*文字\\\\* 包裹\n'
-  + '- 标题：用 ## 或 ### 开头（不要用 # 一级标题）\n'
-  + '- 分隔线：独占一行的 ---\n'
-  + '- 列表：用 - 或数字 1. 2. 3. 开头\n'
-  + '- 引用：用 > 开头（如话术、引用语等）\n'
-  + '- 行内代码：用反引号 ` 包裹\n'
-  + '\n'
-  + '❌ 严禁使用的格式（会导致页面显示异常）：\n'
-  + '- 禁止使用任何 HTML 标签（如 <div>、<span>、<br>、<p>、<table>、<strong>、<em> 等）\n'
-  + '- 禁止使用 HTML 表格（<table>）或 CSS 类名（如 diag-table-wrap）\n'
-  + '- 禁止使用 <br> 换行，请直接用 Markdown 的空行或换行\n'
-  + '- 禁止输出 Markdown 表格（| 列 | 列 | 格式），如需呈现对比信息请用列表或粗体标题+文字描述替代\n'
-  + '\n'
-  + '报告结构建议（纯 Markdown）：\n'
-  + '### 🌟 综合评估\n'
-  + '（总结性分析文字）\n'
-  + '---\n'
-  + '### 🔍 维度深度解析\n'
-  + '（每个维度一段分析，用粗体标注维度名）\n'
-  + '---\n'
-  + '### 🌱 改善建议\n'
-  + '（用编号列表 1. 2. 3. 组织建议）\n'
-  + '---\n'
-  + '### ❤️ 重要提醒\n'
-  + '（注意事项）\n'
-  + '━━━━━━━━━━━━━━━━━━━━\n'
-  + '\n'
-  + '请确保上述格式约束被完整写入你生成的 Prompt 中。';
+// ========== AI 生成规则（Meta Prompt）—— 从 prompts/meta-prompt.md 加载 ==========
 
 function getMetaPrompt() {
-  return DEFAULT_META_PROMPT;
+  var prompts = window.DEFAULT_PROMPTS || [];
+  var meta = prompts.find(function(p) { return p.id === 'meta'; });
+  if (meta && meta.versions && meta.versions.length > 0) {
+    return meta.versions[meta.versions.length - 1].content;
+  }
+  return '';
 }
 
 function loadMetaPromptToEditor() {
   var el = document.getElementById('ai-diag-meta-prompt');
-  if (el) el.value = DEFAULT_META_PROMPT;
+  if (el) el.value = getMetaPrompt();
 }
 
 function toggleMetaPromptPanel() {
@@ -8196,7 +8890,7 @@ async function generateAiDiagPrompt() {
 
   // 检查量表是否有题目
   if (!scale.questions || scale.questions.length === 0) {
-    showToast('warning', '该量表暂无题目数据，无法生成提示词');
+    showToast('该量表暂无题目数据，无法生成提示词', 'warning');
     return;
   }
 
@@ -8210,7 +8904,7 @@ async function generateAiDiagPrompt() {
     // admin-legacy.html 部署在 LNMP 同域，可直接 fetch /api/ai-diagnose
     var hasDirectFetch = typeof fetch === 'function';
     if (!hasCloudProxy && !hasLnmpProxy && !hasDirectFetch) {
-      showToast('warning', 'DashScope 模式需要服务端代理，请确认 API 地址已配置');
+      showToast('DashScope 模式需要服务端代理，请确认 API 地址已配置', 'warning');
       return;
     }
   }
@@ -8218,7 +8912,7 @@ async function generateAiDiagPrompt() {
   // 禁用按钮
   btn.disabled = true;
   btn.innerHTML = '⏳ 生成中...';
-  showToast('info', '正在分析量表信息并生成提示词，请稍候...');
+  showToast('正在分析量表信息并生成提示词，请稍候...', 'info');
 
   try {
     // 1. 组装量表上下文
@@ -8232,7 +8926,7 @@ async function generateAiDiagPrompt() {
     const result = await callAi([{ role: 'user', content: metaPrompt }]);
 
     if (!result || !result.trim()) {
-      showToast('error', 'AI 未返回有效内容，请重试');
+      showToast('AI 未返回有效内容，请重试', 'error');
       return;
     }
 
@@ -8245,10 +8939,10 @@ async function generateAiDiagPrompt() {
       welcomeEl.value = '根据您的测评结果，我为您生成了以下分析报告。';
     }
 
-    showToast('success', '提示词已生成，请检查并微调后保存');
+    showToast('提示词已生成，请检查并微调后保存', 'success');
   } catch(e) {
     console.error('[AI Diag Prompt Gen]', e);
-    showToast('error', '生成失败：' + (e.message || '未知错误'));
+    showToast('生成失败：' + (e.message || '未知错误', 'error'));
   } finally {
     btn.disabled = false;
     btn.innerHTML = '🤖 AI 智能生成';
@@ -8533,7 +9227,7 @@ function saveAiDiagConfig() {
   }
   SharedData.syncToFrontend();
   renderAiDiagScaleList();
-  showToast('success', '测评详情配置已保存');
+  showToast('测评详情配置已保存', 'success');
 }
 
 function resetAiDiagPrompt() {
@@ -8542,7 +9236,7 @@ function resetAiDiagPrompt() {
   document.getElementById('ai-diag-welcome').value = '';
   document.getElementById('ai-diag-temp').value = 0.7;
   document.getElementById('ai-diag-max-tokens').value = 2000;
-  showToast('info', '已重置为默认值');
+  showToast('已重置为默认值', 'info');
 }
 
 async function testAiDiag() {
@@ -8552,7 +9246,7 @@ async function testAiDiag() {
   const prompt = document.getElementById('ai-diag-prompt').value.trim();
 
   if (!prompt) {
-    showToast('warning', '请先编写测评详情 Prompt');
+    showToast('请先编写测评详情 Prompt', 'warning');
     return;
   }
 
@@ -8586,10 +9280,10 @@ async function testAiDiag() {
       { role: 'user', content: '请根据以上提示词和测评数据，生成测评分析报告。' }
     ]);
     resultEl.textContent = result || '（AI 未返回内容）';
-    showToast('success', '测评详情测试完成');
+    showToast('测评详情测试完成', 'success');
   } catch(e) {
     resultEl.textContent = '❌ 请求失败：' + e.message;
-    showToast('error', '请求失败：' + e.message);
+    showToast('请求失败：' + e.message, 'error');
   }
 
   btn.disabled = false;
@@ -9322,9 +10016,9 @@ function renderQEditor() {
   var poolPhases = _getTransitionPhaseCounts();
   container.innerHTML = currentQuestions.map((q, qi) => {
     var qType = q.type || 'standard';
-    var typeLabel = qType === 'matrix' ? '📊 矩阵题' : qType === 'parent-child' ? '🔗 父子题' : '📝 单选题';
-    var typeColor = qType === 'matrix' ? '#7C3AED' : qType === 'parent-child' ? '#0891B2' : 'var(--text-muted)';
-    var cardStyle = qType === 'matrix' ? 'border-left:3px solid #7C3AED;background:#FAF5FF;' : qType === 'parent-child' ? 'border-left:3px solid #0891B2;background:#F0FDFA;' : '';
+    var typeLabel = qType === 'matrix' ? '📊 矩阵题' : qType === 'parent-child' ? '🔗 父子题' : qType === 'grouped' ? '📋 分组下拉' : qType === 'text' ? '✏️ 文字题' : '📝 单选题';
+    var typeColor = qType === 'matrix' ? '#7C3AED' : qType === 'parent-child' ? '#0891B2' : qType === 'grouped' ? '#059669' : qType === 'text' ? '#F97316' : 'var(--text-muted)';
+    var cardStyle = qType === 'matrix' ? 'border-left:3px solid #7C3AED;background:#FAF5FF;' : qType === 'parent-child' ? 'border-left:3px solid #0891B2;background:#F0FDFA;' : qType === 'grouped' ? 'border-left:3px solid #059669;background:#ECFDF5;' : qType === 'text' ? 'border-left:3px solid #F97316;background:#FFF7ED;' : '';
 
     // 选项区域：根据题型分支
     var optionsHtml = '';
@@ -9367,19 +10061,79 @@ function renderQEditor() {
           '<input class="opt-text" type="text" value="' + escHtml(sub.label||'') + '" placeholder="子选项内容" onchange="updateSubOption(' + qi + ',' + si + ',this.value)" style="flex:1" />' +
           '<input class="opt-score" type="number" value="' + (sub.score !== undefined ? sub.score : 0) + '" min="-10" max="10" step="1" onchange="updateSubOptionScore(' + qi + ',' + si + ',parseFloat(this.value))" style="width:50px" />' +
           '<span style="font-size:11px;color:var(--text-muted)">分</span>' +
+          '<input type="checkbox" ' + (sub.hasInput?'checked':'') + ' onchange="updateSubOptionHasInput(' + qi + ',' + si + ',this.checked)" title="勾选后选中此子选项会展开文字输入框" style="margin-right:2px" /><span style="font-size:10px;color:var(--text-muted);white-space:nowrap">填空</span>' +
           '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeSubOption(' + qi + ',' + si + ')">✕</button>' +
         '</div>').join('') +
         '<button type="button" style="padding:3px 10px;font-size:11px;background:#0891B2;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addSubOption(' + qi + ')">＋ 添加子选项</button>' +
+      '</div>';
+    } else if (qType === 'grouped') {
+      // 分组下拉题：每个 group 有独立选项集
+      var groupsArr = q.groups || [];
+      optionsHtml = '<div class="options-row" style="margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#059669;font-weight:600;margin-bottom:4px">📋 分组维度（每题包含多个评分维度）</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;">' +
+        '<span style="color:var(--text-muted);white-space:nowrap;">计分方式:</span>' +
+        '<select style="padding:2px 8px;border:1px solid #059669;border-radius:4px;color:#059669;font-size:12px;" onchange="updateGroupedFormula(' + qi + ', this.value)">' +
+        '<option value="sum"' + ((q.formula !== 'multiply') ? ' selected' : '') + '>求和（默认）</option>' +
+        '<option value="multiply"' + ((q.formula === 'multiply') ? ' selected' : '') + '>乘法（LES 等乘积量表）</option>' +
+        '</select>' +
+        '<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;white-space:nowrap;">' +
+        '<input type="checkbox" style="width:14px;height:14px;" ' + (q.allowRepeat ? 'checked' : '') + ' onchange="updateGroupedAllowRepeat(' + qi + ', this.checked)">' +
+        '允许用户补充事件</label>' +
+        '</div>';
+      groupsArr.forEach(function(group, gi) {
+        optionsHtml += '<div style="margin-bottom:8px;padding:8px 10px;background:#D1FAE5;border-radius:6px;border:1px solid #6EE7B7">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">' +
+            '<span style="font-size:11px;color:#059669;font-weight:600;white-space:nowrap">维度 ' + (gi+1) + ':</span>' +
+            '<input class="opt-text" type="text" value="' + escHtml(group.label||'') + '" placeholder="维度名称" onchange="updateGroupedGroupLabel(' + qi + ',' + gi + ',this.value)" style="flex:1" />' +
+            '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeGroupedGroup(' + qi + ',' + gi + ')">✕</button>' +
+          '</div>';
+        (group.options || []).forEach(function(opt, oi) {
+          optionsHtml += '<div class="option-input-row" style="padding-left:4px">' +
+            '<span style="font-size:11px;color:var(--text-muted);min-width:16px">' + String.fromCharCode(65+oi) + '</span>' +
+            '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateGroupedOptLabel(' + qi + ',' + gi + ',' + oi + ',this.value)" style="flex:1" />' +
+            '<input class="opt-score" type="number" value="' + (opt.score||0) + '" min="-10" max="10" step="1" onchange="updateGroupedOptScore(' + qi + ',' + gi + ',' + oi + ',parseFloat(this.value))" />' +
+            '<span class="opt-score-label">分</span>' +
+            '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeGroupedOpt(' + qi + ',' + gi + ',' + oi + ')">✕</button>' +
+          '</div>';
+        });
+        optionsHtml += '<button type="button" style="padding:2px 8px;font-size:11px;background:#059669;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-top:4px" onclick="addGroupedOpt(' + qi + ',' + gi + ')">＋ 添加选项</button>' +
+        '</div>';
+      });
+      optionsHtml += '<button type="button" style="padding:4px 12px;font-size:12px;background:#34D399;color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="addGroupedGroup(' + qi + ')">＋ 添加评分维度</button>' +
+      '</div>';
+    } else if (qType === 'text') {
+      // 文字题：无选项，配置 placeholder / maxLength / required
+      optionsHtml = '<div style="padding:8px 12px;background:#FFF7ED;border-left:3px solid #F97316;border-radius:4px;font-size:12px;color:#9A3412">' +
+        '<div style="font-weight:600;margin-bottom:6px">✏️ 文字题 — 用户将看到一个文本输入框</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">' +
+          '<span style="font-size:11px;color:var(--text-muted);white-space:nowrap">占位提示:</span>' +
+          '<input class="opt-text" type="text" value="' + escHtml(q.placeholder||'请详细描述...') + '" placeholder="placeholder" onchange="updateTextQuestionField(' + qi + ',\'placeholder\',this.value)" style="flex:1" />' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">' +
+          '<span style="font-size:11px;color:var(--text-muted);white-space:nowrap">最大字数:</span>' +
+          '<input class="opt-score" type="number" value="' + (q.maxLength||500) + '" min="50" max="2000" onchange="updateTextQuestionField(' + qi + ',\'maxLength\',parseInt(this.value))" />' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center">' +
+          '<span style="font-size:11px;color:var(--text-muted);white-space:nowrap">必填:</span>' +
+          '<select class="form-control" style="width:60px;height:26px;font-size:11px;padding:0 4px" onchange="updateTextQuestionField(' + qi + ',\'required\',this.value===\'true\')">' +
+            '<option value="false" ' + (q.required===false?'selected':'') + '>否</option>' +
+            '<option value="true" ' + (q.required!==false?'selected':'') + '>是</option>' +
+          '</select>' +
+        '</div>' +
       '</div>';
     } else {
       // 标准单选题
       optionsHtml = '<div class="options-row">' +
         q.options.map((opt, oi) => '<div class="option-input-row">' +
           '<div class="opt-label">' + String.fromCharCode(65+oi) + '</div>' +
-          '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateOptLabel(' + qi + ',' + oi + ',this.value)" />' +
+          '<input type="checkbox" ' + (opt.hasInput?'checked':'') + ' onchange="updateOptHasInput(' + qi + ',' + oi + ',this.checked)" title="勾选后选中此项会展开文字输入框" style="margin-right:4px" />' +
+          '<input class="opt-text" type="text" value="' + escHtml(opt.label||'') + '" placeholder="选项文字" onchange="updateOptLabel(' + qi + ',' + oi + ',this.value)" style="flex:1" />' +
           '<input class="opt-score" type="number" value="' + opt.score + '" min="-10" max="10" step="1" onchange="updateOptScore(' + qi + ',' + oi + ',parseFloat(this.value))" />' +
           '<span class="opt-score-label">分</span>' +
+          '<button type="button" style="padding:2px 6px;font-size:11px;color:#EF4444;border:1px solid #EF4444;border-radius:4px;cursor:pointer;background:transparent" onclick="removeOpt(' + qi + ',' + oi + ')">✕</button>' +
         '</div>').join('') +
+        '<div style="margin-top:6px"><button type="button" style="padding:3px 10px;font-size:11px;background:var(--primary);color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="addOptToQuestion(' + qi + ')">＋ 添加选项</button></div>' +
       '</div>';
     }
 
@@ -9392,6 +10146,8 @@ function renderQEditor() {
           <option value="standard" ${qType==='standard'?'selected':''}>📝 单选题</option>
           <option value="matrix" ${qType==='matrix'?'selected':''}>📊 矩阵题</option>
           <option value="parent-child" ${qType==='parent-child'?'selected':''}>🔗 父子题</option>
+          <option value="grouped" ${qType==='grouped'?'selected':''}>📋 分组下拉</option>
+          <option value="text" ${qType==='text'?'selected':''}>✏️ 文字题</option>
         </select>
         <select class="form-control" style="width:140px;height:28px;font-size:12px;padding:0 4px" onchange="updateTransition(${qi}, this.value)" title="过渡语模式">
           <option value="random" ${(q.transition||'random')==='random'?'selected':''}>🎲 随机(${poolPhases.total}条)</option>
@@ -9439,6 +10195,29 @@ function updateQContent(qi, val) { currentQuestions[qi].content = val; document.
 function updateOptLabel(qi, oi, val) { currentQuestions[qi].options[oi].label = val; }
 function updateOptScore(qi, oi, val) { currentQuestions[qi].options[oi].score = val; }
 
+function removeOpt(qi, oi) {
+  if (currentQuestions[qi].options.length <= 1) { alert('至少保留一个选项'); return; }
+  currentQuestions[qi].options.splice(oi, 1);
+  renderQEditor();
+}
+function updateOptHasInput(qi, oi, val) {
+  if (!currentQuestions[qi].options[oi]) return;
+  if (val) {
+    currentQuestions[qi].options[oi].hasInput = true;
+    if (!currentQuestions[qi].options[oi].inputPlaceholder) {
+      currentQuestions[qi].options[oi].inputPlaceholder = '请填写具体内容';
+    }
+  } else {
+    delete currentQuestions[qi].options[oi].hasInput;
+    delete currentQuestions[qi].options[oi].inputPlaceholder;
+  }
+}
+function updateTextQuestionField(qi, field, val) {
+  if (field === 'maxLength') val = parseInt(val) || 500;
+  if (field === 'placeholder') val = val || '请详细描述...';
+  currentQuestions[qi][field] = val;
+}
+
 // 题型切换
 function updateQType(qi, newType) {
   var q = currentQuestions[qi];
@@ -9452,10 +10231,33 @@ function updateQType(qi, newType) {
   if (newType === 'parent-child' && !q.subOptions) {
     q.subOptions = [{ id: 's1', label: '子选项1' }, { id: 's2', label: '子选项2' }];
   }
+  if (newType === 'grouped' && !q.groups) {
+    q.groups = [
+      { id: 'g1', label: '维度1', options: [{ id: 'A', label: '选项A', score: 0 }, { id: 'B', label: '选项B', score: 1 }] },
+      { id: 'g2', label: '维度2', options: [{ id: 'A', label: '选项A', score: 0 }, { id: 'B', label: '选项B', score: 1 }] }
+    ];
+  }
+  if (newType === 'text') {
+    delete q.rows;
+    delete q.subOptions;
+    delete q.groups;
+    q.type = 'text';
+    if (q.placeholder === undefined) q.placeholder = '请详细描述...';
+    if (q.maxLength === undefined) q.maxLength = 500;
+    if (q.required === undefined) q.required = false;
+  } else if (oldType === 'text') {
+    delete q.placeholder;
+    delete q.maxLength;
+    delete q.required;
+  }
   if (newType === 'standard') {
     delete q.rows;
     delete q.subOptions;
+    delete q.groups;
     delete q.type;
+    delete q.placeholder;
+    delete q.maxLength;
+    delete q.required;
   }
   renderQEditor();
 }
@@ -9491,6 +10293,58 @@ function updateSubOption(qi, si, val) {
 }
 function updateSubOptionScore(qi, si, val) {
   currentQuestions[qi].subOptions[si].score = val;
+}
+function updateSubOptionHasInput(qi, si, val) {
+  if (val) {
+    currentQuestions[qi].subOptions[si].hasInput = true;
+    if (!currentQuestions[qi].subOptions[si].inputPlaceholder)
+      currentQuestions[qi].subOptions[si].inputPlaceholder = '请填写具体内容';
+  } else {
+    delete currentQuestions[qi].subOptions[si].hasInput;
+    delete currentQuestions[qi].subOptions[si].inputPlaceholder;
+  }
+  renderQEditor();
+}
+
+// 分组下拉题：group 操作
+function addGroupedGroup(qi) {
+  if (!currentQuestions[qi].groups) currentQuestions[qi].groups = [];
+  var groups = currentQuestions[qi].groups;
+  groups.push({ id: 'g' + (groups.length + 1), label: '', options: [{ id: 'A', label: '', score: 0 }] });
+  renderQEditor();
+}
+function removeGroupedGroup(qi, gi) {
+  currentQuestions[qi].groups.splice(gi, 1);
+  renderQEditor();
+}
+function updateGroupedGroupLabel(qi, gi, val) {
+  currentQuestions[qi].groups[gi].label = val;
+}
+// 分组下拉题：group 内选项操作
+function addGroupedOpt(qi, gi) {
+  var group = currentQuestions[qi].groups[gi];
+  if (!group.options) group.options = [];
+  var nextId = String.fromCharCode(65 + group.options.length);
+  group.options.push({ id: nextId, label: '', score: 0 });
+  renderQEditor();
+}
+function removeGroupedOpt(qi, gi, oi) {
+  currentQuestions[qi].groups[gi].options.splice(oi, 1);
+  renderQEditor();
+}
+function updateGroupedOptLabel(qi, gi, oi, val) {
+  currentQuestions[qi].groups[gi].options[oi].label = val;
+}
+function updateGroupedOptScore(qi, gi, oi, val) {
+  currentQuestions[qi].groups[gi].options[oi].score = val;
+}
+function updateGroupedFormula(qi, val) {
+  if (val === 'multiply') currentQuestions[qi].formula = 'multiply';
+  else delete currentQuestions[qi].formula; // 默认求和，不存字段
+}
+function updateGroupedAllowRepeat(qi, checked) {
+  if (checked) currentQuestions[qi].allowRepeat = true;
+  else delete currentQuestions[qi].allowRepeat;
 }
 
 // 标准题：添加选项
@@ -10127,7 +10981,7 @@ function manualSyncNpcImages() {
         var w = img.naturalWidth;
         var h = img.naturalHeight;
         var isPng = base64.indexOf('image/png') !== -1;
-        var isCounselor = imgId && imgId.indexOf('ZXS-') === 0;
+        var isCounselor = imgId && (imgId.indexOf('ZXS-') === 0 || imgId.indexOf('counselor') === 0);
         var maxDim = isCounselor ? MAX_DIM_NPC : MAX_DIM_BG;
 
         // 已足够小则不压缩
@@ -10143,8 +10997,8 @@ function manualSyncNpcImages() {
         canvas.height = nh;
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, nw, nh);
-        // PNG 立绘保留透明通道；背景及其他用 JPEG 压缩
-        var format = (isPng && isCounselor) ? 'image/png' : 'image/jpeg';
+        // 立绘必须保留 PNG 透明通道，背景用 JPEG 压缩
+        var format = isCounselor ? 'image/png' : (isPng ? 'image/png' : 'image/jpeg');
         var quality = (format === 'image/jpeg') ? JPEG_Q : undefined;
         var compressed = canvas.toDataURL(format, quality);
         console.log('[NPC-Sync] 压缩:', imgId || '?', format, Math.round(base64.length / 1024) + 'KB → ' + Math.round(compressed.length / 1024) + 'KB');
@@ -11935,7 +12789,7 @@ function updateEditPreview(config) {
       if (url && charImg) charImg.src = url;
     });
   } else if (charImg) {
-    charImg.src = '../frontend/assets/counselor.png';
+    charImg.src = 'counselor.png';
   }
 
   // 更新名牌和对话框
@@ -12009,6 +12863,7 @@ var OPS_DEFAULT_ITEMS = [
   { id: '小程序认证',   name: '小程序主体认证',      emoji: '🟢',  date: '', note: '企业主体：湖北索拓星蓝科技', isStatus: true },
   // === AI 接口 ===
   { id: 'dashscope',    name: 'DashScope API Key',   emoji: '🤖',  date: '', note: '通义千问，阿里云', editable: false },
+  { id: 'deepseek',     name: 'DeepSeek API Key',     emoji: '🔮',  date: '', note: 'DeepSeek 深度推理', editable: false },
   { id: 'ollama',       name: 'Ollama 本地模型',     emoji: '🦙',  date: '', note: '本地部署，无费用限制', editable: false }
 ];
 
@@ -12326,32 +13181,51 @@ function opsLoadAiKeysFromServer() {
       return r.json();
     })
     .then(function(data) {
-      // 构建兼容格式给 opsRenderAiKeyForm
-      var keys = (data.data && data.data.keys) || [];
+      // 新格式: { dashscope: { count, keys }, deepseek: { count, keys } }
+      // 旧格式: { count, keys }
+      var dsKeys = [], dkKeys = [];
+      if (data.data && data.data.dashscope) {
+        dsKeys = data.data.dashscope.keys || [];
+      } else if (data.data && data.data.keys) {
+        // 旧格式兼容
+        dsKeys = data.data.keys;
+      }
+      if (data.data && data.data.deepseek) {
+        dkKeys = data.data.deepseek.keys || [];
+      }
+
       var config = {
-        provider: 'dashscope',
+        provider: (dkKeys.length > 0 && dsKeys.length === 0) ? 'deepseek' : 'dashscope',
         dashscope: {
           apiKey: '',
           keyName: '',
           model: 'qwen-plus',
-          fallbacks: keys.slice(1).map(function(k, i) {
+          fallbacks: dsKeys.slice(1).map(function(k, i) {
+            return { key: '', name: '备用 #' + (i + 1) };
+          })
+        },
+        deepseek: {
+          apiKey: '',
+          keyName: '',
+          model: 'deepseek-v4-flash',
+          fallbacks: dkKeys.slice(1).map(function(k, i) {
             return { key: '', name: '备用 #' + (i + 1) };
           })
         },
         ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' },
-        _serverKeys: keys  // 传给渲染函数显示服务端脱敏状态
+        _serverKeys: { dashscope: dsKeys, deepseek: dkKeys }
       };
       opsAiKeyData = config;
       opsRenderAiKeyForm(config);
     })
     .catch(function(err) {
       console.warn('[opsLoadAiKeysFromServer] 读取服务端失败（本地开发环境预期行为）:', err.message);
-      // 降级：本地开发环境 LNMP 不可达，直接渲染空表单（含 API 地址配置项）
       var emptyConfig = {
         provider: 'dashscope',
         dashscope: { apiKey: '', keyName: '', model: 'qwen-plus', fallbacks: [] },
+        deepseek: { apiKey: '', keyName: '', model: 'deepseek-v4-flash', fallbacks: [] },
         ollama: { baseUrl: 'http://localhost:11434', model: 'qwen2.5:7b' },
-        _serverKeys: []
+        _serverKeys: { dashscope: [], deepseek: [] }
       };
       opsAiKeyData = emptyConfig;
       opsRenderAiKeyForm(emptyConfig);
@@ -12414,6 +13288,11 @@ function opsRenderAiKeyForm(data) {
   var dsKeyName = ds.keyName || ''; // 主 Key 备注名
   var dsModel = ds.model || 'qwen-plus';
   var dsFallbacks = ds.fallbacks || []; // 备用 Key 数组：[{ key, name }, ...]
+  var dk = data.deepseek || {};
+  var dkKey = dk.apiKey || '';
+  var dkKeyName = dk.keyName || ''; // DeepSeek 主 Key 备注名
+  var dkModel = dk.model || 'deepseek-v4-flash';
+  var dkFallbacks = dk.fallbacks || []; // DeepSeek 备用 Key 数组
   var olUrl = (data.ollama && data.ollama.baseUrl) || 'http://localhost:11434';
   var olModel = (data.ollama && data.ollama.model) || 'qwen2.5:7b';
 
@@ -12442,6 +13321,11 @@ function opsRenderAiKeyForm(data) {
     +      (provider === 'dashscope' ? 'var(--primary)' : 'var(--border)') + ';cursor:pointer;background:var(--bg);transition:border-color .2s">'
     + '      <input type="radio" name="ops-ak-provider" value="dashscope"' + (provider === 'dashscope' ? ' checked' : '') + ' onchange="opsSwitchAkProvider(\'dashscope\')" style="margin:0">'
     + '      <span style="font-size:13px;font-weight:500">☁️ DashScope（通义千问）</span>'
+    + '    </label>'
+    + '    <label id="ops-ak-provider-dk" style="flex:1;display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:8px;border:2px solid '
+    +      (provider === 'deepseek' ? 'var(--primary)' : 'var(--border)') + ';cursor:pointer;background:var(--bg);transition:border-color .2s">'
+    + '      <input type="radio" name="ops-ak-provider" value="deepseek"' + (provider === 'deepseek' ? ' checked' : '') + ' onchange="opsSwitchAkProvider(\'deepseek\')" style="margin:0">'
+    + '      <span style="font-size:13px;font-weight:500">🔮 DeepSeek</span>'
     + '    </label>'
     + '    <label id="ops-ak-provider-ol" style="flex:1;display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:8px;border:2px solid '
     +      (provider === 'ollama' ? 'var(--primary)' : 'var(--border)') + ';cursor:pointer;background:var(--bg);transition:border-color .2s">'
@@ -12474,6 +13358,31 @@ function opsRenderAiKeyForm(data) {
     + '  <input id="ops-ak-ds-model" type="text" value="' + escHtml(dsModel) + '" placeholder="qwen-plus" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;outline:none">'
     + '</div>'
 
+    // DeepSeek 配置（主 Key + 备用 Key）
+    + '<div id="ops-ak-deepseek" style="margin-bottom:16px' + (provider !== 'deepseek' ? ';display:none' : '') + '">'
+    + '  <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">🔑 主 API Key' + (dkKeyName ? ' · <span style="color:var(--primary)">' + escHtml(dkKeyName) + '</span>' : '') + ' <span style="font-weight:400;color:var(--text-muted)">当前: ' + opsMaskKey(dkKey) + '</span></label>'
+    + opsRenderKeyRow('ops-ak-dk-key', dkKey, false, 'ops-ak-dk-keyname', dkKeyName)
+    + '  <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px">'
+    + '    <label style="font-size:13px;font-weight:500;color:var(--text-sec)">📋 备用 Key <span style="font-weight:400;color:var(--text-muted)">已配置 ' + dkFallbacks.length + '/3</span></label>'
+    + (dkFallbacks.length < 3 ? '<button onclick="opsAddFallbackKey(\'deepseek\')" class="ops-btn" style="font-size:11px;padding:4px 10px">+ 添加</button>' : '<span style="font-size:11px;color:var(--text-muted)">已达上限</span>')
+    + '  </div>'
+    + '  <div id="ops-ak-dk-fallbacks">'
+    + (dkFallbacks.length > 0 ? dkFallbacks.map(function(item, i) {
+            var fbKey = typeof item === 'object' ? (item.key || '') : item;
+            var fbName = typeof item === 'object' ? (item.name || '') : '';
+            var label = fbName ? escHtml(fbName) : '备用 #' + (i + 1);
+            return '<div style="margin-bottom:4px;font-size:11px;color:var(--text-muted)">' + label + '</div>' + opsRenderKeyRow('ops-ak-dk-fb-' + i, fbKey, True, 'ops-ak-dk-fb-name-' + i, fbName);
+          }).join('') : '<div style="font-size:12px;color:var(--text-muted);padding:8px 0">暂无备用 Key，建议至少配置 1 个</div>')
+    + '  </div>'
+    + '  <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin:12px 0 8px;">模型</label>'
+    + '  <select id="ops-ak-dk-model" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;outline:none">'
+    + '    <option value="deepseek-v4-flash"' + (dkModel === 'deepseek-v4-flash' ? ' selected' : '') + '>deepseek-v4-flash（推荐，32K输出）</option>'
+    + '    <option value="deepseek-chat"' + (dkModel === 'deepseek-chat' ? ' selected' : '') + '>deepseek-chat（旧版，8K输出）</option>'
+    + '    <option value="deepseek-reasoner"' + (dkModel === 'deepseek-reasoner' ? ' selected' : '') + '>deepseek-reasoner（深度推理 R1）</option>'
+    + '  </select>'
+    + '</div>'
+
+
     // Ollama 配置
     + '<div id="ops-ak-ollama" style="margin-bottom:16px' + (provider !== 'ollama' ? ';display:none' : '') + '">'
     + '  <label style="display:block;font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px;">服务地址</label>'
@@ -12504,12 +13413,14 @@ function opsRenderAiKeyForm(data) {
 /**
  * 添加一个备用 Key 输入行
  */
-function opsAddFallbackKey() {
-  var container = document.getElementById('ops-ak-fallbacks');
+function opsAddFallbackKey(provider) {
+  provider = provider || 'dashscope';
+  var containerId = provider === 'deepseek' ? 'ops-ak-dk-fallbacks' : 'ops-ak-fallbacks';
+  var container = document.getElementById(containerId);
   if (!container) return;
   // 计算当前数量（按 wrapper div 计数）
   var existing = container.children.length;
-  if (existing >= 3) { showToast('warning', '最多配置 3 个备用 Key'); return; }
+  if (existing >= 3) { showToast('最多配置 3 个备用 Key', 'warning'); return; }
   // 移除"暂无"提示
   var emptyTip = container.querySelector('div[style*="padding:8px"]');
   if (emptyTip) emptyTip.remove();
@@ -12527,9 +13438,17 @@ function opsTestSingleKey(inputId) {
   var input = document.getElementById(inputId);
   if (!input) return;
   var key = input.value.trim();
-  if (!key) { showToast('warning', '请先填写 API Key'); return; }
+  if (!key) { showToast('请先填写 API Key', 'warning'); return; }
 
-  // 在输入行后面显示测试结果
+  // 判断 provider：DeepSeek 的 Key 通常以 sk- 开头但含特定前缀
+  // 通过 inputId 前缀判断
+  var testUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+  var testModel = 'qwen-plus';
+  if (inputId.indexOf('dk') >= 0) {
+    testUrl = 'https://api.deepseek.com/v1/chat/completions';
+    testModel = 'deepseek-v4-flash';
+  }
+
   var row = input.closest('div[style*="flex"]');
   var existingResult = row ? row.parentElement.querySelector('.ops-key-test-result') : null;
   if (existingResult) existingResult.remove();
@@ -12540,10 +13459,10 @@ function opsTestSingleKey(inputId) {
   resultEl.textContent = '⏳ 测试中...';
   row.parentElement.appendChild(resultEl);
 
-  fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+  fetch(testUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-    body: JSON.stringify({ model: 'qwen-plus', messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 })
+    body: JSON.stringify({ model: testModel, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 })
   })
   .then(function(r) {
     if (!r.ok) return r.json().then(function(d) { throw new Error((d.error && d.error.message) || 'HTTP ' + r.status); });
@@ -12557,14 +13476,12 @@ function opsTestSingleKey(inputId) {
  * 切换 Provider 面板
  */
 function opsSwitchAkProvider(p) {
-  var dsPanel = document.getElementById('ops-ak-dashscope');
-  var olPanel = document.getElementById('ops-ak-ollama');
-  var dsLabel = document.getElementById('ops-ak-provider-ds');
-  var olLabel = document.getElementById('ops-ak-provider-ol');
-  if (dsPanel) dsPanel.style.display = p === 'dashscope' ? '' : 'none';
-  if (olPanel) olPanel.style.display = p === 'ollama' ? '' : 'none';
-  if (dsLabel) dsLabel.style.borderColor = p === 'dashscope' ? 'var(--primary)' : 'var(--border)';
-  if (olLabel) olLabel.style.borderColor = p === 'ollama' ? 'var(--primary)' : 'var(--border)';
+  ['dashscope', 'deepseek', 'ollama'].forEach(function(pid) {
+    var panel = document.getElementById('ops-ak-' + pid);
+    var label = document.getElementById('ops-ak-provider-' + (pid === 'deepseek' ? 'dk' : pid.substring(0, 2)));
+    if (panel) panel.style.display = p === pid ? '' : 'none';
+    if (label) label.style.borderColor = p === pid ? 'var(--primary)' : 'var(--border)';
+  });
 }
 
 /**
@@ -12584,10 +13501,17 @@ function opsCheckServerKeys() {
   statusDiv.innerHTML = '<span style="color:var(--text-sec)">⏳ 正在查询 LNMP 和 CloudBase 服务端...</span>';
 
   // 并行查询两个服务端
-  var lnmpPromise = fetch('/api/ai-config?_t=' + Date.now(), { headers: _getAdminSecretHeaders() })
-    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(data) { return { source: 'LNMP', data: data.data }; })
-    .catch(function(err) { return { source: 'LNMP', error: err.message }; });
+  var apiBase = localStorage.getItem('psy_cloud_api_base') || '';
+  var lnmpBase = apiBase || '';
+  var lnmpPromise = lnmpBase
+    ? fetch(lnmpBase + '/api/ai-config?_t=' + Date.now(), { headers: _getAdminSecretHeaders() })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(data) { return { source: 'LNMP', data: data.data }; })
+        .catch(function(err) { return { source: 'LNMP', error: err.message }; })
+    : fetch('/api/ai-config?_t=' + Date.now(), { headers: _getAdminSecretHeaders() })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(data) { return { source: 'LNMP', data: data.data }; })
+        .catch(function(err) { return { source: 'LNMP', error: err.message }; });
 
   var cloudBase = localStorage.getItem('psy_cloud_api_base') || '';
   var cloudPromise;
@@ -12607,17 +13531,33 @@ function opsCheckServerKeys() {
       html += '<div style="font-weight:600;margin:8px 0 4px;color:var(--primary)">' + icon + ' ' + result.source + '</div>';
       if (result.error) {
         html += '<div style="color:var(--warning);font-size:11px">' + escHtml(result.error) + '</div>';
-      } else if (!result.data || result.data.count === 0) {
-        html += '<div style="color:var(--danger);font-size:11px">无 API Key</div>';
+      } else if (!result.data) {
+        html += '<div style="color:var(--danger);font-size:11px">无数据</div>';
       } else {
-        html += '<div style="font-size:11px;color:var(--text-sec)">共 ' + result.data.count + ' 个 Key（轮询模式）</div>';
-        (result.data.keys || []).forEach(function(k) {
-          html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">'
-            + '<span style="color:' + (k.active ? 'var(--success)' : 'var(--text-muted)') + '">' + (k.active ? '🟢' : '⚪') + '</span>'
-            + '<span style="font-family:monospace;font-size:11px">' + k.key + '</span>'
-            + (k.active ? '<span style="font-size:10px;color:var(--success);font-weight:600">当前</span>' : '')
-            + '</div>';
+        // 新格式: { dashscope: { count, keys }, deepseek: { count, keys } }
+        ['dashscope', 'deepseek'].forEach(function(pid) {
+          var pData = result.data[pid];
+          if (!pData) return;
+          var pLabel = pid === 'dashscope' ? '☁️ DashScope' : '🔮 DeepSeek';
+          html += '<div style="font-size:11px;color:var(--text-sec);margin:4px 0 2px;font-weight:500">' + pLabel + ' · ' + pData.count + ' 个 Key</div>';
+          (pData.keys || []).forEach(function(k) {
+            html += '<div style="display:flex;align-items:center;gap:6px;margin:1px 0;padding-left:12px">'
+              + '<span style="color:' + (k.active ? 'var(--success)' : 'var(--text-muted)') + '">' + (k.active ? '🟢' : '⚪') + '</span>'
+              + '<span style="font-family:monospace;font-size:11px">' + k.key + '</span>'
+              + (k.active ? '<span style="font-size:10px;color:var(--success);font-weight:600">当前</span>' : '')
+              + '</div>';
+          });
         });
+        // 旧格式兼容
+        if (result.data.count !== undefined && !result.data.dashscope) {
+          html += '<div style="font-size:11px;color:var(--text-sec)">共 ' + result.data.count + ' 个 Key（轮询模式）</div>';
+          (result.data.keys || []).forEach(function(k) {
+            html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">'
+              + '<span style="color:' + (k.active ? 'var(--success)' : 'var(--text-muted)') + '">' + (k.active ? '🟢' : '⚪') + '</span>'
+              + '<span style="font-family:monospace;font-size:11px">' + k.key + '</span>'
+              + '</div>';
+          });
+        }
       }
     });
     statusDiv.innerHTML = html;
@@ -12629,19 +13569,20 @@ function opsCheckServerKeys() {
  */
 function opsCollectFallbacks() {
   var fallbacks = [];
-  var container = document.getElementById('ops-ak-fallbacks');
-  if (!container) return fallbacks;
-  // 按 wrapper div 遍历，每个 wrapper 含备注名 + Key 输入
-  var wrappers = container.children;
-  for (var i = 0; i < wrappers.length; i++) {
-    var keyInput = document.getElementById('ops-ak-fb-' + i);
-    var nameInput = document.getElementById('ops-ak-fb-name-' + i);
-    var keyVal = keyInput ? keyInput.value.trim() : '';
-    var nameVal = nameInput ? nameInput.value.trim() : '';
-    if (keyVal && keyVal.length > 10) {
-      fallbacks.push({ key: keyVal, name: nameVal });
+  ['dashscope', 'deepseek'].forEach(function(pid) {
+    var containerId = pid === 'deepseek' ? 'ops-ak-dk-fallbacks' : 'ops-ak-fallbacks';
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var wrappers = container.children;
+    for (var i = 0; i < wrappers.length; i++) {
+      var keyInput = document.getElementById((pid === 'deepseek' ? 'ops-ak-dk-fb-' : 'ops-ak-fb-') + i);
+      var nameInput = document.getElementById((pid === 'deepseek' ? 'ops-ak-dk-fb-name-' : 'ops-ak-fb-name-') + i);
+      var keyVal = keyInput ? keyInput.value.trim() : '';
+      if (keyVal && keyVal.length > 10) {
+        fallbacks.push({ key: keyVal, name: nameInput ? nameInput.value.trim() : '' });
+      }
     }
-  }
+  });
   return fallbacks;
 }
 
@@ -12650,25 +13591,34 @@ function opsCollectFallbacks() {
  * 不再写 ai-config.json，直接 PUT /api/ai-config
  */
 function opsSaveAiKeys() {
-  var dsKeyEl = document.getElementById('ops-ak-ds-key');
-  var dsKeyNameEl = document.getElementById('ops-ak-ds-keyname');
-  var fallbacks = opsCollectFallbacks();
-
-  // 收集所有 Key
-  var mainKey = dsKeyEl ? dsKeyEl.value.trim() : '';
-  if (!mainKey || mainKey.length <= 10) {
-    showToast('warning', 'DashScope 模式下主 API Key 不能为空');
+  var provider = (document.querySelector('input[name="ops-ak-provider"]:checked') || {}).value || 'dashscope';
+  var mainKeyEl, modelEl, allKeys;
+  
+  if (provider === 'deepseek') {
+    mainKeyEl = document.getElementById('ops-ak-dk-key');
+  } else {
+    mainKeyEl = document.getElementById('ops-ak-ds-key');
+  }
+  
+  if (mainKeyEl) {
+    var mainKey = mainKeyEl.value.trim();
+    if (!mainKey || mainKey.length <= 10) {
+      showToast(provider === 'deepseek' ? 'DeepSeek 模式下主 API Key 不能为空' : 'DashScope 模式下主 API Key 不能为空', 'warning');
+      return;
+    }
+    allKeys = [mainKey];
+    var fallbacks = opsCollectFallbacks();
+    if (fallbacks && fallbacks.length > 0) {
+      fallbacks.forEach(function(fb) { if (fb.key) allKeys.push(fb.key); });
+    }
+  } else {
+    showToast('未找到主 Key 输入框', 'warning');
     return;
   }
-
-  var allKeys = [mainKey];
-  if (fallbacks && fallbacks.length > 0) {
-    fallbacks.forEach(function(fb) { if (fb.key) allKeys.push(fb.key); });
-  }
+  
   allKeys = allKeys.filter(function(k) { return k && k.length > 10; });
-
   if (allKeys.length === 0) {
-    showToast('warning', '无有效 Key');
+    showToast('无有效 Key', 'warning');
     return;
   }
 
@@ -12676,10 +13626,12 @@ function opsSaveAiKeys() {
   if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-sec)">⏳ 正在保存到服务端...</span>';
 
   // 并行保存到两个服务端
+  var body_data = JSON.stringify({ keys: allKeys, provider: provider });
+  
   var lnmpPromise = fetch('/api/ai-config', {
     method: 'PUT',
     headers: Object.assign({ 'Content-Type': 'application/json' }, _getAdminSecretHeaders()),
-    body: JSON.stringify({ keys: allKeys })
+    body: body_data
   })
   .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(function(data) { return { source: 'LNMP', success: true, count: data.data ? data.data.count : 0 }; })
@@ -12691,7 +13643,7 @@ function opsSaveAiKeys() {
     cloudPromise = fetch(cloudBase + '/api/ai-config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keys: allKeys, _openid: NPC_ADMIN_OPENID })
+      body: JSON.stringify({ keys: allKeys, provider: provider, _openid: NPC_ADMIN_OPENID })
     })
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) { return { source: 'CloudBase', success: true, count: data.data ? data.data.count : 0 }; })
@@ -12714,9 +13666,9 @@ function opsSaveAiKeys() {
     });
     if (statusEl) statusEl.innerHTML = html;
     if (allOk) {
-      showToast('success', 'API Key 已保存到所有服务端');
+      showToast('API Key 已保存到所有服务端', 'success');
     } else {
-      showToast('warning', '部分服务端保存失败，请检查');
+      showToast('部分服务端保存失败，请检查', 'warning');
     }
   });
 }
@@ -12774,6 +13726,58 @@ function opsTestAiKeyConfig() {
     .catch(function(err) {
       statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败: ' + escHtml(err.message) + '</span>';
     });
+  } else if (provider === 'deepseek') {
+    var dkKey = document.getElementById('ops-ak-dk-key');
+    var dkModel = document.getElementById('ops-ak-dk-model');
+    var apiKey = dkKey ? dkKey.value.trim() : '';
+    var model = dkModel ? dkModel.value.trim() : 'deepseek-v4-flash';
+
+    // 如果前端未填 Key，则通过服务端代理测试（Key 存在服务端）
+    if (!apiKey) {
+      statusEl.innerHTML = '<span style="color:var(--text-muted)">⏳ 通过服务端代理测试 DeepSeek 连接...</span>';
+      var apiBase = (localStorage.getItem('psy_cloud_api_base') || '').replace(/\/+$/, '');
+      if (!apiBase) {
+        statusEl.innerHTML = '<span style="color:var(--warning)">⚠️ 请先配置 API 服务器地址</span>';
+        return;
+      }
+      fetch(apiBase + '/api/ai-diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'deepseek', model: model, messages: [{ role: 'user', content: '请回复"连接成功"' }], maxTokens: 10, temperature: 0.1 })
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        if (data.code !== 0) throw new Error(data.message || 'AI 调用失败');
+        var reply = data.data || '';
+        statusEl.innerHTML = '<span style="color:var(--success)">✅ 服务端代理连接成功</span> · 模型: ' + escHtml(model);
+      })
+      .catch(function(err) {
+        statusEl.innerHTML = '<span style="color:var(--danger)">❌ 服务端代理连接失败: ' + escHtml(err.message) + '</span>';
+      });
+      return;
+    }
+
+    // 前端填了 Key，则直接测试（用于验证 Key 有效性）
+    statusEl.innerHTML = '<span style="color:var(--text-muted)">⏳ 正在测试 DeepSeek 连接...</span>';
+    fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({ model: model, messages: [{ role: 'user', content: '请回复"连接成功"' }], max_tokens: 10 })
+    })
+    .then(function(r) {
+      if (!r.ok) { var e = r.json ? r.json() : Promise.resolve({}); return e.then(function(d) { throw new Error((d.error && d.error.message) || 'HTTP ' + r.status); }); }
+      return r.json();
+    })
+    .then(function(data) {
+      var reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      statusEl.innerHTML = '<span style="color:var(--success)">✅ 连接成功</span> · 模型: ' + escHtml(model) + (reply ? ' · 回复: "' + escHtml(reply.substring(0, 20)) + '"' : '');
+    })
+    .catch(function(err) {
+      statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败: ' + escHtml(err.message) + '</span>';
+    });
   } else if (provider === 'ollama') {
     var olUrl = document.getElementById('ops-ak-ol-url');
     var url = olUrl ? olUrl.value.trim() : 'http://localhost:11434';
@@ -12784,8 +13788,8 @@ function opsTestAiKeyConfig() {
         var models = (data.models || []).map(function(m) { return m.name; });
         statusEl.innerHTML = '<span style="color:var(--success)">✅ Ollama 运行中</span> · ' + models.length + ' 个模型: ' + escHtml(models.slice(0, 5).join(', '));
       })
-      .catch(function() {
-        statusEl.innerHTML = '<span style="color:var(--danger)">❌ Ollama 未连接</span> · 地址: ' + escHtml(url);
+      .catch(function(err) {
+        statusEl.innerHTML = '<span style="color:var(--danger)">❌ Ollama 连接失败: ' + escHtml(err.message) + '</span>';
       });
   }
 }
@@ -13486,13 +14490,30 @@ function aiOneClickImport() {
 (function() {
   const SP_KEY = 'psy_sys_prompts';
   const SP_VERSION_KEY = 'psy_sys_prompts_v';
-  const SP_DATA_VERSION = 9; // bump when DEFAULT_PROMPTS changes significantly
+  const SP_DATA_VERSION = (window.PROMPTS_VERSION || 'manual-' + Date.now()); // 由 build-prompts.py 构建时自动注入 MD5，无需手动维护
   const ICONS = ['🎯','📊','🧪','🔧','📝','💡','🔍','🤖','📋','💬','🧠','📈','⚙️','📝','🎭','✨'];
-  const TEMPLATES = {
-    scoring: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本（如原版 vs 中文修订版、完整版 vs 简版）。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量，避免将不同版本混淆\n3. 提取维度/因子定义、全局指标、分数解释与划界标准、筛查条件\n4. 记录反向计分题号（仅作参考，不写入计分公式）\n5. 识别特殊题型（矩阵题、父子题），并使用对应的计分格式\n6. 按标准格式输出，供我直接粘贴导入心理评估系统',
-    csv: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目\n3. 检测是否存在题目异常\n4. 生成一个可直接下载的 .csv 文件\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写',
-    blank: ''
-  };
+  // TEMPLATES 优先从 DEFAULT_PROMPTS 的 system-templates 读取，fallback 硬编码
+  function _loadTemplates() {
+    var prompts = window.DEFAULT_PROMPTS || [];
+    var tmpl = prompts.find(function(p) { return p.id === 'system-templates'; });
+    if (tmpl && tmpl.versions && tmpl.versions.length > 0) {
+      var content = tmpl.versions[tmpl.versions.length - 1].content;
+      var templates = { blank: '' };
+      var sections = content.split(/---(\w+)---/);
+      for (var i = 1; i < sections.length; i += 2) {
+        templates[sections[i]] = sections[i + 1].trim();
+      }
+      return templates;
+    }
+    // Fallback
+    return {
+      scoring: '你是一位心理测量学专家，精通各类心理评估量表的计分方法、维度结构、划界标准与解释体系，同时具备专业的结构化数据提取能力。\n\n我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表的计分信息，也可能存在多个版本（如原版 vs 中文修订版、完整版 vs 简版）。\n\n你的任务是：\n1. 通读全文，识别与计分相关的所有内容\n2. 确认量表版本和题目数量，避免将不同版本混淆\n3. 提取维度/因子定义、全局指标、分数解释与划界标准、筛查条件\n4. 记录反向计分题号（仅作参考，不写入计分公式）\n5. 识别特殊题型（矩阵题、父子题），并使用对应的计分格式\n6. 按标准格式输出，供我直接粘贴导入心理评估系统',
+      csv: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范，同时具备专业的结构化数据处理能力。\n\n我接下来会发送一份量表手册的原文给你。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目\n3. 检测是否存在题目异常\n4. 生成一个可直接下载的 .csv 文件\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写',
+      json: '你是一位心理测量学专家，精通各类心理评估量表的维度结构、计分方法和题目编制规范。\n\n我接下来会发送一份量表手册的原文给你。\n\n你的任务是：\n1. 通读全文，识别其中所有量表\n2. 对每张量表，提取其基本信息和全部题目（含特殊题型）\n3. 生成一个可直接导入系统的 .json 文件\n\n⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写',
+      blank: ''
+    };
+  }
+  const TEMPLATES = _loadTemplates();
 
   const DEFAULT_PROMPTS = window.DEFAULT_PROMPTS;
 
@@ -13501,20 +14522,52 @@ function aiOneClickImport() {
   let spSelectedIcon = '🎯';
 
   function loadData() {
+    // 辅助函数：确保每个提示词有 currentVersion 字段，并过滤无效版本
+    function normalizeData(data) {
+      data.forEach(function(pt) {
+        // 过滤掉 content 为空的版本（构建异常导致）
+        var cleanVersions = (pt.versions || []).filter(function(v) { return v.content && v.content.length > 0; });
+        if (cleanVersions.length < (pt.versions || []).length) {
+          console.warn('[SP] 清理了 ' + ((pt.versions || []).length - cleanVersions.length) + ' 个空内容版本: ' + pt.id);
+        }
+        pt.versions = cleanVersions;
+        // 确保 currentVersion 指向存在的版本
+        if (!pt.currentVersion || !cleanVersions.find(function(v) { return v.version === pt.currentVersion; })) {
+          var activeVer = cleanVersions.find(function(v) { return v.status === 'active'; });
+          pt.currentVersion = activeVer ? activeVer.version : (cleanVersions.length > 0 ? cleanVersions[cleanVersions.length - 1].version : '');
+        }
+      });
+    }
+
     try {
       var saved = localStorage.getItem(SP_KEY);
-      var savedVer = parseInt(localStorage.getItem(SP_VERSION_KEY) || '1');
-      if (saved && savedVer >= SP_DATA_VERSION) {
+      var savedVer = localStorage.getItem(SP_VERSION_KEY) || '1';
+      if (saved && savedVer === SP_DATA_VERSION) {
         spData = JSON.parse(saved);
+        normalizeData(spData);
       } else {
         // Data version outdated or first use — reset to defaults
         // If user has existing data, merge: keep user-created types, update built-in ones
-        if (saved && savedVer < SP_DATA_VERSION) {
+        if (saved && savedVer !== SP_DATA_VERSION) {
           var oldData = JSON.parse(saved);
           spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS));
-          // Preserve user-created prompt types (not 'scoring' or 'csv')
+          normalizeData(spData);
+          // Merge: preserve user-created types AND custom versions within built-in types
           oldData.forEach(function(oldPt) {
-            if (oldPt.id !== 'scoring' && oldPt.id !== 'csv') {
+            var builtIn = spData.find(function(p) { return p.id === oldPt.id; });
+            if (builtIn) {
+              // Built-in type (json/csv/scoring): append user-added versions not in defaults
+              oldPt.versions.forEach(function(oldVer) {
+                if (!builtIn.versions.find(function(v) { return v.version === oldVer.version; })) {
+                  builtIn.versions.push(oldVer);
+                }
+              });
+              // Also update currentVersion if it points to a custom version
+              if (oldPt.currentVersion && !builtIn.versions.find(function(v) { return v.version === builtIn.currentVersion; })) {
+                builtIn.currentVersion = oldPt.currentVersion;
+              }
+            } else {
+              // User-created type: keep as-is
               spData.push(oldPt);
             }
           });
@@ -13523,11 +14576,15 @@ function aiOneClickImport() {
           else { spCurrentType = spData[0].id; }
         } else {
           spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS));
+          normalizeData(spData);
         }
         localStorage.setItem(SP_VERSION_KEY, String(SP_DATA_VERSION));
         saveData();
       }
-    } catch(e) { spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS)); }
+    } catch(e) { 
+      spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS)); 
+      normalizeData(spData);
+    }
   }
   function saveData() {
     try { localStorage.setItem(SP_KEY, JSON.stringify(spData)); } catch(e) {}
@@ -13557,10 +14614,18 @@ function aiOneClickImport() {
 
   // ---- 提示词正文区域 ----
   function renderReadingArea() {
+    try {
     var pt = getPt(spCurrentType);
-    if (!pt) return;
+    if (!pt || !pt.versions || pt.versions.length === 0) {
+      document.getElementById('sp-reading-container').innerHTML = '<div style="padding:20px;color:var(--text-muted);text-align:center;">暂无提示词数据</div>';
+      return;
+    }
     var c = document.getElementById('sp-reading-container');
-    var cv = pt.versions.find(function(v) { return v.version === pt.currentVersion; }) || pt.versions[0];
+    var cv = pt.versions.find(function(v) { return v.version === pt.currentVersion; }) || pt.versions[pt.versions.length - 1];
+    if (!cv || !cv.content) {
+      c.innerHTML = '<div style="padding:20px;color:var(--text-muted);text-align:center;">版本内容为空，请检查提示词构建</div>';
+      return;
+    }
     var sl = cv.status === 'active' ? '当前' : cv.status === 'draft' ? '草稿' : '历史';
     c.innerHTML = '<div class="sp-reading-area">' +
       '<div class="sp-reading-toolbar"><div class="sp-reading-toolbar-left"><span class="sp-section-title">📄 提示词正文（发送给 AI 的完整内容）</span></div><div class="sp-actions-bar">' +
@@ -13573,6 +14638,10 @@ function aiOneClickImport() {
           '<span>📅 ' + cv.date + '</span><span>📝 ' + escHtml(cv.note) + '</span>' +
           '<span>📏 ' + cv.content.length.toLocaleString() + ' 字</span></div>' +
         '<div class="sp-document-body" id="sp-doc-body">' + escHtml(cv.content) + '</div></div></div></div>';
+    } catch(e) {
+      console.error('[SP] renderReadingArea 异常:', e.message);
+      document.getElementById('sp-reading-container').innerHTML = '<div style="padding:20px;color:#c00;text-align:center;">⚠️ 提示词渲染失败: ' + e.message + '</div>';
+    }
   }
 
   function renderVersionListHTML() {
@@ -13597,12 +14666,13 @@ function aiOneClickImport() {
     var pt = getPt(spCurrentType);
     var c = document.getElementById('sp-flow-steps');
     var h = '';
-    pt.flowSteps.forEach(function(s, i) {
+    var steps = (pt && pt.flowSteps) || [];
+    steps.forEach(function(s, i) {
       h += '<div class="sp-flow-item" draggable="true" data-step="' + (i+1) + '"><div class="sp-flow-card">' +
         '<div class="sp-flow-actions"><button title="编辑" onclick="spEditFlowStep(this)">✏️</button><button class="sp-btn-del" title="删除" onclick="spDeleteFlowStep(this)">🗑</button></div>' +
         '<div class="sp-flow-num ' + s.color + '">' + s.num + '</div>' +
         '<div class="sp-flow-title">' + escHtml(s.title) + '</div><div class="sp-flow-desc">' + escHtml(s.desc) + '</div></div></div>';
-      if (i < pt.flowSteps.length - 1) h += '<div class="sp-flow-arrow">→</div>';
+      if (i < steps.length - 1) h += '<div class="sp-flow-arrow">→</div>';
     });
     c.innerHTML = h;
   }
@@ -13735,7 +14805,7 @@ function aiOneClickImport() {
   window.spFillTemplate = function(key) {
     document.querySelectorAll('.sp-tpl-chip').forEach(function(c) { c.classList.toggle('selected', c.dataset.tpl === key); });
     document.getElementById('sp-new-content').value = TEMPLATES[key] || '';
-    var names = { scoring: '计分规则提取提示词', csv: 'CSV 导入文件生成提示词', blank: '' };
+    var names = { scoring: '计分规则提取提示词', csv: 'CSV 导入文件生成提示词', json: 'JSON 导入文件生成提示词', blank: '' };
     var ni = document.getElementById('sp-new-name');
     if (!ni.value.trim()) ni.value = names[key] || '';
   };
