@@ -35,7 +35,7 @@ LNMP_SCALES_URL = 'https://www.soarto.com.cn/api/scales-json'
 # LNMP 服务器配置（前端 JS 文件需同步到此服务器）
 LNMP_SSH_HOST = 'root@101.43.43.125'
 LNMP_WWW_DIR = '/www/wwwroot/www.soarto.com.cn'
-LNMP_FRONTEND_FILES = ['shared-data.js', 'cloud-data.js', 'cloud-api.js', 'scoring-engine.js', 'asset-storage.js', 'data-monitor.js', 'index.html', 'miniprogram-qr.png', 'counselor.png']
+LNMP_FRONTEND_FILES = ['shared-data.js', 'cloud-data.js', 'cloud-api.js', 'scoring-engine.js', 'asset-storage.js', 'data-monitor.js', 'index.html', 'admin-legacy.html', 'scale-onboard.html', 'default-prompts.js', 'miniprogram-qr.png', 'counselor.png']
 
 # AI 配置文件（DashScope API Key 等）
 AI_CONFIG_FILE = os.path.join(WORKSPACE, 'ai-config.json')
@@ -46,13 +46,15 @@ SCALE_TYPES_FILE = os.path.join(WORKSPACE, 'scale-types.json')
 # 需要部署的文件（从 mini-app-h5/ 开始的相对路径）
 DEPLOY_FILES = [
     'frontend/index.html',          # 前端页面
-    # admin-legacy.html 已移除 — 后台仅部署到 www.soarto.com.cn 服务器（scp）
+    'backend/admin-legacy.html',    # 后台管理（deploy → SCP → LNMP 服务器）
     'shared-data.js',               # 共享数据模块（将注入量表数据）
     'cloud-data.js',                # 云端数据适配层
     'cloud-api.js',                 # 云托管 HTTP API 通信模块（v11.0）
     'scoring-engine.js',            # 计分引擎
     'asset-storage.js',             # 资源存储模块
     'data-monitor.js',              # 数据监控模块
+    'backend/default-prompts.js',   # 系统提示词（AI 生成量表功能）
+    'backend/scale-onboard.html',   # 量表一键上架向导
     'frontend/assets/counselor.png', # 咨询师立绘（原始 PNG）
     'frontend/assets/miniprogram-qr.png' # 小程序码
 ]
@@ -300,6 +302,12 @@ def main():
     has_scoring = sum(1 for s in scales if s.get('scoring'))
     print(f'  ✅ 读取到 {len(scales)} 个量表，共 {total_questions} 题')
     print(f'  ✅ 含计分规则: {has_scoring}/{len(scales)} 个量表')
+
+    # 数据标准化：确保各量表必有 shortName 字段（注入时按此字段计数校验）
+    for s in scales:
+        if not s.get('shortName'):
+            s['shortName'] = s.get('displayName') or s.get('code') or s['name']
+            print(f'  🔧 补全 shortName: {s["name"]} → {s["shortName"]}')
 
     # 0.5 读取 AI 配置
     print('\n🤖 读取 AI 配置:')

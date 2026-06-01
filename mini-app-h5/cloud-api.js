@@ -24,35 +24,46 @@
  * 配置优先级：localStorage('psy_api_base') > URL 参数(apiBase) > 默认值
  */
 
-(function() {
+(function () {
   'use strict';
 
   // ====================================================
   // 配置
   // ====================================================
 
-  var urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(window.location.search);
 
   // OpenID（从小程序 WebView URL 参数传入）
-  var _openid = urlParams.get('openid') || '';
+  const _openid = urlParams.get('openid') || '';
 
   // API 基础地址
   // WebView 模式（env=cloud）下强制同域（H5 与 API 同在 www.soarto.com.cn），
   // 忽略 URL 参数 apiBase 和 localStorage 残留配置（防止请求发到云托管返回 403）
-  var customBase = null;
-  var storedBase = null;
+  let customBase = null;
+  let storedBase = null;
   if (urlParams.get('env') !== 'cloud' && !/MicroMessenger/i.test(navigator.userAgent)) {
     customBase = urlParams.get('apiBase');
-    try { storedBase = localStorage.getItem('psy_api_base'); } catch(e) {}
+    try {
+      storedBase = localStorage.getItem('psy_api_base');
+    } catch (e) {}
   }
 
-  var API_BASE = storedBase || customBase || '';
-  var TIMEOUT_MS = 15000;        // 普通接口 15 秒
-  var AI_TIMEOUT_MS = 60000;     // AI 诊断 60 秒（DashScope 生成报告可能需 20s+）
+  // 本地开发默认走生产 API（python http.server 不支持 POST）
+  // 可通过 URL 参数 ?apiBase=http://localhost:3100 切换到本地 API
+  // CloudBase 静态托管（rich.soarto.com.cn）也没有后端，需指向 LNMP 服务器
+  const isCloudBaseHosting =
+    window.location.hostname.endsWith('.tcloudbaseapp.com') || window.location.hostname === 'rich.soarto.com.cn';
+  const localFallback =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || isCloudBaseHosting
+      ? 'https://www.soarto.com.cn'
+      : '';
+  let API_BASE = storedBase || customBase || localFallback;
+  const TIMEOUT_MS = 15000; // 普通接口 15 秒
+  const AI_TIMEOUT_MS = 60000; // AI 诊断 60 秒（DashScope 生成报告可能需 20s+）
 
   // 云端是否可用（降级标记）
-  var _cloudAvailable = true;
-  var _lastCloudCheck = 0;
+  let _cloudAvailable = true;
+  let _lastCloudCheck = 0;
 
   /**
    * 通用 fetch 封装
@@ -62,39 +73,47 @@
    * @param {number} [customTimeout] - 自定义超时（毫秒）
    */
   function apiRequest(method, path, data, customTimeout) {
-    var url = API_BASE + path;
+    let url = API_BASE + path;
     // 自动附加 openid 查询参数（GET 和 DELETE 都通过 URL 传递）
     if (_openid && (method === 'GET' || method === 'DELETE') && !path.includes('openid=')) {
-      var sep = url.includes('?') ? '&' : '?';
+      const sep = url.includes('?') ? '&' : '?';
       url = url + sep + 'openid=' + encodeURIComponent(_openid);
     }
-    var timeout = customTimeout || TIMEOUT_MS;
-    var options = {
+    const timeout = customTimeout || TIMEOUT_MS;
+    const options = {
       method: method,
       headers: { 'Content-Type': 'application/json' }
     };
     if (data && method !== 'GET') {
       // POST/DELETE 请求将 openid 放在 body 中
-      if (_openid) data._openid = _openid;
+      if (_openid) {
+        data._openid = _openid;
+      }
       options.body = JSON.stringify(data);
     }
 
     // 超时控制
-    var controller = new AbortController();
+    const controller = new AbortController();
     options.signal = controller.signal;
-    var timer = setTimeout(function() { controller.abort(); }, timeout);
+    const timer = setTimeout(function () {
+      controller.abort();
+    }, timeout);
 
     return fetch(url, options)
-      .then(function(resp) {
+      .then(function (resp) {
         clearTimeout(timer);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        if (!resp.ok) {
+          throw new Error('HTTP ' + resp.status);
+        }
         return resp.json();
       })
-      .then(function(json) {
-        if (json.code !== 0) throw new Error(json.message || '接口错误');
+      .then(function (json) {
+        if (json.code !== 0) {
+          throw new Error(json.message || '接口错误');
+        }
         return json.data;
       })
-      .catch(function(err) {
+      .catch(function (err) {
         clearTimeout(timer);
         console.warn('[CloudAPI] 请求失败:', path, err.message);
         _cloudAvailable = false;
@@ -110,28 +129,28 @@
     /**
      * 检查云端是否可用
      */
-    isAvailable: function() {
+    isAvailable: function () {
       return _cloudAvailable;
     },
 
     /**
      * 获取当前 openid
      */
-    getOpenId: function() {
+    getOpenId: function () {
       return _openid;
     },
 
     /**
      * 测试云端连接（GET /）
      */
-    ping: function() {
+    ping: function () {
       return apiRequest('GET', '/')
-        .then(function(data) {
+        .then(function (data) {
           _cloudAvailable = true;
           _lastCloudCheck = Date.now();
           return true;
         })
-        .catch(function() {
+        .catch(function () {
           _cloudAvailable = false;
           return false;
         });
@@ -144,7 +163,7 @@
      * @param {number} duration - 答题时长（秒）
      * @returns {Promise<object>} { id, score, maxScore, level, levelName, color, interp, dims }
      */
-    submitAnswers: function(scaleId, answers, duration) {
+    submitAnswers: function (scaleId, answers, duration) {
       return apiRequest('POST', '/api/submit', {
         scaleId: scaleId,
         answers: answers,
@@ -158,7 +177,7 @@
      * @param {number} pageSize - 每页条数
      * @returns {Promise<object>} { list, total, page, pageSize }
      */
-    fetchHistory: function(page, pageSize) {
+    fetchHistory: function (page, pageSize) {
       return apiRequest('GET', '/api/history?page=' + (page || 1) + '&pageSize=' + (pageSize || 20));
     },
 
@@ -167,7 +186,7 @@
      * @param {number|string} id - 记录 ID
      * @returns {Promise<boolean>}
      */
-    deleteRecord: function(id) {
+    deleteRecord: function (id) {
       return apiRequest('DELETE', '/api/history/' + id);
     },
 
@@ -177,25 +196,31 @@
      * @param {object} options - { provider, model, temperature, maxTokens }
      * @returns {Promise<string>} 诊断文本
      */
-    aiDiagnose: function(messages, options) {
-      var body = {
+    aiDiagnose: function (messages, options) {
+      const body = {
         messages: messages,
         provider: options && options.provider,
         model: options && options.model,
         temperature: options && options.temperature,
         maxTokens: options && options.maxTokens
       };
-      if (_openid) body.openid = _openid;
+      if (_openid) {
+        body.openid = _openid;
+      }
       return apiRequest('POST', '/api/ai-diagnose', body, AI_TIMEOUT_MS);
     },
 
     /**
      * 获取/设置 API 基础地址
      */
-    getBaseUrl: function() { return API_BASE; },
-    setBaseUrl: function(url) {
+    getBaseUrl: function () {
+      return API_BASE;
+    },
+    setBaseUrl: function (url) {
       API_BASE = url;
-      try { localStorage.setItem('psy_api_base', url); } catch(e) {}
+      try {
+        localStorage.setItem('psy_api_base', url);
+      } catch (e) {}
     },
 
     /**
@@ -203,7 +228,7 @@
      * @param {string} path - API 路径（如 '/api/npc-config'）
      * @returns {Promise<object>} 响应 data
      */
-    get: function(path) {
+    get: function (path) {
       return apiRequest('GET', path);
     },
 
@@ -213,22 +238,22 @@
      * @param {object} body - 请求体
      * @returns {Promise<object>} 响应 data
      */
-    post: function(path, body) {
+    post: function (path, body) {
       return apiRequest('POST', path, body);
     },
 
     /**
      * 重置降级状态（下次请求重新尝试云端）
      */
-    resetAvailability: function() {
+    resetAvailability: function () {
       _cloudAvailable = true;
     }
   };
 
   // 启动时静默检测云端连接（3秒后，不阻塞页面）
   // v3.0: 同域部署，前端和 API 在同一域名下（www.soarto.com.cn）
-  setTimeout(function() {
-    window.CloudAPI.ping().then(function(ok) {
+  setTimeout(function () {
+    window.CloudAPI.ping().then(function (ok) {
       console.log('[CloudAPI v3] 云端连接', ok ? '正常' : '不可用，已启用本地降级', ', openid:', _openid || '(无)');
     });
   }, 3000);

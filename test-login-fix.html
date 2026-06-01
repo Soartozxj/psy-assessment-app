@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录功能测试 - 验证修复</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        border-bottom: 2px solid #4a90d9;
+        padding-bottom: 10px;
+      }
+      .test-step {
+        background: #f9f9f9;
+        padding: 15px;
+        margin: 15px 0;
+        border-left: 4px solid #4a90d9;
+        border-radius: 4px;
+      }
+      .test-step h3 {
+        margin-top: 0;
+        color: #4a90d9;
+      }
+      button {
+        background: #4a90d9;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+      }
+      button:hover {
+        background: #3a7bc8;
+      }
+      button.danger {
+        background: #dc3545;
+      }
+      button.danger:hover {
+        background: #c82333;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      .log {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 20px;
+      }
+      .log-line {
+        margin: 5px 0;
+      }
+      .log-line.success {
+        color: #50fa7b;
+      }
+      .log-line.error {
+        color: #ff5555;
+      }
+      .log-line.info {
+        color: #8be9fd;
+      }
+      .log-line.warn {
+        color: #ffb86c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔐 登录功能测试</h1>
+      <p>验证 <code>dual-adapter.js</code> 修复后，登录功能是否正常工作。</p>
+
+      <div class="test-step">
+        <h3>步骤 1: 检查 Adapter 加载</h3>
+        <p>
+          检查 <code>Adapter.storage.getSession()</code> 和 <code>Adapter.storage.setSession()</code> 方法是否存在。
+        </p>
+        <button onclick="testAdapter()">测试 Adapter</button>
+        <div id="adapter-status"></div>
+      </div>
+
+      <div class="test-step">
+        <h3>步骤 2: 检查认证插件加载</h3>
+        <p>检查 <code>AuthPlugin</code> 是否已定义，并且 <code>adminAuth</code> 全局对象是否可用。</p>
+        <button onclick="testAuthPlugin()">测试认证插件</button>
+        <div id="auth-status"></div>
+      </div>
+
+      <div class="test-step">
+        <h3>步骤 3: 模拟登录测试</h3>
+        <p>使用默认密码 <code>admin2026</code> 测试登录功能。</p>
+        <button onclick="testLogin()">测试登录</button>
+        <div id="login-status"></div>
+      </div>
+
+      <div class="test-step">
+        <h3>步骤 4: 清除会话数据</h3>
+        <p>清除 sessionStorage 中的认证状态，模拟退出登录。</p>
+        <button onclick="clearSession()" class="danger">清除会话</button>
+        <div id="clear-status"></div>
+      </div>
+
+      <div class="test-step">
+        <h3>步骤 5: 打开实际页面测试</h3>
+        <p>在浏览器中打开实际的管理页面，手动测试登录功能。</p>
+        <button onclick="openAdminPage()">打开管理页面</button>
+      </div>
+
+      <h2>📋 测试日志</h2>
+      <div class="log" id="test-log"></div>
+    </div>
+
+    <!-- 加载依赖（v=202606010954 避免缓存） -->
+    <script src="/mini-app-h5/backend/dual-adapter.js?v=202606010954"></script>
+    <script src="/mini-app-h5/backend/plugin-base.js?v=202606010954"></script>
+    <script src="/mini-app-h5/backend/plugins/core/auth-plugin.js?v=202606010954"></script>
+
+    <script>
+      // 日志功能
+      function log(message, type = 'info') {
+        const logEl = document.getElementById('test-log');
+        const line = document.createElement('div');
+        line.className = `log-line ${type}`;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+        console.log(`[Test] ${message}`);
+      }
+
+      // 显示状态
+      function showStatus(elementId, message, type = 'info') {
+        const el = document.getElementById(elementId);
+        el.className = `status ${type}`;
+        el.textContent = message;
+      }
+
+      // 步骤1: 测试 Adapter
+      function testAdapter() {
+        log('开始测试 Adapter...', 'info');
+
+        try {
+          // 检查 Adapter 是否存在
+          if (typeof Adapter === 'undefined') {
+            throw new Error('Adapter 未定义');
+          }
+          log('✅ Adapter 已定义', 'success');
+
+          // 检查 Adapter.storage 是否存在
+          if (!Adapter.storage) {
+            throw new Error('Adapter.storage 未定义');
+          }
+          log('✅ Adapter.storage 已定义', 'success');
+
+          // 检查 getSession 方法
+          if (typeof Adapter.storage.getSession !== 'function') {
+            throw new Error('Adapter.storage.getSession 不是函数');
+          }
+          log('✅ Adapter.storage.getSession() 存在', 'success');
+
+          // 检查 setSession 方法
+          if (typeof Adapter.storage.setSession !== 'function') {
+            throw new Error('Adapter.storage.setSession 不是函数');
+          }
+          log('✅ Adapter.storage.setSession() 存在', 'success');
+
+          // 检查 removeSession 方法
+          if (typeof Adapter.storage.removeSession !== 'function') {
+            throw new Error('Adapter.storage.removeSession 不是函数');
+          }
+          log('✅ Adapter.storage.removeSession() 存在', 'success');
+
+          // 测试 setSession 和 getSession
+          Adapter.storage.setSession('test_key', 'test_value');
+          const value = Adapter.storage.getSession('test_key');
+          if (value !== 'test_value') {
+            throw new Error('setSession/getSession 测试失败');
+          }
+          log('✅ setSession/getSession 测试通过', 'success');
+
+          // 清理测试数据
+          Adapter.storage.removeSession('test_key');
+          log('✅ removeSession 测试通过', 'success');
+
+          showStatus('adapter-status', '✅ Adapter 测试通过！所有 sessionStorage 方法正常。', 'success');
+          log('Adapter 测试完成', 'success');
+        } catch (error) {
+          showStatus('adapter-status', `❌ Adapter 测试失败: ${error.message}`, 'error');
+          log(`Adapter 测试失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 步骤2: 测试认证插件
+      function testAuthPlugin() {
+        log('开始测试认证插件...', 'info');
+
+        try {
+          // 检查 AuthPlugin 类是否存在
+          if (typeof AuthPlugin === 'undefined') {
+            throw new Error('AuthPlugin 类未定义');
+          }
+          log('✅ AuthPlugin 类已定义', 'success');
+
+          // 🔧 关键修复：实例化 AuthPlugin（模拟 PluginLoader 的行为）
+          if (typeof window.authPluginInstance === 'undefined') {
+            log('正在实例化 AuthPlugin...', 'info');
+            window.authPluginInstance = new AuthPlugin();
+            log('✅ AuthPlugin 实例化完成', 'success');
+          } else {
+            log('✅ AuthPlugin 已实例化', 'success');
+          }
+
+          // 检查 window.adminAuth 是否存在
+          if (typeof adminAuth === 'undefined') {
+            throw new Error('adminAuth 全局对象未定义（AuthPlugin 实例化失败）');
+          }
+          log('✅ adminAuth 全局对象已定义', 'success');
+
+          // 检查 adminAuth 的方法
+          if (typeof adminAuth.init !== 'function') {
+            throw new Error('adminAuth.init 不是函数');
+          }
+          log('✅ adminAuth.init() 存在', 'success');
+
+          if (typeof adminAuth.login !== 'function') {
+            throw new Error('adminAuth.login 不是函数');
+          }
+          log('✅ adminAuth.login() 存在', 'success');
+
+          if (typeof adminAuth.logout !== 'function') {
+            throw new Error('adminAuth.logout 不是函数');
+          }
+          log('✅ adminAuth.logout() 存在', 'success');
+
+          showStatus('auth-status', '✅ 认证插件测试通过！adminAuth 对象可用。', 'success');
+          log('认证插件测试完成', 'success');
+        } catch (error) {
+          showStatus('auth-status', `❌ 认证插件测试失败: ${error.message}`, 'error');
+          log(`认证插件测试失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 步骤3: 测试登录
+      function testLogin() {
+        log('开始测试登录功能...', 'info');
+
+        try {
+          // 确保 adminAuth 可用
+          if (typeof adminAuth === 'undefined') {
+            throw new Error('adminAuth 未定义，请先完成步骤2');
+          }
+
+          // 模拟登录（需要先创建密码输入框）
+          const pwdInput = document.createElement('input');
+          pwdInput.id = 'authPassword';
+          pwdInput.type = 'password';
+          pwdInput.value = 'admin2026'; // 默认密码
+          document.body.appendChild(pwdInput);
+
+          // 创建错误显示元素
+          const errorEl = document.createElement('div');
+          errorEl.id = 'authError';
+          document.body.appendChild(errorEl);
+
+          // 调用登录
+          log('正在调用 adminAuth.login()...', 'info');
+          const result = adminAuth.login();
+
+          log(`登录结果: ${JSON.stringify(result)}`, 'info');
+
+          // 检查是否登录成功
+          const isAuthed = Adapter.storage.getSession('psy_admin_authed');
+          if (isAuthed === '1') {
+            showStatus('login-status', '✅ 登录测试通过！认证状态已设置。', 'success');
+            log('✅ 登录测试通过', 'success');
+          } else {
+            throw new Error('登录成功但认证状态未设置');
+          }
+
+          // 清理DOM
+          pwdInput.remove();
+          errorEl.remove();
+        } catch (error) {
+          showStatus('login-status', `❌ 登录测试失败: ${error.message}`, 'error');
+          log(`登录测试失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 步骤4: 清除会话
+      function clearSession() {
+        log('开始清除会话数据...', 'info');
+
+        try {
+          // 清除认证状态
+          Adapter.storage.removeSession('psy_admin_authed');
+          log('✅ 已清除 psy_admin_authed', 'success');
+
+          // 清除锁定信息
+          Adapter.storage.removeSession('psy_admin_lock');
+          log('✅ 已清除 psy_admin_lock', 'success');
+
+          // 验证清除
+          const isAuthed = Adapter.storage.getSession('psy_admin_authed');
+          if (isAuthed === null) {
+            showStatus('clear-status', '✅ 会话数据已清除！', 'success');
+            log('✅ 会话清除测试通过', 'success');
+          } else {
+            throw new Error('会话数据未完全清除');
+          }
+        } catch (error) {
+          showStatus('clear-status', `❌ 清除会话失败: ${error.message}`, 'error');
+          log(`清除会话失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 步骤5: 打开管理页面
+      function openAdminPage() {
+        log('正在打开管理页面...', 'info');
+        window.open('http://localhost:8081/mini-app-h5/backend/admin-legacy.html', '_blank');
+        showStatus('open-status', '✅ 管理页面已在新标签页中打开，请手动测试登录功能。', 'info');
+      }
+
+      // 页面加载完成后自动执行步骤1和步骤2
+      window.addEventListener('DOMContentLoaded', function () {
+        log('测试页面加载完成', 'info');
+        log('请按顺序执行测试步骤', 'info');
+      });
+    </script>
+  </body>
+</html>
