@@ -7,6 +7,63 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>星蓝心镜 · 后台管理</title>
+
+    <!-- 加载进度指示器 -->
+    <style>
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        transition: opacity 0.5s ease-out;
+      }
+      #loading-overlay.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #loading-text {
+        color: #fff;
+        margin-top: 20px;
+        font-size: 16px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      #loading-progress {
+        width: 200px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        margin-top: 15px;
+        overflow: hidden;
+      }
+      #loading-progress-bar {
+        width: 0%;
+        height: 100%;
+        background: #fff;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+    </style>
+
     <!-- ✅ 新增：引入插件系统核心模块（必须放在最前面） -->
     <script src="plugin-base.js?v=202606010950"></script>
     <script src="dual-adapter.js?v=202606010950"></script>
@@ -60,29 +117,57 @@
         console.log = console.debug = console.info = console.warn = function () {};
       }
     </script>
-    <!-- 本地开发模式：从 scales-data.json 加载量表数据 -->
+    <!-- 本地开发模式：从 scales-data.json 加载量表数据（异步加载，不阻塞页面） -->
     <script>
-      (function () {
-        try {
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', 'scales-data.json', false);
-          xhr.send(null);
+      window.__BUNDLED_SCALES__ = []; // 先初始化为空数组
+      window.__SCALES_DATA_PROMISE__ = new Promise(function (resolve) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'scales-data.json', true); // ✅ 改为异步加载
+        xhr.onload = function () {
           if (xhr.status === 200) {
-            window.__BUNDLED_SCALES__ = JSON.parse(xhr.responseText);
-            console.log('[Admin] 从 scales-data.json 加载了 ' + window.__BUNDLED_SCALES__.length + ' 个量表');
+            try {
+              window.__BUNDLED_SCALES__ = JSON.parse(xhr.responseText);
+              console.log('[Admin] 从 scales-data.json 加载了 ' + window.__BUNDLED_SCALES__.length + ' 个量表');
+            } catch (e) {
+              console.warn('[Admin] 解析 scales-data.json 失败: ' + e.message);
+              window.__BUNDLED_SCALES__ = [];
+            }
           } else {
             console.warn('[Admin] 加载 scales-data.json 失败（HTTP ' + xhr.status + '），使用空数组');
             window.__BUNDLED_SCALES__ = [];
           }
-        } catch (e) {
-          console.warn('[Admin] 加载 scales-data.json 异常: ' + e.message);
+          resolve(window.__BUNDLED_SCALES__);
+        };
+        xhr.onerror = function () {
+          console.warn('[Admin] 加载 scales-data.json 网络错误，使用空数组');
           window.__BUNDLED_SCALES__ = [];
-        }
-      })();
+          resolve([]);
+        };
+        xhr.send(null);
+      });
     </script>
-    <script src="shared-data.js?v=3"></script>
-    <script src="cloud-data.js"></script>
-    <script src="data-monitor.js"></script>
+    <script>
+      // 异步加载大型JS文件，不阻塞页面渲染
+      function loadScriptAsync(src, onLoad) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = onLoad || function () {};
+        script.onerror = function () {
+          console.warn('[Admin] 加载失败: ' + src);
+          if (onLoad) onLoad();
+        };
+        document.head.appendChild(script);
+      }
+
+      // 按依赖顺序异步加载
+      loadScriptAsync('shared-data.js?v=3', function () {
+        loadScriptAsync('cloud-data.js', function () {
+          loadScriptAsync('data-monitor.js', function () {
+            console.log('[Admin] 大型脚本异步加载完成');
+          });
+        });
+      });
+    </script>
     <script src="asset-storage.js?v=20260429d"></script>
     <script>
       // Polyfill：如果 asset-storage.js 版本过旧（tcb hosting deploy 有时不更新文件）
@@ -176,9 +261,17 @@
           };
       }
     </script>
-    <script src="scoring-engine.js?v=2"></script>
-    <!-- SheetJS库用于Excel文件处理 -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script>
+      // 异步加载非关键脚本，不阻塞页面渲染
+      loadScriptAsync('scoring-engine.js?v=2', function () {
+        console.log('[Admin] scoring-engine.js 加载完成');
+      });
+
+      // SheetJS 改为异步加载（CDN可能慢）
+      loadScriptAsync('https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js', function () {
+        console.log('[Admin] SheetJS CDN 加载完成');
+      });
+    </script>
 
     <!-- 页面初始化脚本 -->
     <script>
@@ -239,22 +332,55 @@
 
         // 切换到量表管理页面时，渲染量表类型 + 加载AI配置
         if (name === 'scales') {
-          // 延迟执行，确保页面完全加载
-          setTimeout(() => {
-            if (typeof renderScaleTypes === 'function') {
-              renderScaleTypes();
-            }
-            // AI接口配置表单在量表管理section内，切换时需恢复配置
-            if (typeof loadAiConfig === 'function') {
-              loadAiConfig();
-            }
-          }, 100);
+          // 确保 scale 插件已加载
+          const scalePlugin = PluginLoader.get('scale');
+          if (!scalePlugin) {
+            console.log('🔄 量表插件未加载，开始加载...');
+            PluginLoader.load('scale', false)
+              .then(() => {
+                console.log('✅ 量表插件加载完成');
+                // 加载完成后，加载AI配置（如果存在）
+                setTimeout(() => {
+                  if (typeof loadAiConfig === 'function') {
+                    loadAiConfig();
+                  }
+                }, 100);
+              })
+              .catch((error) => {
+                console.error('❌ 加载量表插件失败:', error);
+                if (Adapter && Adapter.ui && Adapter.ui.toast) {
+                  Adapter.ui.toast('加载量表插件失败，请刷新页面', 'error');
+                } else {
+                  alert('加载量表插件失败，请刷新页面');
+                }
+              });
+          } else {
+            // 插件已加载，直接渲染
+            setTimeout(() => {
+              if (typeof renderScaleTypes === 'function') {
+                renderScaleTypes();
+              }
+              // 加载AI配置
+              if (typeof loadAiConfig === 'function') {
+                loadAiConfig();
+              }
+            }, 100);
+          }
         }
-        // 切换到NPC场景配置时，渲染素材
+        // 切换到NPC场景配置时，渲染素材 + 触发NPC插件list action
         if (name === 'npcScene') {
-          setTimeout(() => {
+          setTimeout(async () => {
             if (typeof renderNpcConfig === 'function') {
               renderNpcConfig();
+            }
+            // 🆕 按需加载NPC插件
+            await PluginLoader.load('npc', false);
+
+            // 触发NPC插件的list action
+            const npcPlugin = PluginLoader.get('npc');
+            if (npcPlugin) {
+              console.log('🎯 切换到NPC配置页面，触发NPC插件list action');
+              await npcPlugin.execute({ action: 'list' });
             }
           }, 100);
         }
@@ -267,20 +393,32 @@
             }
           }, 100);
         }
-        // 切换到计分规则管理时，渲染量表列表
+        // 切换到计分规则管理时，渲染量表列表 + 触发Scoring插件list action
         if (name === 'scoring') {
-          setTimeout(() => {
+          setTimeout(async () => {
             if (typeof renderScoringScaleList === 'function') {
               renderScoringScaleList();
+            }
+            // 🆕 按需加载Scoring插件
+            await PluginLoader.load('scoring', false);
+
+            // 触发Scoring插件的list action
+            const scoringPlugin = PluginLoader.get('scoring');
+            if (scoringPlugin) {
+              console.log('🎯 切换到计分规则页面，触发Scoring插件list action');
+              await scoringPlugin.execute({ action: 'list' });
             }
           }, 100);
         }
         // 切换到 AI 配置页面时，初始化配置表单 (P1-1) - 插件方式
         if (name === 'aiConfig') {
-          setTimeout(() => {
+          setTimeout(async () => {
+            // 🆕 按需加载AI插件
+            await PluginLoader.load('ai', false);
+
             const aiPlugin = PluginLoader.get('ai');
             if (aiPlugin && typeof aiPlugin.onExecute === 'function') {
-              aiPlugin.onExecute({ action: 'loadConfig' });
+              await aiPlugin.onExecute({ action: 'loadConfig' });
             }
           }, 100);
         }
@@ -3958,12 +4096,39 @@
     <!-- 暂时注释掉旧代码，保留以备回退
     <script src="admin-ai-config.js?v=1"></script>
     -->
-    <!-- 运维手册数据模块 (P1-2) -->
-    <script src="ops-manual-data.js?v=1"></script>
-    <!-- 量表编辑分步向导模块 (P1-4) -->
-    <script src="admin-scale-wizard.js?v=1"></script>
+    <!-- 运维手册数据模块 (P1-2) 和 量表编辑分步向导模块 (P1-4) -->
+    <!-- 改为异步加载，等待 shared-data.js 加载完成后执行 -->
+    <script>
+      // 等待大型脚本加载完成后再加载依赖脚本
+      function loadDependentScripts() {
+        if (typeof SharedData !== 'undefined') {
+          // shared-data.js 已加载，可以加载依赖它的脚本
+          loadScriptAsync('ops-manual-data.js?v=1', function () {
+            loadScriptAsync('admin-scale-wizard.js?v=1', function () {
+              console.log('[Admin] 依赖脚本加载完成');
+            });
+          });
+        } else {
+          // 等待 100ms 后重试
+          setTimeout(loadDependentScripts, 100);
+        }
+      }
+
+      // 在 shared-data.js 加载完成后调用
+      const originalOnLoad = loadScriptAsync.toString();
+      setTimeout(loadDependentScripts, 3000); // 3秒后尝试加载（此时 shared-data.js 应该已加载完成）
+    </script>
   </head>
   <body>
+    <!-- 加载进度指示器 -->
+    <div id="loading-overlay">
+      <div id="loading-spinner"></div>
+      <div id="loading-text">正在加载...</div>
+      <div id="loading-progress">
+        <div id="loading-progress-bar"></div>
+      </div>
+    </div>
+
     <!-- ========== 登录认证遮罩 ========== -->
     <div class="auth-overlay" id="authOverlay">
       <div class="auth-card">
@@ -19647,7 +19812,8 @@
       function switchNpcTab(tabId) {
         // 切换按钮样式
         document.querySelectorAll('.npc-tab-btn').forEach(function (btn) {
-          btn.classList.toggle('active', btn.getAttribute('onclick').indexOf(tabId) !== -1);
+          const onclickAttr = btn.getAttribute('onclick') || '';
+          btn.classList.toggle('active', onclickAttr.indexOf(tabId) !== -1);
         });
         // 切换面板
         document.querySelectorAll('.npc-tab-panel').forEach(function (panel) {
@@ -25300,19 +25466,63 @@
     <!-- 事件委托优化模块 (P3-9) - 必须在页面脚本之后加载 -->
     <script src="admin-event-delegation.js?v=3"></script>
 
-    <!-- ✅ 新增：插件系统初始化 -->
+    <!-- ✅ 新增：插件系统初始化（优化：按需加载，加快首屏速度） -->
     <script>
+      // 加载进度管理器
+      window.LoadingManager = {
+        overlay: null,
+        text: null,
+        progressBar: null,
+        currentStep: 0,
+        totalSteps: 4,
+
+        init() {
+          this.overlay = document.getElementById('loading-overlay');
+          this.text = document.getElementById('loading-text');
+          this.progressBar = document.getElementById('loading-progress-bar');
+        },
+
+        update(step, message) {
+          this.currentStep = step;
+          const percent = Math.min((step / this.totalSteps) * 100, 100);
+          if (this.progressBar) {
+            this.progressBar.style.width = percent + '%';
+          }
+          if (this.text && message) {
+            this.text.textContent = message;
+          }
+        },
+
+        hide() {
+          if (this.overlay) {
+            this.overlay.classList.add('fade-out');
+            setTimeout(() => {
+              this.overlay.style.display = 'none';
+            }, 500);
+          }
+        }
+      };
+
       document.addEventListener('DOMContentLoaded', async function () {
+        // 初始化加载管理器
+        window.LoadingManager.init();
+        window.LoadingManager.update(0, '正在初始化...');
+
         console.log('🚀 开始初始化插件系统...');
 
         try {
-          // 1. 预加载核心插件
+          // 1. 只预加载 auth 插件（认证必需）
+          window.LoadingManager.update(1, '正在加载认证模块...');
+
+          // 其他插件（ai, scale, scoring, npc）改为按需加载
           await PluginLoader.init();
 
           console.log('✅ 插件系统初始化完成');
-          console.log('   已加载插件:', Object.keys(PluginLoader.plugins).join(', '));
+          console.log('   已加载插件:', Object.keys(PluginLoader.plugins).join(', ') || '（无，等待按需加载）');
 
           // 2. 插件加载完成后，执行认证检查
+          window.LoadingManager.update(2, '正在检查认证...');
+
           if (typeof adminAuth !== 'undefined' && adminAuth.init) {
             console.log('🔐 开始认证检查...');
             adminAuth.init();
@@ -25321,15 +25531,44 @@
             // 改造：使用 Adapter.storage.getSession() 替代 sessionStorage.getItem()
             if (Adapter.storage.getSession('psy_admin_authed') === '1') {
               window._adminInitialized = true;
+              window.LoadingManager.update(3, '正在加载页面...');
               switchSection('dashboard');
+
+              // 4. 隐藏加载指示器
+              setTimeout(() => {
+                window.LoadingManager.update(4, '加载完成！');
+                window.LoadingManager.hide();
+              }, 500);
+
+              // 5. 后台预加载其他常用插件（不阻塞页面）
+              setTimeout(() => {
+                console.log('🔄 后台预加载常用插件...');
+                PluginLoader.load('ai', true).catch(() => {});
+                PluginLoader.load('scale', true).catch(() => {});
+              }, 2000); // 2秒后预加载
+            } else {
+              // 未认证，隐藏加载指示器，显示登录界面
+              window.LoadingManager.hide();
             }
           } else {
             console.error('❌ adminAuth 未定义，无法执行认证检查');
+            window.LoadingManager.hide();
           }
         } catch (error) {
           console.error('❌ 插件系统初始化失败:', error);
+          window.LoadingManager.update(0, '加载失败，请刷新页面');
+          setTimeout(() => window.LoadingManager.hide(), 3000);
         }
       });
+
+      // 插件按需加载辅助函数（在切换页面时调用）
+      window.ensurePlugin = async function (pluginName) {
+        if (PluginLoader.plugins[pluginName]) {
+          return PluginLoader.plugins[pluginName];
+        }
+        console.log(`🔄 按需加载插件: ${pluginName}`);
+        return await PluginLoader.load(pluginName, true);
+      };
     </script>
   </body>
 </html>
