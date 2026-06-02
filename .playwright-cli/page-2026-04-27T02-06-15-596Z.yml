@@ -1,9 +1,0 @@
-- generic [ref=e3]:
-  - generic [ref=e4]: 🧠
-  - generic [ref=e5]: 知我心灵测评
-  - generic [ref=e6]: 后台管理系统 · 请验证管理员身份
-  - textbox "请输入管理员密码" [active] [ref=e8]
-  - button "登 录" [ref=e9] [cursor=pointer]
-  - generic [ref=e11]:
-    - text: 密码错误超过 5 次将锁定 5 分钟
-    - text: 关闭浏览器后需重新登录

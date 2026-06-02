@@ -1,0 +1,18 @@
+# 构建产物
+deploy/
+
+# 依赖
+node_modules/
+
+# 备份文件
+*.bak*
+*.bak.*
+
+# 巨型数据文件（无需格式化）
+shared-data.js
+
+# 设计原型/草稿文件（Prettier HTML 解析器已知限制）
+scale-publish-dialog-final-v2.html
+mini-app-h5/design/feedback-tag-redesign.html
+mini-app-h5-redesign/design/feedback-tag-redesign.html
+mini-app-h5-redesign/backend/scale-onboard.html
