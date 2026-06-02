@@ -35,3 +35,6 @@ test-screenshots/
 *.tmp
 *.log
 .playwright-cli/
+
+# CodeBuddy 工作目录
+.codebuddy/
