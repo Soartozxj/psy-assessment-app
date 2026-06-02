@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skills架构 - 完整示例</title>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h1 {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+      }
+
+      .header p {
+        margin: 0;
+        opacity: 0.9;
+      }
+
+      .section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .section h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-warning {
+        background: #ffc107;
+        color: #333;
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .log-container {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 15px;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 15px;
+      }
+
+      .log-line {
+        margin: 5px 0;
+        line-height: 1.5;
+      }
+
+      .log-line.success {
+        color: #4ec9b0;
+      }
+      .log-line.error {
+        color: #f48771;
+      }
+      .log-line.warning {
+        color: #dcdcaa;
+      }
+      .log-line.info {
+        color: #9cdcfe;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+      }
+
+      .status-badge.loaded {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-badge.unloaded {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .plugin-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        background: #fafafa;
+      }
+
+      .plugin-card h3 {
+        margin-top: 0;
+        color: #667eea;
+      }
+
+      .plugin-info {
+        font-size: 13px;
+        color: #666;
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 头部 -->
+    <div class="header">
+      <h1>🏗️ Skills架构 - 完整示例</h1>
+      <p>这是一个完整可运行的示例，演示如何使用新的插件化架构</p>
+    </div>
+
+    <!-- 第1部分：初始化 -->
+    <div class="section">
+      <h2>🚀 第1步：初始化插件系统</h2>
+      <p>点击按钮初始化插件系统，预加载核心插件。</p>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="initPluginSystem()">🚀 初始化插件系统</button>
+
+        <button class="btn-warning" onclick="clearLog()">🗑️ 清空日志</button>
+      </div>
+
+      <div id="init-status"></div>
+    </div>
+
+    <!-- 第2部分：插件管理 -->
+    <div class="section">
+      <h2>📦 第2步：插件管理</h2>
+      <p>查看已加载的插件，或手动加载/卸载插件。</p>
+
+      <div class="button-group">
+        <button class="btn-info" onclick="showLoadedPlugins()">📋 查看已加载插件</button>
+
+        <button class="btn-success" onclick="loadAIPlugin()">📦 加载AI插件</button>
+
+        <button class="btn-danger" onclick="unloadAIPlugin()">🗑️ 卸载AI插件</button>
+      </div>
+
+      <div id="plugins-list"></div>
+    </div>
+
+    <!-- 第3部分：AI调用示例 -->
+    <div class="section">
+      <h2>🤖 第3步：AI调用示例</h2>
+      <p>演示如何使用AI插件调用DashScope/DeepSeek。</p>
+
+      <div style="margin: 15px 0">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600"> AI提供商： </label>
+        <select id="ai-provider" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd; width: 200px">
+          <option value="dashscope">DashScope (阿里云)</option>
+          <option value="deepseek">DeepSeek (深度求索)</option>
+        </select>
+      </div>
+
+      <div style="margin: 15px 0">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600"> 提示词： </label>
+        <textarea
+          id="ai-prompt"
+          rows="4"
+          style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd"
+          placeholder="输入提示词，比如：生成一个焦虑自评量表"
+        >
+生成一个包含10个题目的心理评估量表，用于评估焦虑水平</textarea
+        >
+      </div>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="callAI()">🤖 调用AI</button>
+
+        <button class="btn-info" onclick="testAIConnection()">🔌 测试连接</button>
+      </div>
+
+      <div id="ai-result" style="margin-top: 15px"></div>
+    </div>
+
+    <!-- 第4部分：事件通信示例 -->
+    <div class="section">
+      <h2>📡 第4步：事件通信示例</h2>
+      <p>演示插件之间如何通过EventHub进行通信。</p>
+
+      <div class="button-group">
+        <button class="btn-success" onclick="subscribeTestEvent()">📡 订阅测试事件</button>
+
+        <button class="btn-warning" onclick="emitTestEvent()">📢 触发测试事件</button>
+
+        <button class="btn-danger" onclick="unsubscribeTestEvent()">🗑️ 取消订阅</button>
+      </div>
+
+      <div id="event-log"></div>
+    </div>
+
+    <!-- 第5部分：双端适配示例 -->
+    <div class="section">
+      <h2>🌐 第5步：双端适配示例</h2>
+      <p>演示如何使用DualAdapter屏蔽H5和小程序差异。</p>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="testStorage()">💾 测试数据存储</button>
+
+        <button class="btn-info" onclick="testHttp()">🌐 测试网络请求</button>
+
+        <button class="btn-success" onclick="testUI()">🎨 测试UI弹窗</button>
+      </div>
+
+      <div id="adapter-result"></div>
+    </div>
+
+    <!-- 日志区域 -->
+    <div class="section">
+      <h2>📝 运行日志</h2>
+      <div class="log-container" id="log-container"></div>
+    </div>
+
+    <!-- 引入核心模块 -->
+    <script src="plugin-base.js?v=1"></script>
+    <script src="dual-adapter.js?v=1"></script>
+    <script src="event-hub.js?v=1"></script>
+    <script src="plugin-loader.js?v=1"></script>
+
+    <!-- 主逻辑 -->
+    <script>
+      // ====================================================
+      // 工具函数
+      // ====================================================
+
+      /**
+       * 添加日志
+       */
+      function addLog(message, type = 'info') {
+        const container = document.getElementById('log-container');
+        const line = document.createElement('div');
+        line.className = `log-line ${type}`;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        container.appendChild(line);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      /**
+       * 清空日志
+       */
+      function clearLog() {
+        document.getElementById('log-container').innerHTML = '';
+        addLog('日志已清空', 'info');
+      }
+
+      /**
+       * 显示结果
+       */
+      function showResult(elementId, content, isError = false) {
+        const el = document.getElementById(elementId);
+        el.innerHTML = `
+        <div style="background: ${isError ? '#f8d7da' : '#d4edda'}; 
+                     padding: 15px; 
+                     border-radius: 6px; 
+                     margin-top: 10px;">
+          <pre style="margin: 0; white-space: pre-wrap; font-size: 13px;">${content}</pre>
+        </div>
+      `;
+      }
+
+      // ====================================================
+      // 第1步：初始化插件系统
+      // ====================================================
+
+      async function initPluginSystem() {
+        addLog('开始初始化插件系统...', 'info');
+
+        try {
+          // 初始化插件加载器
+          await PluginLoader.init();
+
+          addLog('✅ 插件系统初始化成功', 'success');
+
+          // 显示状态
+          const pluginsInfo = PluginLoader.getPluginsInfo();
+          let html = '<h3>已加载插件：</h3>';
+          pluginsInfo.forEach((p) => {
+            html += `
+            <div class="plugin-card">
+              <h3>${p.displayName} <span class="status-badge loaded">已加载</span></h3>
+              <div class="plugin-info">版本：${p.version}</div>
+              <div class="plugin-info">描述：${p.description}</div>
+            </div>
+          `;
+          });
+
+          document.getElementById('init-status').innerHTML = html;
+          addLog(`已加载 ${pluginsInfo.length} 个插件`, 'success');
+        } catch (error) {
+          addLog(`❌ 初始化失败：${error.message}`, 'error');
+        }
+      }
+
+      // ====================================================
+      // 第2步：插件管理
+      // ====================================================
+
+      function showLoadedPlugins() {
+        addLog('查看已加载插件...', 'info');
+
+        const pluginsInfo = PluginLoader.getPluginsInfo();
+
+        if (pluginsInfo.length === 0) {
+          document.getElementById('plugins-list').innerHTML = '<p>暂无已加载的插件，请先初始化插件系统。</p>';
+          return;
+        }
+
+        let html = '';
+        pluginsInfo.forEach((p) => {
+          html += `
+          <div class="plugin-card">
+            <h3>${p.displayName}</h3>
+            <div class="plugin-info">名称：${p.name}</div>
+            <div class="plugin-info">版本：${p.version}</div>
+            <div class="plugin-info">描述：${p.description}</div>
+            <div class="plugin-info">状态：${p.isInitialized ? '✅ 已初始化' : '⚠️ 未初始化'}</div>
+          </div>
+        `;
+        });
+
+        document.getElementById('plugins-list').innerHTML = html;
+        addLog(`显示 ${pluginsInfo.length} 个已加载插件`, 'info');
+      }
+
+      async function loadAIPlugin() {
+        addLog('开始加载AI插件...', 'info');
+
+        try {
+          const plugin = await PluginLoader.load('ai', false);
+
+          if (plugin) {
+            addLog('✅ AI插件加载成功', 'success');
+            showLoadedPlugins();
+          } else {
+            addLog('⚠️ AI插件加载失败（静默模式）', 'warning');
+          }
+        } catch (error) {
+          addLog(`❌ 加载失败：${error.message}`, 'error');
+        }
+      }
+
+      function unloadAIPlugin() {
+        addLog('开始卸载AI插件...', 'info');
+
+        PluginLoader.unload('ai');
+        addLog('✅ AI插件已卸载', 'success');
+
+        showLoadedPlugins();
+      }
+
+      // ====================================================
+      // 第3步：AI调用示例
+      // ====================================================
+
+      async function callAI() {
+        const provider = document.getElementById('ai-provider').value;
+        const prompt = document.getElementById('ai-prompt').value;
+
+        if (!prompt) {
+          addLog('❌ 提示词不能为空', 'error');
+          return;
+        }
+
+        addLog(`开始调用 ${provider} AI...`, 'info');
+
+        try {
+          const result = await PluginLoader.execute('ai', {
+            prompt: prompt,
+            provider: provider
+          });
+
+          addLog('✅ AI调用成功', 'success');
+          showResult('ai-result', result);
+        } catch (error) {
+          addLog(`❌ AI调用失败：${error.message}`, 'error');
+          showResult('ai-result', error.message, true);
+        }
+      }
+
+      async function testAIConnection() {
+        addLog('开始测试AI连接...', 'info');
+
+        try {
+          const plugin = PluginLoader.get('ai');
+
+          if (!plugin) {
+            await PluginLoader.load('ai', false);
+          }
+
+          const isConnected = await plugin.testConnection();
+
+          if (isConnected) {
+            addLog('✅ AI连接测试成功', 'success');
+            showResult('ai-result', 'AI连接测试成功！');
+          } else {
+            addLog('❌ AI连接测试失败', 'error');
+            showResult('ai-result', 'AI连接测试失败，请检查配置', true);
+          }
+        } catch (error) {
+          addLog(`❌ 测试异常：${error.message}`, 'error');
+          showResult('ai-result', error.message, true);
+        }
+      }
+
+      // ====================================================
+      // 第4步：事件通信示例
+      // ====================================================
+
+      let testEventListener = null;
+
+      function subscribeTestEvent() {
+        addLog('订阅测试事件...', 'info');
+
+        // 订阅事件
+        testEventListener = EventHub.on('test-event', (data) => {
+          addLog(`📡 收到事件：test-event，数据：${JSON.stringify(data)}`, 'info');
+
+          const el = document.getElementById('event-log');
+          el.innerHTML += `<div class="log-line info">[${new Date().toLocaleTimeString()}] 收到事件：${JSON.stringify(data)}</div>`;
+        });
+
+        addLog('✅ 已订阅测试事件', 'success');
+      }
+
+      function emitTestEvent() {
+        addLog('触发测试事件...', 'info');
+
+        EventHub.emit('test-event', {
+          message: 'Hello from EventHub!',
+          timestamp: new Date().toISOString()
+        });
+
+        addLog('✅ 已触发测试事件', 'success');
+      }
+
+      function unsubscribeTestEvent() {
+        addLog('取消订阅测试事件...', 'info');
+
+        if (testEventListener) {
+          testEventListener(); // 调用返回的取消订阅函数
+          testEventListener = null;
+          addLog('✅ 已取消订阅', 'success');
+        } else {
+          addLog('⚠️ 没有订阅中的事件监听器', 'warning');
+        }
+      }
+
+      // ====================================================
+      // 第5步：双端适配示例
+      // ====================================================
+
+      function testStorage() {
+        addLog('测试数据存储...', 'info');
+
+        try {
+          // 写入数据
+          Adapter.storage.set('test_key', {
+            message: 'Hello from DualAdapter!',
+            timestamp: Date.now()
+          });
+
+          addLog('✅ 数据写入成功', 'success');
+
+          // 读取数据
+          const data = Adapter.storage.get('test_key');
+
+          if (data) {
+            addLog('✅ 数据读取成功', 'success');
+            showResult(
+              'adapter-result',
+              `存储测试成功！\n\n写入数据：\n${JSON.stringify({ message: 'Hello from DualAdapter!', timestamp: Date.now() }, null, 2)}\n\n读取数据：\n${JSON.stringify(data, null, 2)}`
+            );
+          } else {
+            addLog('❌ 数据读取失败', 'error');
+            showResult('adapter-result', '数据读取失败', true);
+          }
+        } catch (error) {
+          addLog(`❌ 存储测试异常：${error.message}`, 'error');
+          showResult('adapter-result', error.message, true);
+        }
+      }
+
+      async function testHttp() {
+        addLog('测试网络请求...', 'info');
+
+        try {
+          const result = await Adapter.http.get('https://httpbin.org/get', {
+            test: 'hello'
+          });
+
+          addLog('✅ 网络请求成功', 'success');
+          showResult('adapter-result', `网络请求测试成功！\n\n响应数据：\n${JSON.stringify(result, null, 2)}`);
+        } catch (error) {
+          addLog(`❌ 网络请求失败：${error.message}`, 'error');
+          showResult('adapter-result', error.message, true);
+        }
+      }
+
+      function testUI() {
+        addLog('测试UI弹窗...', 'info');
+
+        // 使用Adapter的UI适配器
+        Adapter.ui.alert('这是一个测试弹窗！\n\n当前平台：' + Adapter.platform);
+
+        addLog('✅ UI弹窗已显示', 'success');
+        showResult(
+          'adapter-result',
+          `UI弹窗测试成功！\n\n当前平台：${Adapter.platform}\n\n如果是H5端，会显示浏览器alert；如果是小程序端，会显示wx.showModal。`
+        );
+      }
+
+      // ====================================================
+      // 页面加载完成后初始化
+      // ====================================================
+
+      document.addEventListener('DOMContentLoaded', function () {
+        addLog('页面加载完成', 'info');
+        addLog('当前平台：' + (window.Adapter ? Adapter.platform : '未知'), 'info');
+        addLog('可以点击"初始化插件系统"按钮开始测试', 'info');
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+<view class="share-canvas-wrap">
+  <canvas
+    id="shareCanvas"
+    type="2d"
+    class="share-canvas"
+    style="width:600rpx;height:480rpx;"
+  ></canvas>
+</view>

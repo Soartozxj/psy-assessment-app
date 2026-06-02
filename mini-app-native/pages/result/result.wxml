@@ -1,0 +1,92 @@
+<view class="page-result">
+  <!-- NPC 场景背景 -->
+  <npc-scene
+    scene="full"
+    background="{{backgroundImage}}"
+    counselorImage="{{counselorImage}}"
+    counselorName="{{npcSettings.counselorName}}"
+    sceneOpacity="0.3"
+  />
+
+  <!-- 结果头部（对齐H5: sticky紫色渐变+装饰圆） -->
+  <view class="result-header" style="background:linear-gradient(135deg, {{sColor}} 0%, {{sColor}}aa 100%);">
+    <view class="header-deco-circle"></view>
+    <view class="result-compact">
+      <text class="result-compact-icon">{{emoji}}</text>
+      <text class="result-compact-label">测评：</text>
+      <text class="result-compact-name">{{scaleName}}</text>
+    </view>
+  </view>
+
+  <!-- 结果内容卡片（对齐H5: 暖色半透明） -->
+  <view class="result-content">
+    <!-- 分数环 + 等级（showTotalScore=false 时隐藏） -->
+    <view class="card score-card" wx:if="{{showTotalScore}}">
+      <view class="score-section">
+        <score-ring
+          score="{{totalScore}}"
+          maxScore="{{totalMaxScore}}"
+          color="{{sColor}}"
+          size="200"
+          levelLabel="{{levelName}}"
+        />
+        <view class="level-badge" style="background:{{sColor}}" wx:if="{{levelName}}">
+          <text>{{levelName}}</text>
+        </view>
+        <view class="interp-text" wx:if="{{levelText}}">
+          <text>{{levelText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 维度分析 -->
+    <view class="card" wx:if="{{dims.length > 0}}">
+      <view class="section-divider"></view>
+      <text class="dims-title">维度分析</text>
+      <view class="dim-list">
+        <dim-bar
+          wx:for="{{dims}}"
+          wx:key="key"
+          label="{{item.name}}"
+          score="{{item.score}}"
+          maxScore="{{item.max}}"
+          levelLabel="{{item.levelLabel}}"
+          color="{{item.color}}"
+          detail="{{item.levelText}}"
+          expandable="{{!!item.hasInterp}}"
+        />
+      </view>
+    </view>
+
+    <!-- 筛查结果 -->
+    <view class="card" wx:if="{{hasScreening}}">
+      <view class="section-divider"></view>
+      <text class="dims-title">筛查结果</text>
+      <view class="screening-card {{isScreeningPositive ? 'positive' : 'negative'}}">
+        <text class="screening-icon">{{isScreeningPositive ? '⚠️' : '✅'}}</text>
+        <text class="screening-label">{{screeningResult.result}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏（fixed，z-index:100，不会被内容遮挡） -->
+  <view class="bottom-actions">
+    <view class="action-btn retake" bindtap="onRetake">
+      <text>重新测评</text>
+    </view>
+    <view class="action-btn history" bindtap="onViewHistory">
+      <text>历史记录</text>
+    </view>
+    <view class="action-btn ai-action" bindtap="onAiDiag">
+      <text class="ai-action-icon">🤖</text>
+      <text>AI解读</text>
+    </view>
+    <view class="action-btn feedback-action" bindtap="onFeedback">
+      <text class="fb-action-icon">📝</text>
+      <text>评价</text>
+    </view>
+    <button class="action-btn share" open-type="share">
+      <text>分享</text>
+    </button>
+  </view>
+</view>

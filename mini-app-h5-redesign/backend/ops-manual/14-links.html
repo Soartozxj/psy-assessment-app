@@ -1,0 +1,72 @@
+<h2>附录 A：关键链接速查</h2>
+<table>
+  <tr>
+    <th>名称</th>
+    <th>URL</th>
+  </tr>
+  <tr>
+    <td>微信公众平台</td>
+    <td><a href="https://mp.weixin.qq.com" target="_blank">mp.weixin.qq.com</a></td>
+  </tr>
+  <tr>
+    <td>微信开发者工具</td>
+    <td>
+      <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html" target="_blank">下载地址</a>
+    </td>
+  </tr>
+  <tr>
+    <td>微信云开发控制台</td>
+    <td>公众平台 → 开发管理 → 云开发</td>
+  </tr>
+  <tr>
+    <td>腾讯云轻量服务器</td>
+    <td><a href="https://console.cloud.tencent.com/lighthouse" target="_blank">控制台</a></td>
+  </tr>
+  <tr>
+    <td>阿里云域名管理</td>
+    <td><a href="https://dc.console.aliyun.com" target="_blank">控制台</a></td>
+  </tr>
+  <tr>
+    <td>DashScope 控制台</td>
+    <td><a href="https://dashscope.console.aliyun.com" target="_blank">控制台</a></td>
+  </tr>
+  <tr>
+    <td>宝塔面板</td>
+    <td><code>http://101.43.43.125:8888/tencentcloud</code></td>
+  </tr>
+  <tr>
+    <td>H5 前端</td>
+    <td><a href="https://rich.soarto.com.cn/index.html" target="_blank">rich.soarto.com.cn</a></td>
+  </tr>
+  <tr>
+    <td>H5 后台</td>
+    <td><a href="https://rich.soarto.com.cn/admin-legacy.html" target="_blank">rich.soarto.com.cn/admin</a></td>
+  </tr>
+  <tr>
+    <td>API 健康检查</td>
+    <td><a href="https://identity.soarto.com.cn" target="_blank">identity.soarto.com.cn</a></td>
+  </tr>
+</table>
+<h2>附录 B：项目文件结构</h2>
+<pre>
+项目根目录/
+├── build-deploy.py          # 构建部署脚本
+├── scales-data.json         # 量表数据（后台导出）
+├── ai-config.json           # AI 接口配置
+├── scale-types.json         # 量表类型配置
+├── deploy/                  # 构建输出目录
+│   ├── index.html           # 前端页面
+│   ├── admin-legacy.html    # 后台管理
+│   ├── shared-data.js       # 共享数据模块
+│   ├── scoring-engine.js    # 计分引擎
+│   ├── cloud-data.js        # 云端数据适配
+│   ├── cloud-api.js         # API 通信模块
+│   ├── asset-storage.js     # 资源存储
+│   ├── data-monitor.js      # 数据监控
+│   ├── counselor.png        # 咨询师立绘
+│   ├── fQJW4aYeSL.txt       # 域名校验文件
+│   └── manifest.json         # 构建清单
+├── mini-app-h5/             # H5 源码
+├── cloudbase-run/           # 云托管 API 服务源码
+└── wechat-miniprogram/      # 微信小程序源码</pre
+>

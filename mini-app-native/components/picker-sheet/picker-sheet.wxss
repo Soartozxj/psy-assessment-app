@@ -1,0 +1,68 @@
+.picker-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.picker-sheet {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  width: 100%;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.picker-sheet.show {
+  transform: translateY(0);
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 32rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.sheet-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.sheet-cancel text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.sheet-body {
+  max-height: 60vh;
+}
+
+.sheet-option {
+  padding: 28rpx 32rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.sheet-option-active {
+  background: #f5f5f5;
+}
+
+.sheet-option-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.sheet-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

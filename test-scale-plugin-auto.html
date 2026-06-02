@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>量表插件自动化测试 - scale-plugin.js v1.0.0</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f5f7fa;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #1a202c;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        color: #718096;
+        margin-bottom: 30px;
+      }
+
+      .test-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .test-section h2 {
+        color: #2d3748;
+        margin-bottom: 16px;
+        font-size: 18px;
+      }
+
+      .test-grid {
+        display: grid;
+        gap: 12px;
+      }
+      .test-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        background: #f7fafc;
+        border-radius: 8px;
+        border-left: 4px solid #cbd5e0;
+      }
+      .test-item.pass {
+        border-left-color: #48bb78;
+        background: #f0fff4;
+      }
+      .test-item.fail {
+        border-left-color: #f56565;
+        background: #fff5f5;
+      }
+      .test-item.running {
+        border-left-color: #4299e1;
+        background: #ebf8ff;
+      }
+
+      .test-status {
+        font-size: 20px;
+        margin-right: 12px;
+      }
+      .test-info {
+        flex: 1;
+      }
+      .test-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 4px;
+      }
+      .test-detail {
+        font-size: 13px;
+        color: #718096;
+      }
+      .test-result {
+        font-size: 12px;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+      .test-result.pass {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+      .test-result.fail {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+      .test-result.pending {
+        background: #e2e8f0;
+        color: #2d3748;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: #4299e1;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #3182ce;
+      }
+      .btn-success {
+        background: #48bb78;
+        color: white;
+      }
+      .btn-success:hover {
+        background: #38a169;
+      }
+
+      .progress-bar {
+        background: #e2e8f0;
+        border-radius: 8px;
+        height: 24px;
+        margin: 20px 0;
+        overflow: hidden;
+      }
+      .progress-fill {
+        background: linear-gradient(90deg, #4299e1, #48bb78);
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+      }
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .stat-number {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: #718096;
+      }
+      .stat-card.pass .stat-number {
+        color: #48bb78;
+      }
+      .stat-card.fail .stat-number {
+        color: #f56565;
+      }
+      .stat-card.pending .stat-number {
+        color: #4299e1;
+      }
+
+      .log {
+        background: #1a202c;
+        color: #a0aec0;
+        padding: 16px;
+        border-radius: 8px;
+        font-family: 'Monaco', 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 20px;
+      }
+      .log-entry {
+        margin-bottom: 4px;
+      }
+      .log-time {
+        color: #4299e1;
+      }
+      .log-success {
+        color: #48bb78;
+      }
+      .log-error {
+        color: #f56565;
+      }
+      .log-info {
+        color: #a0aec0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 量表插件自动化测试</h1>
+      <p class="subtitle">测试 scale-plugin.js v1.0.0 的所有功能</p>
+
+      <div style="display: flex; gap: 12px; margin-bottom: 20px">
+        <button class="btn btn-primary" onclick="runAllTests()">🚀 运行所有测试</button>
+        <button class="btn btn-success" onclick="exportTestReport()">📊 导出测试报告</button>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card pass">
+          <div class="stat-number" id="stat-pass">0</div>
+          <div class="stat-label">通过</div>
+        </div>
+        <div class="stat-card fail">
+          <div class="stat-number" id="stat-fail">0</div>
+          <div class="stat-label">失败</div>
+        </div>
+        <div class="stat-card pending">
+          <div class="stat-number" id="stat-pending">28</div>
+          <div class="stat-label">待测试</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-total">28</div>
+          <div class="stat-label">总计</div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>📦 1. 插件加载测试</h2>
+        <div class="test-grid" id="tests-load"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>⚙️ 2. 核心功能测试</h2>
+        <div class="test-grid" id="tests-core"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>🔄 3. 向后兼容性测试</h2>
+        <div class="test-grid" id="tests-compat"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>🔌 4. 插件标准接口测试</h2>
+        <div class="test-grid" id="tests-interface"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>📡 5. 事件通信测试</h2>
+        <div class="test-grid" id="tests-events"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>💾 6. 存储同步测试</h2>
+        <div class="test-grid" id="tests-storage"></div>
+      </div>
+
+      <div class="log" id="test-log"></div>
+    </div>
+
+    <script src="mini-app-h5/backend/plugins/plugin-base.js"></script>
+    <script src="mini-app-h5/backend/plugins/dual-adapter.js"></script>
+    <script src="mini-app-h5/backend/plugins/event-hub.js"></script>
+    <script src="mini-app-h5/backend/plugins/core/scale-plugin.js"></script>
+
+    <script>
+      // 测试数据
+      const testResults = {
+        pass: 0,
+        fail: 0,
+        pending: 28,
+        total: 28
+      };
+
+      // 日志函数
+      function log(message, type = 'info') {
+        const logEl = document.getElementById('test-log');
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${message}</span>`;
+        logEl.appendChild(entry);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      // 更新统计
+      function updateStats() {
+        document.getElementById('stat-pass').textContent = testResults.pass;
+        document.getElementById('stat-fail').textContent = testResults.fail;
+        document.getElementById('stat-pending').textContent = testResults.pending;
+
+        const progress = Math.round(((testResults.pass + testResults.fail) / testResults.total) * 100);
+        const progressFill = document.getElementById('progress-fill');
+        progressFill.style.width = progress + '%';
+        progressFill.textContent = progress + '%';
+      }
+
+      // 创建测试项
+      function createTestItem(id, name, detail) {
+        return `
+        <div class="test-item" id="test-${id}">
+          <div class="test-status">⏳</div>
+          <div class="test-info">
+            <div class="test-name">${name}</div>
+            <div class="test-detail">${detail}</div>
+          </div>
+          <div class="test-result pending">待测试</div>
+        </div>
+      `;
+      }
+
+      // 更新测试项状态
+      function updateTestStatus(id, passed, message) {
+        const el = document.getElementById(`test-${id}`);
+        if (!el) return;
+
+        el.className = `test-item ${passed ? 'pass' : 'fail'}`;
+        el.querySelector('.test-status').textContent = passed ? '✅' : '❌';
+        el.querySelector('.test-result').className = `test-result ${passed ? 'pass' : 'fail'}`;
+        el.querySelector('.test-result').textContent = passed ? '通过' : '失败';
+        el.querySelector('.test-detail').textContent = message;
+
+        if (passed) {
+          testResults.pass++;
+          testResults.pending--;
+        } else {
+          testResults.fail++;
+          testResults.pending--;
+        }
+
+        updateStats();
+      }
+
+      // 初始化测试界面
+      function initTestUI() {
+        // 1. 插件加载测试
+        const testsLoad = document.getElementById('tests-load');
+        testsLoad.innerHTML = [
+          createTestItem('1-1', '1.1 插件类定义', '检查 ScalePlugin 类是否已定义'),
+          createTestItem('1-2', '1.2 插件自动加载', '检查插件是否能自动加载'),
+          createTestItem('1-3', '1.3 插件手动加载', '检查插件是否能手动加载')
+        ].join('');
+
+        // 2. 核心功能测试
+        const testsCore = document.getElementById('tests-core');
+        testsCore.innerHTML = [
+          createTestItem('2-1', '2.1 加载量表数据', '测试 loadScales() 方法'),
+          createTestItem('2-2', '2.2 保存量表数据', '测试 saveScales() 方法'),
+          createTestItem('2-3', '2.3 删除量表', '测试 confirmDelete() 方法'),
+          createTestItem('2-4', '2.4 切换状态', '测试 toggleStatus() 方法'),
+          createTestItem('2-5', '2.5 规范化数据', '测试 normalizeScaleBeforeSave() 方法')
+        ].join('');
+
+        // 3. 向后兼容性测试
+        const testsCompat = document.getElementById('tests-compat');
+        testsCompat.innerHTML = [
+          createTestItem('3-1', '3.1 全局函数 loadScales', '检查全局函数是否存在'),
+          createTestItem('3-2', '3.2 全局函数 saveScales', '检查全局函数是否存在'),
+          createTestItem('3-3', '3.3 全局函数 normalizeScaleBeforeSave', '检查全局函数是否存在'),
+          createTestItem('3-4', '3.4 全局函数 renderScaleList', '检查全局函数是否存在'),
+          createTestItem('3-5', '3.5 全局函数 renderScaleTypes', '检查全局函数是否存在'),
+          createTestItem('3-6', '3.6 全局函数 openEditModal', '检查全局函数是否存在'),
+          createTestItem('3-7', '3.7 全局函数 confirmDelete', '检查全局函数是否存在'),
+          createTestItem('3-8', '3.8 全局函数 toggleStatus', '检查全局函数是否存在'),
+          createTestItem('3-9', '3.9 全局函数 exportSingleScale', '检查全局函数是否存在')
+        ].join('');
+
+        // 4. 插件标准接口测试
+        const testsInterface = document.getElementById('tests-interface');
+        testsInterface.innerHTML = [
+          createTestItem('4-1', '4.1 onExecute({action:"load"})', '测试标准接口'),
+          createTestItem('4-2', '4.2 onExecute({action:"save"})', '测试标准接口'),
+          createTestItem('4-3', '4.3 onExecute({action:"render"})', '测试标准接口'),
+          createTestItem('4-4', '4.4 onExecute({action:"delete"})', '测试标准接口'),
+          createTestItem('4-5', '4.5 onExecute({action:"export"})', '测试标准接口')
+        ].join('');
+
+        // 5. 事件通信测试
+        const testsEvents = document.getElementById('tests-events');
+        testsEvents.innerHTML = [
+          createTestItem('5-1', '5.1 scale-initialized 事件', '检查事件是否触发'),
+          createTestItem('5-2', '5.2 scale-deleted 事件', '检查事件是否触发'),
+          createTestItem('5-3', '5.3 scale-status-changed 事件', '检查事件是否触发')
+        ].join('');
+
+        // 6. 存储同步测试
+        const testsStorage = document.getElementById('tests-storage');
+        testsStorage.innerHTML = [
+          createTestItem('6-1', '6.1 保存到 localStorage', '检查数据是否正确保存'),
+          createTestItem('6-2', '6.2 从 localStorage 加载', '检查数据是否正确加载'),
+          createTestItem('6-3', '6.3 同步到前端', '检查 psy_scales_synced 是否正确')
+        ].join('');
+      }
+
+      // 运行所有测试
+      async function runAllTests() {
+        log('开始运行所有测试...', 'info');
+
+        // 重置统计
+        testResults.pass = 0;
+        testResults.fail = 0;
+        testResults.pending = testResults.total;
+        updateStats();
+
+        // 1. 插件加载测试
+        await testPluginLoad();
+
+        // 2. 核心功能测试
+        await testCoreFunctions();
+
+        // 3. 向后兼容性测试
+        await testBackwardCompat();
+
+        // 4. 插件标准接口测试
+        await testStandardInterface();
+
+        // 5. 事件通信测试
+        await testEventCommunication();
+
+        // 6. 存储同步测试
+        await testStorageSync();
+
+        log(
+          `所有测试完成！通过: ${testResults.pass}, 失败: ${testResults.fail}`,
+          testResults.fail === 0 ? 'success' : 'error'
+        );
+      }
+
+      // 1. 插件加载测试
+      async function testPluginLoad() {
+        log('正在测试插件加载...', 'info');
+
+        // 1.1 插件类定义
+        const hasClass = typeof ScalePlugin === 'function';
+        updateTestStatus('1-1', hasClass, hasClass ? 'ScalePlugin 类已定义' : 'ScalePlugin 类未定义');
+        if (!hasClass) log('❌ ScalePlugin 类未定义', 'error');
+        else log('✅ ScalePlugin 类已定义', 'success');
+
+        // 1.2 插件自动加载（需要检查 window.ScalePlugin）
+        const hasGlobal = typeof window.ScalePlugin === 'object';
+        updateTestStatus('1-2', hasGlobal, hasGlobal ? '插件已自动加载到 window.ScalePlugin' : '插件未自动加载');
+        if (!hasGlobal) log('⚠️ window.ScalePlugin 未定义（可能需要手动加载）', 'error');
+        else log('✅ 插件已自动加载', 'success');
+
+        // 1.3 插件手动加载
+        if (!hasGlobal && hasClass) {
+          try {
+            window.ScalePlugin = new ScalePlugin();
+            updateTestStatus('1-3', true, '插件手动加载成功');
+            log('✅ 插件手动加载成功', 'success');
+          } catch (e) {
+            updateTestStatus('1-3', false, '插件手动加载失败: ' + e.message);
+            log('❌ 插件手动加载失败: ' + e.message, 'error');
+          }
+        } else {
+          updateTestStatus('1-3', true, '无需手动加载（已自动加载）');
+          log('✅ 插件手动加载测试跳过（已自动加载）', 'info');
+        }
+      }
+
+      // 2. 核心功能测试
+      async function testCoreFunctions() {
+        log('正在测试核心功能...', 'info');
+
+        if (!window.ScalePlugin) {
+          log('❌ window.ScalePlugin 未定义，跳过核心功能测试', 'error');
+          for (let i = 1; i <= 5; i++) {
+            updateTestStatus(`2-${i}`, false, '跳过（插件未加载）');
+          }
+          return;
+        }
+
+        const plugin = window.ScalePlugin;
+
+        // 2.1 加载量表数据
+        try {
+          const scales = plugin.loadScales();
+          const passed = Array.isArray(scales);
+          updateTestStatus('2-1', passed, passed ? `成功加载 ${scales.length} 个量表` : '返回结果不是数组');
+          if (passed) log(`✅ loadScales() 成功，返回 ${scales.length} 个量表`, 'success');
+          else log('❌ loadScales() 返回结果不是数组', 'error');
+        } catch (e) {
+          updateTestStatus('2-1', false, '抛出异常: ' + e.message);
+          log('❌ loadScales() 抛出异常: ' + e.message, 'error');
+        }
+
+        // 2.2 保存量表数据
+        try {
+          const testScale = {
+            id: 99999,
+            name: '测试量表',
+            code: 'TEST_' + Date.now(),
+            status: 2,
+            questions: [],
+            preQuestions: []
+          };
+          plugin.saveScales([testScale]);
+          const saved = plugin.loadScales();
+          const found = saved.find((s) => s.id === 99999);
+          updateTestStatus('2-2', !!found, !!found ? '成功保存测试量表' : '保存失败');
+          if (found) log('✅ saveScales() 成功', 'success');
+          else log('❌ saveScales() 失败', 'error');
+        } catch (e) {
+          updateTestStatus('2-2', false, '抛出异常: ' + e.message);
+          log('❌ saveScales() 抛出异常: ' + e.message, 'error');
+        }
+
+        // 2.3 删除量表
+        try {
+          const result = plugin.confirmDelete(99999);
+          updateTestStatus('2-3', result === true, result === true ? '成功删除测试量表' : '删除失败');
+          if (result === true) log('✅ confirmDelete() 成功', 'success');
+          else log('❌ confirmDelete() 失败', 'error');
+        } catch (e) {
+          updateTestStatus('2-3', false, '抛出异常: ' + e.message);
+          log('❌ confirmDelete() 抛出异常: ' + e.message, 'error');
+        }
+
+        // 2.4 切换状态
+        try {
+          const testScale = {
+            id: 99998,
+            name: '测试量表2',
+            code: 'TEST2_' + Date.now(),
+            status: 1,
+            questions: [],
+            preQuestions: []
+          };
+          plugin.saveScales([testScale]);
+          const result = plugin.toggleStatus(99998);
+          updateTestStatus('2-4', result === true, result === true ? '成功切换量表状态' : '切换失败');
+          if (result === true) log('✅ toggleStatus() 成功', 'success');
+          else log('❌ toggleStatus() 失败', 'error');
+
+          // 清理
+          plugin.confirmDelete(99998);
+        } catch (e) {
+          updateTestStatus('2-4', false, '抛出异常: ' + e.message);
+          log('❌ toggleStatus() 抛出异常: ' + e.message, 'error');
+        }
+
+        // 2.5 规范化数据
+        try {
+          const incomplete = { id: 99997, name: '不完整量表' };
+          const normalized = plugin.normalizeScaleBeforeSave(incomplete);
+          const passed = normalized && normalized.code && normalized.questions !== undefined;
+          updateTestStatus('2-5', passed, passed ? '成功规范化量表数据' : '规范化失败');
+          if (passed) log('✅ normalizeScaleBeforeSave() 成功', 'success');
+          else log('❌ normalizeScaleBeforeSave() 失败', 'error');
+        } catch (e) {
+          updateTestStatus('2-5', false, '抛出异常: ' + e.message);
+          log('❌ normalizeScaleBeforeSave() 抛出异常: ' + e.message, 'error');
+        }
+      }
+
+      // 3. 向后兼容性测试
+      async function testBackwardCompat() {
+        log('正在测试向后兼容性...', 'info');
+
+        const functions = [
+          'loadScales',
+          'saveScales',
+          'normalizeScaleBeforeSave',
+          'renderScaleList',
+          'renderScaleTypes',
+          'openEditModal',
+          'confirmDelete',
+          'toggleStatus',
+          'exportSingleScale'
+        ];
+
+        for (let i = 0; i < functions.length; i++) {
+          const funcName = functions[i];
+          const passed = typeof window[funcName] === 'function';
+          updateTestStatus(`3-${i + 1}`, passed, passed ? `全局函数 ${funcName} 存在` : `全局函数 ${funcName} 不存在`);
+          if (passed) log(`✅ 全局函数 ${funcName} 存在`, 'success');
+          else log(`❌ 全局函数 ${funcName} 不存在`, 'error');
+        }
+      }
+
+      // 4. 插件标准接口测试
+      async function testStandardInterface() {
+        log('正在测试插件标准接口...', 'info');
+
+        if (!window.ScalePlugin) {
+          log('❌ window.ScalePlugin 未定义，跳过标准接口测试', 'error');
+          for (let i = 1; i <= 5; i++) {
+            updateTestStatus(`4-${i}`, false, '跳过（插件未加载）');
+          }
+          return;
+        }
+
+        const plugin = window.ScalePlugin;
+
+        // 4.1 onExecute({action:'load'})
+        try {
+          const result = plugin.onExecute({ action: 'load' });
+          const passed = Array.isArray(result);
+          updateTestStatus('4-1', passed, passed ? 'onExecute({action:"load"}) 返回数组' : '返回结果不是数组');
+          if (passed) log('✅ onExecute({action:"load"}) 成功', 'success');
+          else log('❌ onExecute({action:"load"}) 返回结果不是数组', 'error');
+        } catch (e) {
+          updateTestStatus('4-1', false, '抛出异常: ' + e.message);
+          log('❌ onExecute({action:"load"}) 抛出异常: ' + e.message, 'error');
+        }
+
+        // 4.2-4.5 其他标准接口（简化测试）
+        const actions = ['save', 'render', 'delete', 'export'];
+        for (let i = 0; i < actions.length; i++) {
+          try {
+            const result = plugin.onExecute({ action: actions[i] });
+            updateTestStatus(`4-${i + 2}`, true, `onExecute({action:"${actions[i]}"}) 执行成功`);
+            log(`✅ onExecute({action:"${actions[i]}"}) 成功`, 'success');
+          } catch (e) {
+            updateTestStatus(`4-${i + 2}`, false, `onExecute({action:"${actions[i]}"}) 抛出异常: ${e.message}`);
+            log(`❌ onExecute({action:"${actions[i]}"}) 抛出异常: ${e.message}`, 'error');
+          }
+        }
+      }
+
+      // 5. 事件通信测试
+      async function testEventCommunication() {
+        log('正在测试事件通信...', 'info');
+
+        if (typeof EventHub === 'undefined') {
+          log('❌ EventHub 未定义，跳过事件通信测试', 'error');
+          for (let i = 1; i <= 3; i++) {
+            updateTestStatus(`5-${i}`, false, '跳过（EventHub 未定义）');
+          }
+          return;
+        }
+
+        // 5.1 scale-initialized 事件
+        let event1Fired = false;
+        EventHub.on('scale-initialized', () => {
+          event1Fired = true;
+        });
+        if (window.ScalePlugin) window.ScalePlugin.loadScales();
+        updateTestStatus('5-1', event1Fired, event1Fired ? 'scale-initialized 事件已触发' : '事件未触发');
+        if (event1Fired) log('✅ scale-initialized 事件已触发', 'success');
+        else log('⚠️ scale-initialized 事件未触发（可能未实现）', 'error');
+
+        // 5.2 scale-deleted 事件
+        let event2Fired = false;
+        EventHub.on('scale-deleted', () => {
+          event2Fired = true;
+        });
+        if (window.ScalePlugin) window.ScalePlugin.confirmDelete(99997);
+        updateTestStatus('5-2', event2Fired, event2Fired ? 'scale-deleted 事件已触发' : '事件未触发');
+        if (event2Fired) log('✅ scale-deleted 事件已触发', 'success');
+        else log('⚠️ scale-deleted 事件未触发（可能未实现）', 'error');
+
+        // 5.3 scale-status-changed 事件
+        let event3Fired = false;
+        EventHub.on('scale-status-changed', () => {
+          event3Fired = true;
+        });
+        if (window.ScalePlugin) window.ScalePlugin.toggleStatus(1);
+        updateTestStatus('5-3', event3Fired, event3Fired ? 'scale-status-changed 事件已触发' : '事件未触发');
+        if (event3Fired) log('✅ scale-status-changed 事件已触发', 'success');
+        else log('⚠️ scale-status-changed 事件未触发（可能未实现）', 'error');
+      }
+
+      // 6. 存储同步测试
+      async function testStorageSync() {
+        log('正在测试存储同步...', 'info');
+
+        // 6.1 保存到 localStorage
+        try {
+          if (window.ScalePlugin) {
+            const testScale = {
+              id: 99996,
+              name: '存储测试量表',
+              code: 'STORAGE_TEST',
+              status: 1,
+              questions: [],
+              preQuestions: []
+            };
+            window.ScalePlugin.saveScales([testScale]);
+            const stored = localStorage.getItem('psy_scales');
+            const passed = stored !== null;
+            updateTestStatus('6-1', passed, passed ? '数据已保存到 localStorage' : '保存失败');
+            if (passed) log('✅ 保存到 localStorage 成功', 'success');
+            else log('❌ 保存到 localStorage 失败', 'error');
+          } else {
+            updateTestStatus('6-1', false, '跳过（插件未加载）');
+          }
+        } catch (e) {
+          updateTestStatus('6-1', false, '抛出异常: ' + e.message);
+          log('❌ 保存到 localStorage 抛出异常: ' + e.message, 'error');
+        }
+
+        // 6.2 从 localStorage 加载
+        try {
+          const stored = localStorage.getItem('psy_scales');
+          const parsed = stored ? JSON.parse(stored) : [];
+          const passed = Array.isArray(parsed);
+          updateTestStatus('6-2', passed, passed ? '数据已从 localStorage 加载' : '加载失败');
+          if (passed) log('✅ 从 localStorage 加载成功', 'success');
+          else log('❌ 从 localStorage 加载失败', 'error');
+        } catch (e) {
+          updateTestStatus('6-2', false, '抛出异常: ' + e.message);
+          log('❌ 从 localStorage 加载抛出异常: ' + e.message, 'error');
+        }
+
+        // 6.3 同步到前端
+        try {
+          const synced = localStorage.getItem('psy_scales_synced');
+          updateTestStatus('6-3', synced !== null, synced ? '数据已同步到前端' : '同步失败');
+          if (synced) log('✅ 同步到前端成功', 'success');
+          else log('⚠️ 同步到前端未完成（可能未实现）', 'error');
+        } catch (e) {
+          updateTestStatus('6-3', false, '抛出异常: ' + e.message);
+          log('❌ 同步到前端抛出异常: ' + e.message, 'error');
+        }
+      }
+
+      // 导出测试报告
+      function exportTestReport() {
+        const report = {
+          testDate: new Date().toISOString(),
+          pluginVersion: '1.0.0',
+          testResults: testResults,
+          passRate: Math.round((testResults.pass / testResults.total) * 100) + '%'
+        };
+
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `scale-plugin-test-report-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        log('✅ 测试报告已导出', 'success');
+      }
+
+      // 初始化
+      initTestUI();
+      log('测试界面已初始化，点击"运行所有测试"开始测试', 'info');
+    </script>
+  </body>
+</html>

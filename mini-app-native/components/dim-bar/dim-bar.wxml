@@ -1,0 +1,20 @@
+<view class="dim-bar-comp">
+  <view class="dim-head" bindtap="onToggle">
+    <text class="dim-label">{{label}}</text>
+    <view class="dim-head-right">
+      <text class="dim-score-tag" style="color:{{color}}">{{score}}</text>
+      <text class="dim-max">/{{maxScore}}</text>
+      <view class="dim-level-badge" wx:if="{{levelLabel}}" style="background:{{color}}">{{levelLabel}}</view>
+      <view class="dim-expand-icon" wx:if="{{expandable}}">{{expanded ? '▴' : '▾'}}</view>
+    </view>
+  </view>
+
+  <view class="dim-bar-wrap">
+    <view class="dim-bar" style="width:{{percent}}%;background:{{color}};"></view>
+  </view>
+
+  <!-- 维度解释（hasInterp 时直接展示，不再隐藏在折叠区） -->
+  <view class="dim-explain" wx:if="{{detail && detail !== ''}}">
+    <text class="dim-explain-text">{{detail}}</text>
+  </view>
+</view>

@@ -1,0 +1,246 @@
+/* ===== 量表详情页 — 三段式布局 ===== */
+
+.page-detail {
+  background: transparent;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ===== 主容器：flex 纵向三段 ===== */
+.layout-container {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  margin: 16vh 24rpx 4vh;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  border-radius: 36rpx;
+  box-shadow: 0 16rpx 64rpx rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  /* 固定高度：标题区+操作区位置始终固定，内容区滚动 */
+  height: 80vh;
+}
+
+/* ===== 标题区（紧凑，固定高度不随内容变化） ===== */
+.title-zone {
+  flex-shrink: 0;
+  padding: 28rpx 36rpx 20rpx;
+  border-bottom: 1rpx solid rgba(139, 110, 80, 0.1);
+  height: 180rpx;
+  box-sizing: border-box;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.title-category {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.title-category-name {
+  font-size: 22rpx;
+  color: #8b6e50;
+  font-weight: 500;
+}
+
+.title-name {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #3a2e22;
+  line-height: 1.35;
+  margin-bottom: 12rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 标签 + 统计（一行内） */
+.title-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-item {
+  font-size: 20rpx;
+  color: #7a6050;
+  background: rgba(139, 110, 80, 0.1);
+  border: 1rpx solid rgba(139, 110, 80, 0.2);
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  white-space: nowrap;
+}
+
+.meta-stats {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  flex-shrink: 0;
+}
+
+.meta-stat {
+  font-size: 22rpx;
+  color: #8b6e50;
+  white-space: nowrap;
+}
+
+.meta-dot {
+  font-size: 20rpx;
+  color: rgba(139, 110, 80, 0.3);
+}
+
+/* ===== 内容区（可滚动） ===== */
+.content-zone {
+  flex: 1;
+  min-height: 0;
+  padding: 0 36rpx;
+}
+
+.content-section {
+  padding-top: 24rpx;
+  padding-bottom: 20rpx;
+}
+
+.content-section + .content-section {
+  border-top: 1rpx solid rgba(139, 110, 80, 0.08);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.section-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #5a4a38;
+  position: relative;
+  padding-left: 20rpx;
+}
+
+.section-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6rpx;
+  height: 24rpx;
+  background: #8b6e50;
+  border-radius: 3rpx;
+}
+
+.section-body {
+  display: block;
+  font-size: 25rpx;
+  color: #6a5a48;
+  line-height: 1.8;
+}
+
+/* 须知列表 */
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.notice-item {
+  padding: 10rpx 16rpx;
+  background: rgba(139, 110, 80, 0.04);
+  border-left: 4rpx solid rgba(139, 110, 80, 0.25);
+  border-radius: 0 12rpx 12rpx 0;
+}
+
+.notice-text {
+  font-size: 24rpx;
+  color: #5a4a38;
+  line-height: 1.65;
+}
+
+/* ===== 操作区（单行：模式切换+按钮一体） ===== */
+.action-zone {
+  flex-shrink: 0;
+  padding: 16rpx 36rpx 20rpx;
+  background: linear-gradient(to top, rgba(255, 252, 248, 0.98) 60%, rgba(255, 252, 248, 0.85));
+  border-top: 1rpx solid rgba(139, 110, 80, 0.1);
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+/* 模式切换器（点击循环切换） */
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(139, 110, 80, 0.07);
+  border: 2rpx solid rgba(139, 110, 80, 0.15);
+  border-radius: 44rpx;
+  flex-shrink: 0;
+}
+
+.mode-switch:active {
+  background: rgba(91, 143, 185, 0.1);
+  border-color: rgba(91, 143, 185, 0.3);
+}
+
+.mode-switch-icon {
+  font-size: 26rpx;
+}
+
+.mode-switch-label {
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #5a4a38;
+  white-space: nowrap;
+}
+
+.mode-switch-arrow {
+  font-size: 18rpx;
+  color: rgba(139, 110, 80, 0.4);
+}
+
+/* 开始按钮 */
+.start-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22rpx 0;
+  background: linear-gradient(135deg, #6b8f71, #5a7d60);
+  border-radius: 44rpx;
+  box-shadow: 0 6rpx 24rpx rgba(90, 125, 96, 0.4);
+}
+
+.start-btn:active {
+  background: linear-gradient(135deg, #5a7d60, #4a6d50);
+  transform: scale(0.98);
+}
+
+.start-btn-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 1px;
+}

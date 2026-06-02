@@ -1,0 +1,562 @@
+{
+  "无关技术文档": [
+    {
+      "path": "content-creation/week02/W02-02-525爱自己日测测你的自爱指数.md",
+      "size": 3223,
+      "reason": "属于无关技术文档文件夹: content-creation",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "content-creation/week02/W02-01-不是你太敏感是你的情绪雷达太强了.md",
+      "size": 3772,
+      "reason": "属于无关技术文档文件夹: content-creation",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "content-creation/week03/W03-01-11的孩子在等一个拥抱.md",
+      "size": 4524,
+      "reason": "属于无关技术文档文件夹: content-creation",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "content-creation/week03/W03-02-今天525给自己3分钟的心理体检.md",
+      "size": 3550,
+      "reason": "属于无关技术文档文件夹: content-creation",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/full_test_report_qa_edward.md",
+      "size": 7836,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/software-company/h5-to-miniprogram-delivery-2026-05-17.md",
+      "size": 4102,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/software-company/sequence-diagram.mermaid",
+      "size": 2099,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/software-company/class-diagram.mermaid",
+      "size": 5400,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/software-company/h5-to-miniprogram-prd.md",
+      "size": 7785,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "deliverables/software-company/h5-to-miniprogram-architecture.md",
+      "size": 28519,
+      "reason": "属于无关技术文档文件夹: deliverables",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "mini-app-h5/design/guide-preview.html",
+      "size": 27065,
+      "reason": "文件名包含无关技术关键词: guide",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "mini-app-h5-redesign/design/guide-preview.html",
+      "size": 27065,
+      "reason": "文件名包含无关技术关键词: guide",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "reviews/CODE_REVIEW_WORKFLOW.md",
+      "size": 9288,
+      "reason": "属于无关技术文档文件夹: reviews",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "reviews/CODE_REVIEW_ONBOARDING.md",
+      "size": 6222,
+      "reason": "属于无关技术文档文件夹: reviews",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "reviews/project-specific-checklist.md",
+      "size": 13493,
+      "reason": "属于无关技术文档文件夹: reviews",
+      "category": "无关技术文档"
+    },
+    {
+      "path": "reviews/review-scoring-engine.md",
+      "size": 9166,
+      "reason": "属于无关技术文档文件夹: reviews",
+      "category": "无关技术文档"
+    }
+  ],
+  "过时文档": [
+    {
+      "path": "meta-prompt-v2.3.md",
+      "size": 12851,
+      "reason": "文件名包含过时文档关键词: v2.3",
+      "category": "过时文档"
+    },
+    {
+      "path": "wechat-miniprogram/app.json.bak.20260517_0918",
+      "size": 379,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "wechat-miniprogram/app.js.bak.20260517_0918",
+      "size": 1454,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "wechat-miniprogram/app.wxss.bak.20260517_0918",
+      "size": 3418,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "wechat-miniprogram/images/preview/style-c-line-bold.png",
+      "size": 1289,
+      "reason": "文件名包含过时文档关键词: old",
+      "category": "过时文档"
+    },
+    {
+      "path": "tests/playwright-ssrs-test.js.bak",
+      "size": 26541,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": ".workbuddy/backups/20260505_093503/deploy_backup.tar.gz",
+      "size": 1802693,
+      "reason": "文件名包含过时文档关键词: backup",
+      "category": "过时文档"
+    },
+    {
+      "path": "prompts/displayName生成-v1.1.md",
+      "size": 6408,
+      "reason": "文件名包含过时文档关键词: v1.1",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/scale-template.csv",
+      "size": 841,
+      "reason": "文件名包含过时文档关键词: temp",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/frontend/index.html.bak.20260430_164317",
+      "size": 368510,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/frontend/index.html.bak",
+      "size": 450760,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-legacy.html.bak.20260512_0543",
+      "size": 1007117,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-legacy.html.bak.20260518_1150",
+      "size": 1041004,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/default-prompts.js.bak.2026-05-15T00_57_05",
+      "size": 250129,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-legacy.html.bak.20260511",
+      "size": 891394,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/scale-onboard.html.bak",
+      "size": 231280,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/default-prompts.js.bak.2026-05-15T02_53_22",
+      "size": 259092,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/default-prompts.js.bak",
+      "size": 134024,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-legacy.html.bak.20260511-optimize",
+      "size": 1128540,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/default-prompts.js.bak.2026-05-15T00_22_24",
+      "size": 242617,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/default-prompts.js.bak.2026-05-15T00_38_06",
+      "size": 247425,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-sysprompts.html.bak",
+      "size": 684938,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5-redesign/scale-template.csv",
+      "size": 841,
+      "reason": "文件名包含过时文档关键词: temp",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5-redesign/frontend/index.html.bak.20260430_164317",
+      "size": 368510,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    },
+    {
+      "path": "mini-app-h5-redesign/frontend/index.html.bak",
+      "size": 450760,
+      "reason": "文件名包含过时文档关键词: bak",
+      "category": "过时文档"
+    }
+  ],
+  "临时测试文档": [
+    {
+      "path": "test-meta-results-1778888907091.json",
+      "size": 11472,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778888688492.json",
+      "size": 4230,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "les-fix-test-result.json",
+      "size": 86359,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-optimized.html",
+      "size": 18085,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-round.js",
+      "size": 5378,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-user-layout.html",
+      "size": 16491,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778887796486.json",
+      "size": 24464,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-final-optimized.html",
+      "size": 19385,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-final.html",
+      "size": 22677,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778834204628.json",
+      "size": 9690,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "测试方案-v12.9.md",
+      "size": 20193,
+      "reason": "文件名包含临时测试关键词: 测试",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778888528477.json",
+      "size": 8677,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-preview.html",
+      "size": 17436,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-final-v2.html",
+      "size": 20135,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "les-ai-test-result.json",
+      "size": 9406,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778888586540.json",
+      "size": 10674,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-displayname.py",
+      "size": 6897,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "feedback-page.yaml",
+      "size": 7950,
+      "reason": "文件扩展名是临时文件类型: .yaml",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-final-design.html",
+      "size": 20784,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "scale-publish-dialog-real-images.html",
+      "size": 16233,
+      "reason": "文件名包含临时测试关键词: log-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-displayname-batch.py",
+      "size": 7022,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "测试清单-v10.15.md",
+      "size": 13096,
+      "reason": "文件名包含临时测试关键词: 测试",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778888731862.json",
+      "size": 44906,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "test-meta-results-1778834308490.json",
+      "size": 22400,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "init.yaml",
+      "size": 2297,
+      "reason": "文件扩展名是临时文件类型: .yaml",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-native/pages/report-favorites/report-favorites.js",
+      "size": 2283,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-native/pages/report-favorites/report-favorites.json",
+      "size": 72,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-native/pages/report-favorites/report-favorites.wxss",
+      "size": 1856,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-native/pages/report-favorites/report-favorites.wxml",
+      "size": 1642,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/e2e-regression.cjs",
+      "size": 44368,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/scoring-engine.test.js",
+      "size": 39999,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/miniprogram-smoke.test.js",
+      "size": 5050,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/playwright-ssrs-test.js",
+      "size": 28641,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/perf-baseline.cjs",
+      "size": 7575,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/webview-back.test.js",
+      "size": 15712,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/miniprogram-automator-plan.md",
+      "size": 4495,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/api-test.cjs",
+      "size": 7824,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/scoring-engine-ssrs-node-test.js",
+      "size": 6316,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/fixtures/assessments.json",
+      "size": 3,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "tests/fixtures/feedback.json",
+      "size": 853,
+      "reason": "属于临时测试文件夹: tests",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "generated-images/tts-demo/generate-report-voice.py",
+      "size": 9247,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "generated-images/tts-demo/report-voice.mp3",
+      "size": 1326189,
+      "reason": "文件名包含临时测试关键词: report-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "size": 1436,
+      "reason": "文件扩展名是临时文件类型: .yml",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-h5/backend/test-engine.js",
+      "size": 47322,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    },
+    {
+      "path": "mini-app-h5/backend/admin-test-center.html",
+      "size": 86121,
+      "reason": "文件名包含临时测试关键词: test-",
+      "category": "临时测试文档"
+    }
+  ],
+  "重复文档": [
+    {
+      "path": "文档清理-最终报告.md",
+      "size": 14547,
+      "reason": "文件名包含重复文档关键词: 文档清理",
+      "category": "重复文档"
+    },
+    {
+      "path": "document_scan_results_v2.json",
+      "size": 18543,
+      "reason": "文件名包含重复文档关键词: scan",
+      "category": "重复文档"
+    },
+    {
+      "path": "document_scan_results.json",
+      "size": 2216,
+      "reason": "文件名包含重复文档关键词: scan",
+      "category": "重复文档"
+    },
+    {
+      "path": "微信小程序上线前检查报告.md",
+      "size": 12597,
+      "reason": "文件名包含重复文档关键词: 报告",
+      "category": "重复文档"
+    },
+    {
+      "path": "smart_doc_scanner.py",
+      "size": 10447,
+      "reason": "文件名包含重复文档关键词: scan",
+      "category": "重复文档"
+    },
+    {
+      "path": "mini-app-h5/backend/优化报告.md",
+      "size": 10237,
+      "reason": "文件名包含重复文档关键词: 报告",
+      "category": "重复文档"
+    }
+  ]
+}

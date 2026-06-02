@@ -1,0 +1,2 @@
+page { height: 100%; width: 100%; }
+web-view { height: 100%; width: 100%; }

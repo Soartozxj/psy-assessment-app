@@ -1,0 +1,113 @@
+.question-matrix {
+  padding: 0;
+}
+
+.q-header {
+  margin-bottom: 8rpx;
+}
+
+.q-number {
+  font-size: 24rpx;
+  color: #5b8fb9;
+  font-weight: 600;
+}
+
+.q-content {
+  font-size: 30rpx;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin-bottom: 20rpx;
+}
+
+.matrix-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.matrix-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid rgba(91, 143, 185, 0.15);
+}
+
+.matrix-row {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1rpx solid rgba(91, 143, 185, 0.15);
+}
+
+.matrix-header {
+  background: rgba(91, 143, 185, 0.08);
+}
+
+.matrix-cell {
+  padding: 14rpx 8rpx;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80rpx;
+  flex-shrink: 0;
+}
+
+.matrix-corner {
+  min-width: 120rpx;
+  max-width: 200rpx;
+}
+
+.matrix-col-head {
+  flex: 1;
+  min-width: 80rpx;
+}
+
+.col-head-text {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #3a5a6e;
+}
+
+.matrix-row-label {
+  min-width: 120rpx;
+  max-width: 200rpx;
+  justify-content: flex-start;
+  padding-left: 16rpx;
+  text-align: left;
+  background: #fff;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.row-label-text {
+  font-size: 24rpx;
+  color: #3a5a6e;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.matrix-radio-cell {
+  flex: 1;
+  min-width: 80rpx;
+}
+
+.matrix-radio-group {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  min-width: 0;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 80rpx;
+}
+
+.matrix-row:nth-child(even) {
+  background: #f8fbfd;
+}

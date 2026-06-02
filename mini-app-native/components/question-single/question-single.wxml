@@ -1,0 +1,23 @@
+<view class="question-single">
+  <!-- 题号 + 题目内容 -->
+  <view class="q-header" wx:if="{{showIndex && index > 0}}">
+    <text class="q-number">【第{{index}}题】</text>
+  </view>
+  <view class="q-content" wx:if="{{npcMode !== 'immersive'}}">{{question.content}}</view>
+
+  <!-- 选项列表 -->
+  <view class="options-area">
+    <view
+      class="option-btn {{selectedIndex === item.idx ? 'selected' : ''}} {{disabled ? 'disabled' : ''}}"
+      wx:for="{{renderedOptions}}"
+      wx:key="idx"
+      data-index="{{item.idx}}"
+      bindtap="onSelectOption"
+    >
+      <view class="option-letter-wrap {{selectedIndex === item.idx ? 'selected' : ''}}">
+        <text class="option-letter">{{item.letter}}</text>
+      </view>
+      <text class="option-label">{{item.label}}</text>
+    </view>
+  </view>
+</view>

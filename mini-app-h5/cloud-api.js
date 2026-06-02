@@ -1,7 +1,8 @@
 /**
- * cloud-api.js v3.3 - 云托管 HTTP API 通信模块
+ * cloud-api.js v3.4 - 云托管 HTTP API 通信模块
  *
- * 替代 cloud-data.js 中的 mock 通信，实现真正的云端数据交互
+ * v3.4 改动：
+ *   - ping() 改用 /api/scales 替代 /（避免 CDN 缓存根路径导致 CORS 头丢失）
  *
  * v3.3 改动：
  *   - WebView 模式下也跳过 URL 参数 apiBase，强制同域（H5 与 API 同在 www.soarto.com.cn）
@@ -141,10 +142,11 @@
     },
 
     /**
-     * 测试云端连接（GET /）
+     * 测试云端连接（GET /api/scales）
+     * 注：改用 /api/scales 而非 /，因为 / 被 CDN 缓存后返回的响应不含 CORS 头
      */
     ping: function () {
-      return apiRequest('GET', '/')
+      return apiRequest('GET', '/api/scales')
         .then(function (data) {
           _cloudAvailable = true;
           _lastCloudCheck = Date.now();

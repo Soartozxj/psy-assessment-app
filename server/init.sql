@@ -114,7 +114,34 @@ CREATE TABLE `scales` (
 INSERT INTO `admins` (`openid`, `role`, `nickname`) VALUES
   ('oyORU3XImvO_rYAWBUTMNm89-3v0', 'super', 'Rich');
 
+-- ============================================================
+-- 5. TTS 音频缓存表 (tts_cache)
+-- 用于 TTS 合并音频的缓存管理，支持 MySQL 索引快速查找
+-- ============================================================
+DROP TABLE IF EXISTS `tts_cache`;
+CREATE TABLE `tts_cache` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `content_hash`  VARCHAR(32) UNIQUE NOT NULL COMMENT 'MD5(segments.join("|") + emotion + rate + voice)',
+  `scale_id`      VARCHAR(64) NOT NULL DEFAULT '' COMMENT '关联量表ID',
+  `emotion`       VARCHAR(20) NOT NULL DEFAULT 'empathetic' COMMENT '情感语气',
+  `rate`          VARCHAR(10) NOT NULL DEFAULT '+0%' COMMENT '语速',
+  `voice`         VARCHAR(64) NOT NULL DEFAULT 'zh-CN-XiaoxiaoNeural' COMMENT '语音ID',
+  `has_bgm`       TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否含BGM',
+  `bgm_name`      VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'BGM文件名',
+  `duration`      INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '音频时长（秒）',
+  `file_size`     INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文件大小（字节）',
+  `file_path`     VARCHAR(255) NOT NULL DEFAULT '' COMMENT '磁盘绝对路径',
+  `play_count`    INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '播放次数',
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `expires_at`    DATETIME DEFAULT NULL COMMENT '过期时间（NULL=永不过期）',
+  PRIMARY KEY (`id`),
+  KEY `idx_scale` (`scale_id`),
+  KEY `idx_expires` (`expires_at`),
+  KEY `idx_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='TTS音频文件缓存';
+
 -- 验证
 SELECT '✅ 数据库初始化完成' AS status;
 SELECT CONCAT('assessments 表: ', COUNT(*), ' 条记录') AS info FROM `assessments`;
 SELECT CONCAT('admins 表: ', COUNT(*), ' 条记录') AS info FROM `admins`;
+SELECT CONCAT('tts_cache 表: ', COUNT(*), ' 条记录') AS info FROM `tts_cache`;

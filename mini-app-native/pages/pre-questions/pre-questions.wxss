@@ -1,0 +1,168 @@
+.page-preq {
+  min-height: 100vh;
+  position: relative;
+  background: transparent;
+}
+
+/* 对齐答题页 assessment-content：底部吸附容器 */
+.preq-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 0 20rpx 20rpx;
+}
+
+/* 对齐答题页 question-area：半透明卡片 */
+.preq-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 28rpx;
+  padding: 28rpx 32rpx 32rpx;
+  box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.08), inset 0 2rpx 0 rgba(255, 255, 255, 0.8);
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 对齐答题页: question-area::before 顶部蓝色装饰线 */
+.preq-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 32rpx;
+  right: 32rpx;
+  height: 6rpx;
+  background: linear-gradient(90deg, #5b8fb9, #7eb5d6, #5b8fb9);
+  border-radius: 0 0 6rpx 6rpx;
+}
+
+.preq-field {
+  margin-bottom: 32rpx;
+}
+
+.preq-label {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 对齐H5: preq-label::before 蓝色圆点装饰 */
+.preq-label::before {
+  content: '';
+  width: 14rpx;
+  height: 14rpx;
+  background: #5b8fb9;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.preq-label-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3a6d8c;
+}
+
+.preq-required {
+  color: #e53935;
+  font-size: 28rpx;
+}
+
+.preq-input {
+  width: 100%;
+  min-height: 72rpx;
+  padding: 16rpx 20rpx;
+  border: 2rpx solid rgba(139, 110, 80, 0.2);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #3a2e22;
+  background: rgba(255, 255, 255, 0.6);
+  box-sizing: border-box;
+}
+
+/* 内联按钮组（替代原生picker） */
+.preq-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.preq-option-btn {
+  padding: 14rpx 28rpx;
+  border: 2rpx solid rgba(91, 143, 185, 0.25);
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #5a4a38;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s;
+}
+
+.preq-option-btn:active {
+  transform: scale(0.96);
+}
+
+.preq-option-btn.active {
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4rpx 16rpx rgba(91, 143, 185, 0.3);
+}
+
+.preq-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.preq-check-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.preq-check-text {
+  font-size: 28rpx;
+  color: #5a4a38;
+}
+
+.preq-nav {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 32rpx;
+}
+
+.preq-btn {
+  flex: 1;
+  padding: 20rpx 0;
+  border-radius: 20rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.preq-btn.prev {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.preq-btn.prev.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.preq-btn.next {
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  box-shadow: 0 6rpx 24rpx rgba(91, 143, 185, 0.3);
+}
+
+.preq-steps {
+  text-align: center;
+  margin-top: 16rpx;
+}
+
+.step-text {
+  font-size: 24rpx;
+  color: #999;
+}

@@ -1,0 +1,119 @@
+<h2>微信云开发配置</h2>
+<h3>6.1 环境信息</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>值</th>
+  </tr>
+  <tr>
+    <td>环境 ID</td>
+    <td><code>cloud1-d8ggx8sqde8afa6a4</code></td>
+  </tr>
+  <tr>
+    <td>套餐</td>
+    <td>标准版（连续包月 199 元/月）</td>
+  </tr>
+  <tr>
+    <td>控制台入口</td>
+    <td>公众平台 → 开发管理 → 云开发</td>
+  </tr>
+</table>
+<h3>6.2 云数据库集合</h3>
+<table>
+  <tr>
+    <th>集合名</th>
+    <th>用途</th>
+    <th>权限</th>
+  </tr>
+  <tr>
+    <td><code>scales</code></td>
+    <td>量表配置数据</td>
+    <td>管理员读写</td>
+  </tr>
+  <tr>
+    <td><code>history</code></td>
+    <td>测评历史记录</td>
+    <td>按 openid 筛选</td>
+  </tr>
+  <tr>
+    <td><code>config</code></td>
+    <td>系统配置（含 ai_config）</td>
+    <td>管理员读写</td>
+  </tr>
+</table>
+<h3>6.3 云函数</h3>
+<table>
+  <tr>
+    <th>函数名</th>
+    <th>用途</th>
+    <th>调用时机</th>
+  </tr>
+  <tr>
+    <td><code>data-user</code></td>
+    <td>获取用户 OpenID</td>
+    <td>小程序启动</td>
+  </tr>
+  <tr>
+    <td><code>data-init</code></td>
+    <td>初始化量表数据</td>
+    <td>首次部署</td>
+  </tr>
+  <tr>
+    <td><code>data-sync</code></td>
+    <td>同步前后端数据</td>
+    <td>后台操作</td>
+  </tr>
+  <tr>
+    <td><code>data-save</code></td>
+    <td>保存测评结果</td>
+    <td>提交测评</td>
+  </tr>
+  <tr>
+    <td><code>data-history</code></td>
+    <td>查询历史记录</td>
+    <td>查看记录</td>
+  </tr>
+  <tr>
+    <td><code>data-init-force</code></td>
+    <td>强制初始化数据</td>
+    <td>紧急恢复</td>
+  </tr>
+  <tr>
+    <td><code>ai-call</code></td>
+    <td>AI 诊断调用</td>
+    <td>AI 诊断</td>
+  </tr>
+  <tr>
+    <td><code>file-upload</code></td>
+    <td>文件上传</td>
+    <td>NPC 图片上传</td>
+  </tr>
+  <tr>
+    <td><code>get-my-openid</code></td>
+    <td>获取 OpenID（调试）</td>
+    <td>调试</td>
+  </tr>
+</table>
+<h3>6.4 静态网站托管</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>说明</th>
+  </tr>
+  <tr>
+    <td>默认域名</td>
+    <td><code>cloud1-d8ggx8sqde8afa6a4.tcloudbaseapp.com</code></td>
+  </tr>
+  <tr>
+    <td>自定义域名</td>
+    <td><code>rich.soarto.com.cn</code></td>
+  </tr>
+  <tr>
+    <td>默认首页</td>
+    <td><code>index.html</code></td>
+  </tr>
+  <tr>
+    <td>文件管理</td>
+    <td>手动上传 deploy/ 目录下所有文件</td>
+  </tr>
+</table>

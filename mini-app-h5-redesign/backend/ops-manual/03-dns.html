@@ -1,0 +1,83 @@
+<h2>域名体系与 DNS 解析</h2>
+<h3>3.1 域名清单</h3>
+<table>
+  <tr>
+    <th>域名</th>
+    <th>用途</th>
+    <th>DNS</th>
+  </tr>
+  <tr>
+    <td><code>soarto.com.cn</code></td>
+    <td>主域名</td>
+    <td>阿里云</td>
+  </tr>
+  <tr>
+    <td><code>rich.soarto.com.cn</code></td>
+    <td>H5 静态页面</td>
+    <td>阿里云</td>
+  </tr>
+  <tr>
+    <td><code>identity.soarto.com.cn</code></td>
+    <td>云托管 API</td>
+    <td>阿里云</td>
+  </tr>
+  <tr>
+    <td><code>www.soarto.com.cn</code></td>
+    <td>独立 Web 端</td>
+    <td>阿里云</td>
+  </tr>
+</table>
+<h3>3.2 DNS 解析记录</h3>
+<h4>rich.soarto.com.cn</h4>
+<table>
+  <tr>
+    <th>类型</th>
+    <th>主机</th>
+    <th>记录值</th>
+  </tr>
+  <tr>
+    <td>CNAME</td>
+    <td>rich</td>
+    <td><code>cloud1-d8ggx8sqde8afa6a4.tcloudbaseapp.com</code></td>
+  </tr>
+</table>
+<h4>identity.soarto.com.cn</h4>
+<table>
+  <tr>
+    <th>类型</th>
+    <th>主机</th>
+    <th>记录值</th>
+  </tr>
+  <tr>
+    <td>CNAME</td>
+    <td>identity</td>
+    <td><code>identity.soarto.com.cn.tcbaccess.tencentcloudbase.com</code></td>
+  </tr>
+</table>
+<h4>www.soarto.com.cn</h4>
+<table>
+  <tr>
+    <th>类型</th>
+    <th>主机</th>
+    <th>记录值</th>
+  </tr>
+  <tr>
+    <td>A</td>
+    <td>www</td>
+    <td><code>101.43.43.125</code></td>
+  </tr>
+</table>
+<blockquote><p>注意：1 个域名只能绑定 1 个云托管服务，所以 rich 和 identity 分别用两个子域名。</p></blockquote>
+<h3>3.3 域名校验文件</h3>
+<p>微信小程序业务域名验证文件（必须放在 rich.soarto.com.cn 根目录）：</p>
+<table>
+  <tr>
+    <th>文件名</th>
+    <th>内容</th>
+  </tr>
+  <tr>
+    <td><code>fQJW4aYeSL.txt</code></td>
+    <td><code>369ce7084eb9405844f1fcb37a749865</code></td>
+  </tr>
+</table>
+<blockquote><p>切勿删除！删了微信业务域名校验会失败。</p></blockquote>

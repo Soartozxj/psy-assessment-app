@@ -1,0 +1,103 @@
+.scale-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  border: 2rpx solid #f0f0f0;
+  overflow: hidden;
+  display: flex;
+}
+
+.scale-card-active {
+  transform: scale(0.99);
+  opacity: 0.95;
+}
+
+.color-bar {
+  width: 8rpx;
+  flex-shrink: 0;
+}
+
+.card-main {
+  flex: 1;
+  padding: 28rpx 24rpx 24rpx;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.card-emoji {
+  font-size: 32rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.35;
+}
+
+.card-badges {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 6rpx;
+  font-weight: 500;
+}
+
+.badge-pro {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+
+.badge-rec {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.badge-done {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.card-desc {
+  margin-bottom: 12rpx;
+}
+
+.desc-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.meta-item {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.meta-divider {
+  font-size: 22rpx;
+  color: #ddd;
+}

@@ -1,0 +1,259 @@
+.page-index {
+  padding: 0 32rpx 32rpx;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* 问候区 */
+.greeting-area {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 60rpx 32rpx 28rpx;
+  color: #fff;
+  margin: 0 -32rpx;
+}
+
+/* 右上角装饰圆 */
+.greeting-deco-tr {
+  position: absolute;
+  top: -40rpx;
+  right: -24rpx;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+/* 左下角装饰圆 */
+.greeting-deco-bl {
+  position: absolute;
+  bottom: -16rpx;
+  left: 32rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.greeting-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting-hi {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4rpx;
+}
+
+.greeting-sub {
+  font-size: 22rpx;
+  opacity: 0.85;
+  color: #fff;
+}
+
+.greeting-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+}
+
+.greeting-actions {
+  display: flex;
+  gap: 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting-chip {
+  font-size: 22rpx;
+  color: #fff;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 10rpx 24rpx;
+  border-radius: 28rpx;
+}
+
+.greeting-chip:active {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* 搜索框 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  background: #fff;
+  border-radius: 40rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.search-icon { font-size: 28rpx; }
+.search-placeholder { font-size: 28rpx; color: #bbb; }
+
+/* 分类网格 */
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #3a2e22;
+  margin: 28rpx 0 20rpx;
+}
+
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  padding: 0 0 20rpx;
+}
+
+.cat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24rpx;
+  padding: 36rpx 20rpx 28rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s;
+}
+
+.cat-card:active {
+  transform: scale(0.96);
+}
+
+/* 装饰圆 - 右上角 */
+.cat-deco-circle-tl {
+  position: absolute;
+  top: -28rpx;
+  right: -16rpx;
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+/* 装饰圆 - 左下角 */
+.cat-deco-circle-br {
+  position: absolute;
+  bottom: -14rpx;
+  left: -10rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.cat-card-emoji {
+  font-size: 56rpx;
+  margin-bottom: 12rpx;
+}
+
+.cat-card-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.cat-card-count {
+  font-size: 20rpx;
+  opacity: 0.8;
+}
+
+/* 宽卡片（奇数时最后一个横跨2列） */
+.cat-card-wide {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 32rpx;
+  text-align: left;
+}
+
+.cat-card-wide:active {
+  transform: scale(0.98);
+}
+
+.cat-card-emoji-wide {
+  font-size: 56rpx;
+  flex-shrink: 0;
+}
+
+.cat-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cat-card-arrow {
+  font-size: 36rpx;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* 推荐量表 */
+.recommended-scroll {
+  white-space: nowrap;
+  margin: 0 -32rpx;
+  padding: 0 32rpx;
+}
+
+.recommended-list {
+  display: flex;
+  gap: 20rpx;
+  padding-bottom: 8rpx;
+}
+
+.recommended-item {
+  width: 480rpx;
+  flex-shrink: 0;
+}
+
+/* 最近完成 */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+}
+
+.recent-emoji { font-size: 36rpx; }
+
+.recent-info { flex: 1; }
+.recent-name { display: block; font-size: 28rpx; color: #333; font-weight: 500; }
+.recent-date { display: block; font-size: 22rpx; color: #999; margin-top: 4rpx; }
+.recent-score { font-size: 28rpx; font-weight: 600; }

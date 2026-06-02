@@ -1,0 +1,108 @@
+.page-profile-edit {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 头像区域 */
+.edit-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 32rpx;
+  background: #fff;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.edit-section:first-child {
+  margin-top: 16rpx;
+}
+
+.section-label {
+  font-size: 28rpx;
+  color: #333;
+  flex-shrink: 0;
+  width: 120rpx;
+}
+
+.avatar-section {
+  padding: 32rpx;
+}
+
+.avatar-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+.avatar-preview {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid #e0e0e0;
+}
+
+.avatar-placeholder {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 输入框 */
+.edit-input {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #333;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+/* 选择器 */
+.edit-picker {
+  flex: 1;
+  text-align: right;
+}
+
+.picker-text {
+  font-size: 28rpx;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8rpx;
+}
+
+/* 保存按钮 */
+.save-btn {
+  margin: 64rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(91, 143, 185, 0.3);
+}
+
+.save-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}

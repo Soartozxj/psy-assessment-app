@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "量表列表",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "scale-card": "/components/scale-card/scale-card"
+  }
+}

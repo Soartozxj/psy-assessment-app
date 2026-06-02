@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI插件测试页面</title>
+
+    <!-- 引入插件系统核心模块 -->
+    <script src="plugin-base.js?v=1"></script>
+    <script src="dual-adapter.js?v=1"></script>
+    <script src="event-hub.js?v=1"></script>
+    <script src="plugin-loader.js?v=1"></script>
+  </head>
+  <body>
+    <h1>🧪 AI插件测试页面</h1>
+
+    <div style="margin: 20px 0">
+      <button onclick="testPluginLoad()">测试插件加载</button>
+      <button onclick="testPluginInit()">测试插件初始化</button>
+      <button onclick="testPluginExecute()">测试插件执行</button>
+      <button onclick="testPluginDestroy()">测试插件销毁</button>
+    </div>
+
+    <div id="test-results" style="background: #f5f5f5; padding: 10px; margin-top: 20px">
+      <h3>测试结果：</h3>
+      <pre id="test-output"></pre>
+    </div>
+
+    <script>
+      // 测试结果输出
+      function output(message) {
+        const outputEl = document.getElementById('test-output');
+        outputEl.textContent += message + '\n';
+        console.log(message);
+      }
+
+      // 测试1：插件加载
+      async function testPluginLoad() {
+        output('🧪 开始测试：插件加载...');
+
+        try {
+          const aiPlugin = await PluginLoader.load('ai', true);
+
+          if (aiPlugin) {
+            output('✅ 测试通过：插件加载成功');
+            output('   插件名称: ' + aiPlugin.name);
+            output('   插件版本: ' + aiPlugin.version);
+          } else {
+            output('❌ 测试失败：插件加载返回null');
+          }
+        } catch (error) {
+          output('❌ 测试失败：' + error.message);
+        }
+      }
+
+      // 测试2：插件初始化
+      async function testPluginInit() {
+        output('🧪 开始测试：插件初始化...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+
+          if (!aiPlugin) {
+            output('❌ 测试失败：插件未加载');
+            return;
+          }
+
+          if (aiPlugin.isInitialized) {
+            output('✅ 测试通过：插件已初始化');
+          } else {
+            output('⚠️ 测试警告：插件未初始化，尝试手动初始化...');
+            await aiPlugin.init();
+
+            if (aiPlugin.isInitialized) {
+              output('✅ 测试通过：插件手动初始化成功');
+            } else {
+              output('❌ 测试失败：插件初始化失败');
+            }
+          }
+        } catch (error) {
+          output('❌ 测试失败：' + error.message);
+        }
+      }
+
+      // 测试3：插件执行
+      async function testPluginExecute() {
+        output('🧪 开始测试：插件执行...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+
+          if (!aiPlugin) {
+            output('❌ 测试失败：插件未加载');
+            return;
+          }
+
+          // 测试执行loadConfig操作
+          const result = await aiPlugin.execute({ action: 'loadConfig' });
+
+          if (result && result.success) {
+            output('✅ 测试通过：插件执行成功');
+            output('   配置: ' + JSON.stringify(result.config));
+          } else {
+            output('❌ 测试失败：插件执行返回失败');
+          }
+        } catch (error) {
+          output('❌ 测试失败：' + error.message);
+        }
+      }
+
+      // 测试4：插件销毁
+      async function testPluginDestroy() {
+        output('🧪 开始测试：插件销毁...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+
+          if (!aiPlugin) {
+            output('❌ 测试失败：插件未加载');
+            return;
+          }
+
+          // 销毁插件
+          aiPlugin.destroy();
+
+          if (aiPlugin.isDestroyed) {
+            output('✅ 测试通过：插件销毁成功');
+          } else {
+            output('❌ 测试失败：插件销毁失败');
+          }
+        } catch (error) {
+          output('❌ 测试失败：' + error.message);
+        }
+      }
+
+      // 页面加载时自动测试
+      document.addEventListener('DOMContentLoaded', async function () {
+        output('🚀 页面加载完成，开始自动测试...');
+
+        // 等待一下确保插件系统完全加载
+        setTimeout(async () => {
+          await testPluginLoad();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+.privacy-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+}
+
+.privacy-card {
+  background: #fff;
+  border-radius: 24rpx;
+  width: 100%;
+  max-width: 600rpx;
+  overflow: hidden;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+}
+
+.privacy-title {
+  padding: 32rpx 32rpx 16rpx;
+  text-align: center;
+}
+
+.privacy-title text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.privacy-content {
+  max-height: 480rpx;
+  padding: 0 32rpx;
+}
+
+.privacy-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.8;
+}
+
+.privacy-actions {
+  display: flex;
+  border-top: 2rpx solid #f0f0f0;
+  margin-top: 24rpx;
+}
+
+.privacy-btn {
+  flex: 1;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.privacy-btn.reject {
+  color: #999;
+  border-right: 2rpx solid #f0f0f0;
+}
+
+.privacy-btn.agree {
+  color: #5b8fb9;
+  font-weight: 600;
+}

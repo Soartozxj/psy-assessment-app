@@ -1,0 +1,31 @@
+<view class="question-text">
+  <view class="q-header" wx:if="{{showIndex && index > 0}}">
+    <text class="q-number">【第{{index}}题】</text>
+  </view>
+  <view class="q-content" wx:if="{{npcMode !== 'immersive'}}">{{question.content}}</view>
+
+  <view class="text-wrap">
+    <!-- 多行输入 -->
+    <textarea
+      wx:if="{{multiline}}"
+      class="text-input"
+      placeholder="{{question.placeholder || '请详细描述...'}}"
+      value="{{textValue}}"
+      maxlength="{{maxLength}}"
+      bindinput="onInput"
+      disabled="{{disabled}}"
+      auto-height
+    />
+    <!-- 单行输入 -->
+    <input
+      wx:else
+      class="text-input single-line"
+      placeholder="{{question.placeholder || '请输入...'}}"
+      value="{{textValue}}"
+      maxlength="{{maxLength}}"
+      bindinput="onInput"
+      disabled="{{disabled}}"
+    />
+    <view class="char-counter">{{charCount}} / {{maxLength}}</view>
+  </view>
+</view>

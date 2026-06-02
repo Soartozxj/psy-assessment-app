@@ -1,0 +1,30 @@
+<view class="home-page">
+  <view class="home-greeting">
+    <text class="greeting-title">你好</text>
+    <text class="greeting-sub">每一种感受，都值得被温柔以待</text>
+  </view>
+
+  <view class="home-search" bindtap="onSearchTap">
+    <text class="search-icon">🔍</text>
+    <text class="search-placeholder">搜索量表名称...</text>
+  </view>
+
+  <view class="section-title">心理测评</view>
+
+  <view class="cat-grid">
+    <block wx:for="{{catRows}}" wx:key="*this" wx:for-item="row">
+      <view class="cat-row">
+        <view class="cat-card {{item.isLastFull ? 'full-width' : ''}}"
+              wx:for="{{row}}" wx:key="id" wx:for-item="item"
+              style="background:linear-gradient(135deg, {{item.c1}}, {{item.c2}})"
+              bindtap="onCategoryTap" data-category="{{item.id}}">
+          <view class="deco-circle deco-top"></view>
+          <view class="deco-circle deco-bot"></view>
+          <text class="cat-emoji">{{item.emoji}}</text>
+          <text class="cat-name">{{item.name}}</text>
+          <text class="cat-count">{{item.count}}个量表</text>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "答题中",
+  "usingComponents": {
+    "npc-scene": "/components/npc-scene/npc-scene",
+    "npc-dialog": "/components/npc-dialog/npc-dialog",
+    "question-single": "/components/question-single/question-single",
+    "question-matrix": "/components/question-matrix/question-matrix",
+    "question-parent-child": "/components/question-parent-child/question-parent-child",
+    "question-grouped": "/components/question-grouped/question-grouped",
+    "question-text": "/components/question-text/question-text"
+  }
+}

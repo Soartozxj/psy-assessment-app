@@ -1,0 +1,113 @@
+{
+  "total": 21,
+  "passed": 12,
+  "failed": 9,
+  "skipped": 0,
+  "details": [
+    {
+      "name": "1.1 页面加载",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "1.2 PluginLoader 已加载",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "1.3 NpcPlugin 已定义",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "1.4 NPC 插件已加载",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "2.1 NpcPlugin.init() 可执行",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "2.2 NpcPlugin.getInfo() 可执行",
+      "passed": false,
+      "details": "插件或 getInfo 方法不存在"
+    },
+    {
+      "name": "2.3 NpcPlugin.isInstalled() 可执行",
+      "passed": false,
+      "details": "插件或 isInstalled 方法不存在"
+    },
+    {
+      "name": "2.4 NpcPlugin.install() 可执行",
+      "passed": false,
+      "details": "插件或 install 方法不存在"
+    },
+    {
+      "name": "2.5 NpcPlugin.uninstall() 可执行",
+      "passed": false,
+      "details": "插件或 uninstall 方法不存在"
+    },
+    {
+      "name": "3.1 加载NPC列表",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "3.2 获取单个NPC",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "3.3 创建NPC",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "3.4 更新NPC",
+      "passed": false,
+      "details": "没有可更新的NPC"
+    },
+    {
+      "name": "3.5 删除NPC",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "3.6 与NPC聊天",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "4.1 EventHub 已定义",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "4.2 事件监听正常",
+      "passed": false,
+      "details": "EventHub.on is not a function"
+    },
+    {
+      "name": "4.3 NPC 插件事件发射正常",
+      "passed": false,
+      "details": "EventHub.emit is not a function"
+    },
+    {
+      "name": "5.1 NPC 配置界面存在",
+      "passed": false,
+      "details": ""
+    },
+    {
+      "name": "5.2 NPC 列表存在",
+      "passed": false,
+      "details": ""
+    },
+    {
+      "name": "5.3 截图保存",
+      "passed": true,
+      "details": ""
+    }
+  ]
+}

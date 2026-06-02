@@ -1,0 +1,60 @@
+<h2>独立 Web 端部署（www.soarto.com.cn）</h2>
+<h3>10.1 服务器信息</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>值</th>
+  </tr>
+  <tr>
+    <td>公网 IP</td>
+    <td><code>101.43.43.125</code></td>
+  </tr>
+  <tr>
+    <td>操作系统</td>
+    <td>OpenCloudOS</td>
+  </tr>
+  <tr>
+    <td>宝塔面板</td>
+    <td><code>http://101.43.43.125:8888/tencentcloud</code></td>
+  </tr>
+  <tr>
+    <td>网站根目录</td>
+    <td><code>/www/wwwroot/www.soarto.com.cn</code></td>
+  </tr>
+  <tr>
+    <td>运行环境</td>
+    <td>Nginx 1.28 + MySQL 5.7</td>
+  </tr>
+</table>
+<h3>10.2 上传文件到服务器</h3>
+<ol>
+  <li>登录宝塔面板</li>
+  <li>文件 → 进入 /www/wwwroot/www.soarto.com.cn</li>
+  <li>上传 deploy/ 目录下所有文件</li>
+</ol>
+<h3>10.3 SSL 证书（备案通过后操作）</h3>
+<blockquote><p>前置条件：ICP 接入备案必须审核通过后才能申请 SSL。</p></blockquote>
+<ol>
+  <li>宝塔面板 → 网站 → www.soarto.com.cn → SSL</li>
+  <li>选择 Let's Encrypt → 申请</li>
+  <li>开启强制 HTTPS</li>
+</ol>
+<h3>10.4 备案状态</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>状态</th>
+  </tr>
+  <tr>
+    <td>域名备案</td>
+    <td>阿里云已完成</td>
+  </tr>
+  <tr>
+    <td>接入备案</td>
+    <td>腾讯云审核中</td>
+  </tr>
+  <tr>
+    <td>预计时间</td>
+    <td>7-20 个工作日</td>
+  </tr>
+</table>

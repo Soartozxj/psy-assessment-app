@@ -1,0 +1,158 @@
+{
+  "total": 30,
+  "passed": 30,
+  "failed": 0,
+  "skipped": 0,
+  "details": [
+    {
+      "name": "页面加载成功",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "PluginLoader 已加载",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "ScalePlugin 已定义",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 loadScales 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 saveScale 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 deleteScale 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 editScale 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 showScaleForm 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 hideScaleForm 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "函数 exportScales 存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "loadScales() 可执行",
+      "passed": true,
+      "details": "函数调用成功"
+    },
+    {
+      "name": "saveScale() 可执行",
+      "passed": true,
+      "details": "保存成功"
+    },
+    {
+      "name": "deleteScale() 可执行",
+      "passed": true,
+      "details": "函数存在"
+    },
+    {
+      "name": "showScaleForm() 可执行",
+      "passed": true,
+      "details": "表单显示成功"
+    },
+    {
+      "name": "hideScaleForm() 可执行",
+      "passed": true,
+      "details": "表单隐藏成功"
+    },
+    {
+      "name": "exportScales() 可执行",
+      "passed": true,
+      "details": "函数存在"
+    },
+    {
+      "name": "ScalePlugin.init() 可执行",
+      "passed": true,
+      "details": "方法已定义"
+    },
+    {
+      "name": "ScalePlugin.install() 可执行",
+      "passed": true,
+      "details": "方法已定义"
+    },
+    {
+      "name": "ScalePlugin.uninstall() 可执行",
+      "passed": true,
+      "details": "方法已定义"
+    },
+    {
+      "name": "ScalePlugin.getInfo() 可执行",
+      "passed": true,
+      "details": "方法已定义"
+    },
+    {
+      "name": "ScalePlugin.isInstalled() 可执行",
+      "passed": true,
+      "details": "方法已定义"
+    },
+    {
+      "name": "localStorage 存储正常",
+      "passed": true,
+      "details": "读写成功"
+    },
+    {
+      "name": "ScalePlugin._saveScales() 可执行",
+      "passed": true,
+      "details": "实例方法已定义"
+    },
+    {
+      "name": "ScalePlugin._loadScales() 可执行",
+      "passed": true,
+      "details": "实例方法已定义"
+    },
+    {
+      "name": "EventHub 已定义",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "事件监听正常",
+      "passed": true,
+      "details": "事件监听正常"
+    },
+    {
+      "name": "ScalePlugin 事件发射正常",
+      "passed": true,
+      "details": "事件发射测试完成"
+    },
+    {
+      "name": "量表列表容器存在",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "量表表单存在",
+      "passed": true,
+      "details": "找到表单: div[id*=\"scale\"][class*=\"modal\"] (display=flex, visibility=visible)"
+    },
+    {
+      "name": "截图保存成功",
+      "passed": true,
+      "details": "test-scale-plugin-screenshot.png"
+    }
+  ]
+}

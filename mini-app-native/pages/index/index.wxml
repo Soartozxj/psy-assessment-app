@@ -1,0 +1,91 @@
+<view class="page-index">
+  <!-- 问候区 -->
+  <view class="greeting-area">
+    <view class="greeting-deco-tr"></view>
+    <view class="greeting-deco-bl"></view>
+    <view class="greeting-top">
+      <view class="greeting-text">
+        <text class="greeting-hi">{{greeting}}</text>
+        <text class="greeting-sub">每一种感受，都值得被温柔以待</text>
+      </view>
+      <view class="greeting-avatar" bindtap="onMineTap">👤</view>
+    </view>
+    <view class="greeting-actions">
+      <view class="greeting-chip" bindtap="onDiaryTap">📒 情绪日记</view>
+      <view class="greeting-chip" bindtap="onHistoryTap">📊 测评记录</view>
+    </view>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-bar" bindtap="onSearchTap">
+    <text class="search-icon">🔍</text>
+    <text class="search-placeholder">搜索量表...</text>
+  </view>
+
+  <!-- 分类网格 -->
+  <view class="section-title">分类浏览</view>
+  <view class="cat-grid">
+    <view
+      class="cat-card {{item.isWide ? 'cat-card-wide' : ''}}"
+      wx:for="{{categories}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      bindtap="onCategoryTap"
+      style="background:linear-gradient(135deg,{{item.color1}},{{item.color2}})"
+    >
+      <view class="cat-deco-circle-tl"></view>
+      <view class="cat-deco-circle-br"></view>
+      <!-- 横跨宽卡片：横向布局 -->
+      <block wx:if="{{item.isWide}}">
+        <text class="cat-card-emoji-wide">{{item.emoji}}</text>
+        <view class="cat-card-info">
+          <text class="cat-card-name">{{item.name}}</text>
+          <text class="cat-card-count">{{item.count}} 个量表</text>
+        </view>
+        <text class="cat-card-arrow">→</text>
+      </block>
+      <!-- 普通卡片：纵向居中布局 -->
+      <block wx:else>
+        <text class="cat-card-emoji">{{item.emoji}}</text>
+        <text class="cat-card-name">{{item.name}}</text>
+        <text class="cat-card-count">{{item.count}} 个量表</text>
+      </block>
+    </view>
+  </view>
+
+  <!-- 推荐量表 -->
+  <view class="section-title">推荐量表</view>
+  <scroll-view class="recommended-scroll" scroll-x="true" enhanced="true">
+    <view class="recommended-list">
+      <view class="recommended-item" wx:for="{{recommendedScales}}" wx:key="id">
+        <scale-card
+          scale="{{item}}"
+          color="{{item.color || '#5b8fb9'}}"
+          done="{{item.done}}"
+          bind:scaletap="onScaleTap"
+        />
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 最近完成 -->
+  <view class="section-title" wx:if="{{recentRecords.length > 0}}">最近完成</view>
+  <view class="recent-list" wx:if="{{recentRecords.length > 0}}">
+    <view
+      class="recent-item"
+      wx:for="{{recentRecords}}"
+      wx:key="id"
+      data-record="{{item}}"
+      bindtap="onRecentTap"
+    >
+      <view class="recent-emoji">{{item.emoji || '📋'}}</view>
+      <view class="recent-info">
+        <text class="recent-name">{{item.scaleName}}</text>
+        <text class="recent-date">{{item.date || item.completedAt}}</text>
+      </view>
+      <view class="recent-score" style="color:{{item.color || '#5b8fb9'}}">
+        {{item.score}}分
+      </view>
+    </view>
+  </view>
+</view>

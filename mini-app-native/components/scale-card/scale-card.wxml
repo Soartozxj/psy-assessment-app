@@ -1,0 +1,36 @@
+<view class="scale-card" hover-class="scale-card-active" bindtap="onTap">
+  <!-- 左侧色条 -->
+  <view class="color-bar" style="background:{{color}};"></view>
+
+  <!-- 主内容区 -->
+  <view class="card-main">
+    <!-- 标题行 -->
+    <view class="card-header">
+      <view class="card-title-row">
+        <text class="card-emoji" wx:if="{{emoji}}">{{emoji}}</text>
+        <text class="card-title">{{title}}</text>
+      </view>
+      <view class="card-badges" wx:if="{{badges.length > 0}}">
+        <text
+          class="badge badge-{{item.cls}}"
+          wx:for="{{badges}}"
+          wx:key="cls"
+        >{{item.label}}</text>
+      </view>
+    </view>
+
+    <!-- 描述 -->
+    <view class="card-desc" wx:if="{{description}}">
+      <text class="desc-text">{{description}}</text>
+    </view>
+
+    <!-- 元数据 -->
+    <view class="card-meta">
+      <text class="meta-item" wx:if="{{questionCount}}">{{questionCount}}题</text>
+      <text class="meta-divider" wx:if="{{questionCount && estimatedTime}}">·</text>
+      <text class="meta-item" wx:if="{{estimatedTime}}">{{estimatedTime}}</text>
+      <text class="meta-divider" wx:if="{{estimatedTime && participantCount}}">·</text>
+      <text class="meta-item" wx:if="{{participantCount}}">{{participantCount}}人已测</text>
+    </view>
+  </view>
+</view>

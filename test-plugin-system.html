@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插件系统测试页</title>
+
+    <!-- 引入插件系统核心模块（使用绝对路径） -->
+    <script src="/mini-app-h5/backend/plugin-base.js?v=1"></script>
+    <script src="/mini-app-h5/backend/dual-adapter.js?v=1"></script>
+    <script src="/mini-app-h5/backend/event-hub.js?v=1"></script>
+    <script src="/mini-app-h5/backend/plugin-loader.js?v=1"></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-section {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      h2 {
+        color: #666;
+        font-size: 18px;
+        margin-top: 0;
+      }
+      button {
+        background: #4a90d9;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      button:hover {
+        background: #3a7bc8;
+      }
+      .log {
+        background: #f8f8f8;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .success {
+        color: #52c41a;
+      }
+      .error {
+        color: #ff4d4f;
+      }
+      .info {
+        color: #4a90d9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 插件系统测试页</h1>
+
+    <div class="test-section">
+      <h2>1. 核心模块加载测试</h2>
+      <button onclick="testCoreModules()">测试核心模块</button>
+      <div id="log1" class="log"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>2. 插件加载测试</h2>
+      <button onclick="testPluginLoad()">加载AI插件</button>
+      <button onclick="testPluginGet()">获取AI插件实例</button>
+      <div id="log2" class="log"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>3. 插件功能测试</h2>
+      <button onclick="testPluginExecute()">测试插件执行</button>
+      <button onclick="testPluginConfig()">测试配置加载</button>
+      <div id="log3" class="log"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>4. 事件通信测试</h2>
+      <button onclick="testEventHub()">测试EventHub</button>
+      <div id="log4" class="log"></div>
+    </div>
+
+    <script>
+      // 日志输出辅助函数
+      function log(sectionId, message, type = 'info') {
+        const logEl = document.getElementById(sectionId);
+        const time = new Date().toLocaleTimeString();
+        const prefix = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        logEl.innerHTML += `<div class="${type}">[${time}] ${prefix} ${message}</div>`;
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      // 测试1：核心模块加载
+      function testCoreModules() {
+        log('log1', '开始测试核心模块...');
+
+        try {
+          // 检查 PluginBase
+          if (typeof PluginBase !== 'undefined') {
+            log('log1', 'PluginBase 已定义', 'success');
+          } else {
+            log('log1', 'PluginBase 未定义', 'error');
+          }
+
+          // 检查 Adapter
+          if (typeof Adapter !== 'undefined') {
+            log('log1', 'Adapter 已定义', 'success');
+            log('log1', `当前环境: ${Adapter.platform}`, 'info');
+          } else {
+            log('log1', 'Adapter 未定义', 'error');
+          }
+
+          // 检查 EventHub
+          if (typeof EventHub !== 'undefined') {
+            log('log1', 'EventHub 已定义', 'success');
+          } else {
+            log('log1', 'EventHub 未定义', 'error');
+          }
+
+          // 检查 PluginLoader
+          if (typeof PluginLoader !== 'undefined') {
+            log('log1', 'PluginLoader 已定义', 'success');
+            log('log1', `已注册插件: ${Object.keys(PluginLoader.plugins).join(', ')}`, 'info');
+          } else {
+            log('log1', 'PluginLoader 未定义', 'error');
+          }
+
+          log('log1', '核心模块测试完成', 'success');
+        } catch (error) {
+          log('log1', `测试失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 测试2：插件加载
+      async function testPluginLoad() {
+        log('log2', '开始加载AI插件...');
+
+        try {
+          await PluginLoader.init();
+          log('log2', '插件系统初始化成功', 'success');
+          log('log2', `已加载插件: ${Object.keys(PluginLoader.plugins).join(', ')}`, 'info');
+        } catch (error) {
+          log('log2', `插件加载失败: ${error.message}`, 'error');
+        }
+      }
+
+      function testPluginGet() {
+        log('log2', '获取AI插件实例...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+          if (aiPlugin) {
+            log('log2', `AI插件实例获取成功`, 'success');
+            log('log2', `插件名称: ${aiPlugin.name}`, 'info');
+            log('log2', `插件版本: ${aiPlugin.version}`, 'info');
+          } else {
+            log('log2', 'AI插件实例未找到', 'error');
+          }
+        } catch (error) {
+          log('log2', `获取插件失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 测试3：插件功能
+      async function testPluginExecute() {
+        log('log3', '测试插件执行...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+          if (!aiPlugin) {
+            log('log3', 'AI插件未加载，请先加载插件', 'error');
+            return;
+          }
+
+          // 测试 loadConfig action
+          log('log3', '执行 action=loadConfig...', 'info');
+          const result = await aiPlugin.onExecute({ action: 'loadConfig' });
+          log('log3', `执行结果: ${JSON.stringify(result)}`, 'success');
+        } catch (error) {
+          log('log3', `插件执行失败: ${error.message}`, 'error');
+        }
+      }
+
+      async function testPluginConfig() {
+        log('log3', '测试配置加载...');
+
+        try {
+          const aiPlugin = PluginLoader.get('ai');
+          if (!aiPlugin) {
+            log('log3', 'AI插件未加载，请先加载插件', 'error');
+            return;
+          }
+
+          // 检查配置
+          log('log3', `当前配置: ${JSON.stringify(aiPlugin._config)}`, 'info');
+          log('log3', '配置加载测试完成', 'success');
+        } catch (error) {
+          log('log3', `配置测试失败: ${error.message}`, 'error');
+        }
+      }
+
+      // 测试4：事件通信
+      function testEventHub() {
+        log('log4', '测试EventHub事件通信...');
+
+        try {
+          // 使用 window.EventHub 确保访问全局实例
+          const hub = window.EventHub;
+
+          if (!hub) {
+            log('log4', 'EventHub 未初始化', 'error');
+            return;
+          }
+
+          // 检查 EventHub 方法是否存在
+          if (typeof hub.on !== 'function') {
+            log('log4', `EventHub.on 不存在, typeof: ${typeof hub.on}`, 'error');
+            log(
+              'log4',
+              `EventHub 实例: ${JSON.stringify(Object.getOwnPropertyNames(Object.getPrototypeOf(hub)))}`,
+              'info'
+            );
+            return;
+          }
+
+          // 监听事件
+          hub.on('ai-config-changed', (data) => {
+            log('log4', `收到事件 ai-config-changed: ${JSON.stringify(data)}`, 'success');
+          });
+          log('log4', '事件监听器已注册', 'info');
+
+          // 触发事件
+          hub.emit('ai-config-changed', { provider: 'deepseek', test: true });
+          log('log4', '事件已触发', 'info');
+
+          log('log4', 'EventHub测试完成', 'success');
+        } catch (error) {
+          log('log4', `EventHub测试失败: ${error.message}`, 'error');
+        }
+      }
+    </script>
+  </body>
+</html>

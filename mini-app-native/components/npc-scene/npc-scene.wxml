@@ -1,0 +1,29 @@
+<view class="npc-scene {{scene}}" style="{{bgStyle}}{{wrapStyle}}">
+  <!-- 默认渐变背景（当无自定义背景图时显示） -->
+  <view class="scene-bg-default" wx:if="{{!background}}">
+    <view class="scene-bg-glow"></view>
+  </view>
+
+  <!-- 自定义背景图时也应用透明度 -->
+  <view class="scene-bg-custom" wx:if="{{background}}"></view>
+
+  <!-- 角色立绘 -->
+  <view class="character-area">
+    <image
+      class="character-img {{imgLoaded ? 'img-loaded' : 'img-loading'}}"
+      src="{{counselorImage}}"
+      mode="aspectFit"
+      wx:if="{{counselorImage}}"
+      bindload="_onImgLoad"
+      binderror="_onImgError"
+    />
+  </view>
+
+  <!-- 名牌 -->
+  <view class="nameplate" wx:if="{{counselorName}}">
+    <view class="np-inner">
+      <text class="np-name">{{counselorName}}</text>
+      <text class="np-motto" wx:if="{{motto}}">{{motto}}</text>
+    </view>
+  </view>
+</view>

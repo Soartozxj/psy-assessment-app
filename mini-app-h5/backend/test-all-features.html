@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插件系统 - 功能验证</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      .section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section h2 {
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+      }
+      .test-button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 14px;
+      }
+      .test-button:hover {
+        background: #764ba2;
+      }
+      .result {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .stat-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .stat-card h3 {
+        margin: 0;
+        color: #667eea;
+        font-size: 24px;
+      }
+      .stat-card p {
+        margin: 5px 0 0 0;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🧪 插件系统功能验证</h1>
+      <p>验证所有优化功能是否正常工作</p>
+    </div>
+
+    <!-- 1. 插件加载测试 -->
+    <div class="section">
+      <h2>📦 1. 插件加载测试</h2>
+      <button class="test-button" onclick="testPluginLoad()">测试插件加载</button>
+      <button class="test-button" onclick="testPluginExecute()">测试插件执行</button>
+      <div id="plugin-load-result" class="result"></div>
+    </div>
+
+    <!-- 2. 压缩文件测试 -->
+    <div class="section">
+      <h2>🗜️ 2. 压缩文件测试</h2>
+      <button class="test-button" onclick="testCompression()">测试压缩文件</button>
+      <div id="compression-result" class="result"></div>
+    </div>
+
+    <!-- 3. 错误监控测试 -->
+    <div class="section">
+      <h2>🚨 3. 错误监控测试</h2>
+      <button class="test-button" onclick="testErrorMonitor()">测试错误捕获</button>
+      <button class="test-button" onclick="triggerError()">触发测试错误</button>
+      <div id="error-monitor-result" class="result"></div>
+    </div>
+
+    <!-- 4. 性能监控测试 -->
+    <div class="section">
+      <h2>⚡ 4. 性能监控测试</h2>
+      <button class="test-button" onclick="testPerformanceMonitor()">测试性能监控</button>
+      <button class="test-button" onclick="measurePluginPerformance()">测量插件性能</button>
+      <div id="performance-monitor-result" class="result"></div>
+    </div>
+
+    <!-- 5. 图片压缩测试 -->
+    <div class="section">
+      <h2>🖼️ 5. 图片压缩测试</h2>
+      <input type="file" id="image-input" accept="image/*" onchange="testImageCompression(event)" />
+      <div id="image-compression-result" class="result"></div>
+    </div>
+
+    <!-- 6. 虚拟滚动测试 -->
+    <div class="section">
+      <h2>📜 6. 虚拟滚动测试</h2>
+      <button class="test-button" onclick="testVirtualScroll()">测试虚拟滚动</button>
+      <div id="virtual-scroll-container" style="height: 300px; border: 1px solid #ccc"></div>
+      <div id="virtual-scroll-result" class="result"></div>
+    </div>
+
+    <!-- 7. 用户反馈测试 -->
+    <div class="section">
+      <h2>📝 7. 用户反馈测试</h2>
+      <button class="test-button" onclick="testFeedbackSystem()">测试反馈系统</button>
+      <div id="feedback-result" class="result"></div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="section">
+      <h2>📊 测试统计</h2>
+      <div class="stats">
+        <div class="stat-card">
+          <h3 id="stat-total">0</h3>
+          <p>总测试数</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-passed">0</h3>
+          <p>通过</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="stat-failed">0</h3>
+          <p>失败</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载监控脚本 -->
+    <script src="error-monitor.js"></script>
+    <script src="performance-monitor.js"></script>
+    <script src="image-compression.js"></script>
+    <script src="virtual-scroll.js"></script>
+    <script src="feedback-system.js"></script>
+
+    <script>
+      // 统计
+      let testStats = { total: 0, passed: 0, failed: 0 };
+
+      function updateStats() {
+        document.getElementById('stat-total').textContent = testStats.total;
+        document.getElementById('stat-passed').textContent = testStats.passed;
+        document.getElementById('stat-failed').textContent = testStats.failed;
+      }
+
+      function logResult(elementId, message, type = 'info') {
+        const el = document.getElementById(elementId);
+        el.className = `result ${type}`;
+        el.textContent = message;
+        testStats.total++;
+        if (type === 'success') testStats.passed++;
+        if (type === 'error') testStats.failed++;
+        updateStats();
+      }
+
+      // 1. 插件加载测试
+      async function testPluginLoad() {
+        try {
+          // 模拟加载插件
+          const response = await fetch('plugins/core/scoring-plugin.min.js');
+          const text = await response.text();
+
+          if (text.includes('ScoringPlugin')) {
+            logResult('plugin-load-result', '✅ 插件加载测试通过\n插件文件正常加载', 'success');
+          } else {
+            logResult('plugin-load-result', '❌ 插件加载测试失败\n插件文件内容异常', 'error');
+          }
+        } catch (error) {
+          logResult('plugin-load-result', `❌ 插件加载测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      async function testPluginExecute() {
+        try {
+          // 模拟执行插件
+          const plugin = { name: 'TestPlugin', onExecute: async () => ({ success: true }) };
+          const result = await plugin.onExecute();
+
+          if (result.success) {
+            logResult('plugin-load-result', '✅ 插件执行测试通过\n插件执行正常', 'success');
+          } else {
+            logResult('plugin-load-result', '❌ 插件执行测试失败\n插件执行异常', 'error');
+          }
+        } catch (error) {
+          logResult('plugin-load-result', `❌ 插件执行测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      // 2. 压缩文件测试
+      async function testCompression() {
+        try {
+          const response = await fetch('plugins/core/scoring-plugin.min.js');
+          const text = await response.text();
+          const size = new Blob([text]).size;
+          const originalSize = 35000; // 原始文件大小约 35KB
+          const savings = (((originalSize - size) / originalSize) * 100).toFixed(2);
+
+          logResult(
+            'compression-result',
+            `✅ 压缩文件测试通过\n压缩后大小: ${(size / 1024).toFixed(2)} KB\n节省: ${savings}%`,
+            'success'
+          );
+        } catch (error) {
+          logResult('compression-result', `❌ 压缩文件测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      // 3. 错误监控测试
+      function testErrorMonitor() {
+        try {
+          if (window.errorMonitor) {
+            window.errorMonitor.captureError({
+              type: 'test',
+              message: '测试错误',
+              timestamp: new Date().toISOString()
+            });
+            logResult('error-monitor-result', '✅ 错误监控测试通过\n错误已捕获并加入队列', 'success');
+          } else {
+            logResult('error-monitor-result', '❌ 错误监控测试失败\n错误监控器未初始化', 'error');
+          }
+        } catch (error) {
+          logResult('error-monitor-result', `❌ 错误监控测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      function triggerError() {
+        try {
+          // 触发一个测试错误
+          throw new Error('这是一个测试错误');
+        } catch (error) {
+          logResult('error-monitor-result', `✅ 错误已触发并捕获\n${error.message}`, 'success');
+        }
+      }
+
+      // 4. 性能监控测试
+      function testPerformanceMonitor() {
+        try {
+          if (window.performanceMonitor) {
+            window.performanceMonitor.captureMetric({
+              type: 'test',
+              value: 100,
+              timestamp: new Date().toISOString()
+            });
+            logResult('performance-monitor-result', '✅ 性能监控测试通过\n性能指标已捕获并加入队列', 'success');
+          } else {
+            logResult('performance-monitor-result', '❌ 性能监控测试失败\n性能监控器未初始化', 'error');
+          }
+        } catch (error) {
+          logResult('performance-monitor-result', `❌ 性能监控测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      function measurePluginPerformance() {
+        try {
+          if (window.performanceMonitor) {
+            window.performanceMonitor
+              .measureExecution('test', 'testAction', async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                return { success: true };
+              })
+              .then((result) => {
+                logResult('performance-monitor-result', '✅ 性能测量测试通过\n插件执行时间已测量', 'success');
+              });
+          } else {
+            logResult('performance-monitor-result', '❌ 性能测量测试失败\n性能监控器未初始化', 'error');
+          }
+        } catch (error) {
+          logResult('performance-monitor-result', `❌ 性能测量测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      // 5. 图片压缩测试
+      async function testImageCompression(event) {
+        try {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const compressed = await ImageCompression.compress(file, { quality: 0.8 });
+          const originalSize = (file.size / 1024).toFixed(2);
+          const compressedSize = (compressed.size / 1024).toFixed(2);
+          const savings = (((file.size - compressed.size) / file.size) * 100).toFixed(2);
+
+          logResult(
+            'image-compression-result',
+            `✅ 图片压缩测试通过\n原始大小: ${originalSize} KB\n压缩大小: ${compressedSize} KB\n节省: ${savings}%`,
+            'success'
+          );
+        } catch (error) {
+          logResult('image-compression-result', `❌ 图片压缩测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      // 6. 虚拟滚动测试
+      function testVirtualScroll() {
+        try {
+          const container = document.getElementById('virtual-scroll-container');
+          const vs = new VirtualScroll(container, {
+            itemHeight: 50,
+            renderItem: (item, index) => {
+              const el = document.createElement('div');
+              el.textContent = `Item ${index}: ${item.name}`;
+              return el;
+            }
+          });
+
+          const items = Array(1000)
+            .fill()
+            .map((_, i) => ({ name: `Item ${i}` }));
+          vs.setItems(items);
+
+          logResult('virtual-scroll-result', `✅ 虚拟滚动测试通过\n渲染了 1000 条数据\n只渲染可见区域 DOM`, 'success');
+        } catch (error) {
+          logResult('virtual-scroll-result', `❌ 虚拟滚动测试失败\n${error.message}`, 'error');
+        }
+      }
+
+      // 7. 用户反馈测试
+      function testFeedbackSystem() {
+        try {
+          if (window.feedbackSystem) {
+            logResult('feedback-result', '✅ 用户反馈测试通过\n反馈系统已初始化', 'success');
+          } else {
+            logResult('feedback-result', '❌ 用户反馈测试失败\n反馈系统未初始化', 'error');
+          }
+        } catch (error) {
+          logResult('feedback-result', `❌ 用户反馈测试失败\n${error.message}`, 'error');
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -38,3 +38,14 @@ test-screenshots/
 
 # CodeBuddy 工作目录
 .codebuddy/
+
+# 备份目录
+rules_backup/
+
+# 符号链接文件（指向 mini-app-h5/，无需 Git 跟踪）
+mini-app-h5-redesign/frontend/asset-storage.js
+mini-app-h5-redesign/frontend/cloud-api.js
+mini-app-h5-redesign/frontend/cloud-data.js
+mini-app-h5-redesign/frontend/data-monitor.js
+mini-app-h5-redesign/frontend/scoring-engine.js
+mini-app-h5-redesign/frontend/shared-data.js

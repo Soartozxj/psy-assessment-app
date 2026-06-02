@@ -1,0 +1,170 @@
+{
+  "summary": {
+    "total": 20,
+    "perfect": 20,
+    "rate": "100.0%",
+    "timestamp": "2026-05-09T07:57:27.083020"
+  },
+  "results": [
+    {
+      "code": "PPCRS",
+      "name": "父母共同教养关系感知量表",
+      "displayName": "父母教养互动模式",
+      "shortDesc": "你和父母如何一起照顾孩子？从协作默契、意见一致性和共同参与度，了解家庭教养中的真实互动方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "FACES II-CV",
+      "name": "家庭亲密度和适应性",
+      "displayName": "家庭互动模式",
+      "shortDesc": "你和家人的相处方式是怎样的？从亲密度与适应性两个方面，了解家庭成员间的联结方式和应变风格。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CBF-PI-B-2024",
+      "name": "中国大五人格问卷（简式版）",
+      "displayName": "性格全貌分析",
+      "shortDesc": "你是什么样的人？从情绪稳定性、做事风格、待人方式等维度，了解你的核心性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SCL-90",
+      "name": "90项症状清单",
+      "displayName": "心理状态全景分析",
+      "shortDesc": "最近压力大、睡不好、容易烦躁？从情绪、躯体感受等维度，全面了解你近一周的心理状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CPTI",
+      "name": "儿童问题特质问卷",
+      "displayName": "儿童行为特质分析",
+      "shortDesc": "您的孩子在3-12岁阶段的行为表现如何？从冲动控制、情绪反应与人际互动风格，了解其核心行为特质。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "RPQ_SC",
+      "name": "反应性-主动性攻击量表（简式中文版）",
+      "displayName": "冲突反应模式",
+      "shortDesc": "遇到矛盾时，你更易冲动反击，还是冷静谋划？了解你在冲突中的典型反应方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SCSQ",
+      "name": "简易应对方式问卷",
+      "displayName": "应对方式分析",
+      "shortDesc": "遇到压力时，你习惯怎么反应？从积极行动与情绪调节两个角度，了解你的日常应对模式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "ASSS",
+      "name": "青少年社会支持量表",
+      "displayName": "社会支持资源分析",
+      "shortDesc": "青少年常感到没人可依靠？从主观感受、实际帮助和求助行动三方面，了解你当前的社会支持资源。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CBF_PI_15",
+      "name": "中国大五人格问卷(极简式版)(CBF-PI-15)",
+      "displayName": "性格五维分析",
+      "shortDesc": "你是什么样的人？从外向、友善、自律、情绪稳定和好奇心五个方面，全面了解你的性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SSRS",
+      "name": "社会支持评定量表(SSRS)",
+      "displayName": "社会支持分析",
+      "shortDesc": "你感受到的支持够吗？从主观感受、实际帮助和资源运用三方面，了解你的社会支持状况。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "BFFP_CAS",
+      "name": "中文形容词大五人格量表(简式版)(BFFP-CAS)",
+      "displayName": "性格全貌分析",
+      "shortDesc": "你是什么样的人？从外向性、宜人性等五大维度，帮你系统认识自己的稳定性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "ZHONGYONG",
+      "name": "中庸实践思维方式量表",
+      "displayName": "中庸思维特点分析",
+      "shortDesc": "面对冲突或选择时，你习惯如何权衡与行动？从认知灵活性维度，了解你的中庸实践思维方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "BFI2",
+      "name": "大五人格问卷(第2版)(BFI-2)",
+      "displayName": "性格全貌分析",
+      "shortDesc": "你是什么样的人？从外向、友善、自律、情绪稳定和好奇心五个方面，全面了解你的性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "TMMS",
+      "name": "特质性元情绪量表(TMMS)",
+      "displayName": "情绪调节三维度分析",
+      "shortDesc": "你如何觉察、理解并调整自己的情绪？从注意力、辨别力到修复力，看清你的情绪调节习惯。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "TMD",
+      "name": "手机依赖测验（中文版）（TMD）",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "刷完手机总想再看一眼？了解你的使用强度和行为控制状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SASSV",
+      "name": "智能手机成瘾量表(简式版)(SAS-SV)",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "刷完手机总想再看一眼？了解你的使用强度和行为控制状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "PMSMU_SQ",
+      "name": "问题性移动社交媒体使用筛查问卷(PMSMU-SQ)",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "刷完手机总想再看一眼？了解你的使用强度和行为控制状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "PMSMU_AQ",
+      "name": "问题性移动社交媒体使用评估问卷",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "刷完手机总想再看一眼？了解你的使用强度和行为控制状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "PMVGS",
+      "name": "问题性移动视频游戏使用量表(PMVGS)",
+      "displayName": "游戏使用与失控感",
+      "shortDesc": "总想拿起手机玩游戏？帮你了解使用强度和情绪调节方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "NMP_C",
+      "name": "无手机恐惧量表(中文版)(NMP-C)",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "手机不在身边就心慌、坐立不安？了解你在脱离手机时的紧张反应和行为控制特点。",
+      "issues": [],
+      "perfect": true
+    }
+  ]
+}

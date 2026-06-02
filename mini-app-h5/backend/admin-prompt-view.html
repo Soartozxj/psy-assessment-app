@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>提示词查看</title>
+    <style>
+      :root {
+        --bg: #faf9f7;
+        --card: #fff;
+        --text: #2c2c2a;
+        --text-sec: #5f5e5a;
+        --text-muted: #888780;
+        --border: #d3d1c7;
+        --primary: #534ab7;
+        --primary-light: #eeedfe;
+        --danger: #993556;
+        --danger-light: #fbeaf0;
+        --success: #0f6e56;
+        --success-light: #e1f5ee;
+        --radius: 12px;
+        --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .btn {
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 0.5px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .btn:hover {
+        background: var(--bg);
+      }
+      .btn-pri {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .btn-pri:hover {
+        opacity: 0.9;
+      }
+      .btn-danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: var(--danger-light);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--card);
+        border-bottom: 0.5px solid var(--border);
+      }
+      .toolbar .back {
+        font-size: 12px;
+        color: var(--primary);
+        cursor: pointer;
+      }
+      .toolbar .icon {
+        font-size: 18px;
+      }
+      .toolbar .name {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .toolbar .id-badge {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-family: monospace;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: var(--bg);
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+
+      .body {
+        display: flex;
+        height: calc(100vh - 56px);
+      }
+      .ver-sidebar {
+        width: 180px;
+        flex-shrink: 0;
+        border-right: 0.5px solid var(--border);
+        background: var(--card);
+        padding: 12px;
+        overflow-y: auto;
+      }
+      .ver-sidebar h4 {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .ver-item {
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 3px;
+        font-size: 11px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.15s;
+      }
+      .ver-item:hover {
+        background: var(--bg);
+      }
+      .ver-item.active {
+        background: var(--primary-light);
+      }
+      .ver-item .vi-ver {
+        font-weight: 500;
+      }
+      .ver-item .vi-status {
+        font-size: 9px;
+        padding: 0 5px;
+        border-radius: 4px;
+      }
+      .vi-status.current {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .vi-status.draft {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+      .vi-status.old {
+        color: var(--text-muted);
+      }
+      .ver-item .vi-actions {
+        display: none;
+        gap: 2px;
+      }
+      .ver-item:hover .vi-actions {
+        display: flex;
+      }
+      .ver-item .vi-btn {
+        width: 18px;
+        height: 18px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 10px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ver-item .vi-btn:hover {
+        background: var(--border);
+      }
+      .ver-add {
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 0.5px solid var(--border);
+      }
+
+      .doc-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .doc-meta {
+        padding: 10px 20px;
+        border-bottom: 0.5px solid var(--border);
+        font-size: 11px;
+        color: var(--text-sec);
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--bg);
+      }
+      .doc-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      .doc-body pre {
+        white-space: pre-wrap;
+        font-size: 12px;
+        line-height: 1.7;
+        font-family: var(--font);
+        color: var(--text);
+      }
+
+      .flow-section {
+        border-top: 0.5px solid var(--border);
+        padding: 10px 20px;
+        background: var(--card);
+      }
+      .flow-section h4 {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-sec);
+        margin-bottom: 6px;
+      }
+      .flow-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+      }
+      .flow-step {
+        flex-shrink: 0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        background: var(--bg);
+        font-size: 10px;
+        border: 0.5px solid var(--border);
+      }
+      .flow-arrow {
+        color: var(--text-muted);
+        font-size: 10px;
+        flex-shrink: 0;
+      }
+
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+      .modal-box {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 24px;
+        width: 480px;
+        max-width: 90vw;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .modal-box h3 {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+      .modal-box label {
+        display: block;
+        font-size: 10px;
+        color: var(--text-sec);
+        margin-bottom: 3px;
+      }
+      .modal-box input,
+      .modal-box textarea,
+      .modal-box select {
+        width: 100%;
+        padding: 7px 10px;
+        border-radius: 6px;
+        border: 0.5px solid var(--border);
+        font-size: 11px;
+        margin-bottom: 10px;
+        outline: none;
+        font-family: var(--font);
+      }
+      .modal-box textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+      .modal-box .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        z-index: 200;
+        animation: fadeIn 0.3s;
+      }
+      .toast.success {
+        background: var(--success-light);
+        color: var(--success);
+        border: 1px solid var(--success);
+      }
+      .toast.info {
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+      .toast.warning {
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <a class="back" href="admin-legacy.html#section-sysPrompts">← 返回后台管理</a>
+      <span class="icon" id="pt-icon"></span>
+      <span class="name" id="pt-name"></span>
+      <span class="id-badge" id="pt-id"></span>
+      <span class="spacer"></span>
+      <button class="btn" data-action="pv-copy-content">📋 复制正文</button>
+      <button class="btn" data-action="pv-rename">✏️ 重命名</button>
+      <button class="btn btn-danger" data-action="pv-delete">🗑 删除</button>
+    </div>
+    <div class="body">
+      <div class="ver-sidebar" id="ver-sidebar"></div>
+      <div class="doc-area">
+        <div class="doc-meta" id="doc-meta"></div>
+        <div class="doc-body"><pre id="doc-body"></pre></div>
+        <div class="flow-section" id="flow-section"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-modal">
+      <div class="modal-box">
+        <h3 id="edit-title"></h3>
+        <label>版本号</label><input type="text" id="e-version" /> <label>状态</label
+        ><select id="e-status">
+          <option value="active">当前</option>
+          <option value="draft">草稿</option>
+          <option value="old">历史</option>
+        </select>
+        <label>说明</label><input type="text" id="e-note" /> <label>内容</label><textarea id="e-content"></textarea>
+        <div class="modal-actions">
+          <button class="btn" data-action="pv-close-edit">取消</button>
+          <button class="btn btn-pri" data-action="pv-save-edit">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="default-prompts.js?v=22"></script>
+    <script>
+      (function () {
+        var spData = [],
+          ptId = null,
+          pt = null,
+          spCurVerIdx = 0;
+        var SP_KEY = 'psy_sys_prompts',
+          SP_VERSION_KEY = 'psy_sys_prompts_v';
+        var SP_DATA_VERSION =
+          window.PROMPTS_VERSION ||
+          (function () {
+            var meta = (DEFAULT_PROMPTS || []).find(function (p) {
+              return p.id === 'meta';
+            });
+            if (!meta) return 'meta-missing';
+            var av = meta.versions.find(function (v) {
+              return v.status === 'active';
+            });
+            return (
+              'meta-v' +
+              meta.versions.length +
+              '-' +
+              meta.currentVersion +
+              '-' +
+              (av
+                ? av.content
+                    .substring(0, 40)
+                    .replace(/[^a-zA-Z0-9\\u4e00-\\u9fff]/g, '_')
+                    .substring(0, 20)
+                : '?')
+            );
+          })();
+
+        function showToast(m, t) {
+          m = m || '';
+          t = t || 'info';
+          var el = document.createElement('div');
+          el.className = 'toast ' + t;
+          el.textContent = m;
+          document.body.appendChild(el);
+          setTimeout(function () {
+            el.remove();
+          }, 2500);
+        }
+        function escHtml(s) {
+          var d = document.createElement('div');
+          d.textContent = s || '';
+          return d.innerHTML;
+        }
+
+        function normalizeData(data) {
+          var seen = {},
+            dd = [];
+          data.forEach(function (p) {
+            if (seen[p.id]) return;
+            seen[p.id] = true;
+            var clean = (p.versions || []).filter(function (v) {
+              return v.content && v.content.length > 0;
+            });
+            var vs = {},
+              vd = [];
+            clean.forEach(function (v) {
+              if (vs[v.version]) return;
+              vs[v.version] = true;
+              vd.push(v);
+            });
+            p.versions = vd;
+            if (
+              !p.currentVersion ||
+              !vd.find(function (v) {
+                return v.version === p.currentVersion;
+              })
+            ) {
+              var a = vd.find(function (v) {
+                return v.status === 'active';
+              });
+              p.currentVersion = a ? a.version : vd.length ? vd[vd.length - 1].version : '';
+            }
+            dd.push(p);
+          });
+          data.length = 0;
+          data.push.apply(data, dd);
+        }
+
+        function loadData() {
+          var saved = localStorage.getItem(SP_KEY);
+          if (saved) {
+            // 有数据就直接用，版本号仅记录，不用于决定是否覆盖
+            var savedVer = localStorage.getItem(SP_VERSION_KEY) || '(无版本记录)';
+            try {
+              spData = JSON.parse(saved);
+              normalizeData(spData);
+            } catch (e) {
+              spData = JSON.parse(JSON.stringify(window.DEFAULT_PROMPTS || []));
+              normalizeData(spData);
+            }
+            if (!spData || spData.length === 0) {
+              spData = JSON.parse(JSON.stringify(window.DEFAULT_PROMPTS || []));
+              normalizeData(spData);
+            }
+            localStorage.setItem(SP_VERSION_KEY, SP_DATA_VERSION);
+            saveData();
+          } else {
+            // 首次使用
+            spData = JSON.parse(JSON.stringify(window.DEFAULT_PROMPTS || []));
+            normalizeData(spData);
+            localStorage.setItem(SP_VERSION_KEY, SP_DATA_VERSION);
+            saveData();
+          }
+        }
+        function saveData() {
+          try {
+            localStorage.setItem(SP_KEY, JSON.stringify(spData));
+          } catch (e) {}
+        }
+
+        function render() {
+          if (!pt) return;
+          document.getElementById('pt-icon').textContent = pt.icon || '📋';
+          document.getElementById('pt-name').textContent = pt.name;
+          document.getElementById('pt-id').textContent = pt.id;
+          document.title = pt.name + ' - 提示词查看';
+
+          // Version list
+          var cv =
+            pt.versions.find(function (v) {
+              return v.version === pt.currentVersion;
+            }) || pt.versions[pt.versions.length - 1];
+          spCurVerIdx = pt.versions.indexOf(cv);
+          var vh = '<h4>版本</h4>';
+          (pt.versions || []).forEach(function (v, i) {
+            var act = v.version === pt.currentVersion ? ' active' : '';
+            var sl =
+              v.status === 'active'
+                ? '<span class="vi-status current">当前</span>'
+                : v.status === 'draft'
+                  ? '<span class="vi-status draft">草稿</span>'
+                  : '<span class="vi-status old">历史</span>';
+            vh +=
+              '<div class="ver-item' +
+              act +
+              '" data-action="pv-switch-version" data-index="' +
+              i +
+              '">' +
+              '<div><span class="vi-ver">v' +
+              v.version +
+              '</span> <span style="font-size:9px;color:var(--text-muted)">' +
+              v.date +
+              '</span></div>' +
+              '<div style="display:flex;align-items:center;gap:4px">' +
+              sl +
+              '<div class="vi-actions"><button class="vi-btn" data-action="pv-open-edit" data-index="' +
+              i +
+              '" title="编辑">✏️</button><button class="vi-btn" data-action="pv-del-version" data-index="' +
+              i +
+              '" title="删除">🗑</button></div>' +
+              '</div></div>';
+          });
+          vh +=
+            '<div class="ver-add"><button class="btn" style="width:100%;font-size:10px;justify-content:center" data-action="pv-add-version">+ 新增版本</button></div>';
+          document.getElementById('ver-sidebar').innerHTML = vh;
+
+          // Meta
+          document.getElementById('doc-meta').innerHTML =
+            '<span style="font-weight:500">v' +
+            cv.version +
+            '</span> ' +
+            '<span>' +
+            getStatusLabel(cv.status) +
+            '</span> ' +
+            '<span>📅 ' +
+            cv.date +
+            '</span> ' +
+            '<span>📏 ' +
+            (cv.content || '').length.toLocaleString() +
+            ' 字</span> ' +
+            (cv.note ? '<span>📝 ' + escHtml(cv.note) + '</span>' : '');
+
+          // Content
+          document.getElementById('doc-body').textContent = cv.content || '';
+
+          // Flow steps
+          var steps = pt.flowSteps || [],
+            fh = '<h4>📋 使用流程</h4><div class="flow-bar">';
+          steps.forEach(function (s, i) {
+            fh +=
+              '<div class="flow-step"><span style="font-weight:500;color:var(--primary)">' +
+              s.num +
+              '.</span> ' +
+              escHtml(s.title) +
+              '<br><span style="font-size:9px;color:var(--text-muted)">' +
+              escHtml(s.desc) +
+              '</span></div>';
+            if (i < steps.length - 1) fh += '<div class="flow-arrow">→</div>';
+          });
+          fh += '</div>';
+          document.getElementById('flow-section').innerHTML = fh;
+        }
+
+        function getStatusLabel(s) {
+          return s === 'active' ? '当前' : s === 'draft' ? '草稿' : '历史';
+        }
+
+        // ---- Version actions ----
+        window.switchVersion = function (idx) {
+          var v = pt.versions[idx];
+          pt.currentVersion = v.version;
+          saveData();
+          render();
+        };
+        window.addVersion = function () {
+          var cur = pt.currentVersion,
+            parts = cur.split('.'),
+            nv = parts[0] + '.' + (parseInt(parts[1]) + 1);
+          var co = pt.versions.find(function (v) {
+            return v.version === cur;
+          });
+          pt.versions.push({
+            version: nv,
+            status: 'draft',
+            note: '基于 v' + cur + ' 创建',
+            date: new Date().toISOString().split('T')[0],
+            content: (co || {}).content || ''
+          });
+          pt.currentVersion = nv;
+          saveData();
+          render();
+          showToast('✨ 已创建 v' + nv, 'success');
+        };
+        window.delVersion = function (idx) {
+          if (pt.versions.length <= 1) {
+            showToast('⚠️ 至少保留一个版本', 'warning');
+            return;
+          }
+          var d = pt.versions[idx];
+          pt.versions.splice(idx, 1);
+          if (pt.currentVersion === d.version) pt.currentVersion = pt.versions[pt.versions.length - 1].version;
+          saveData();
+          render();
+          showToast('🗑 已删除 v' + d.version, 'info');
+        };
+        window.openEdit = function (idx) {
+          var v = pt.versions[idx];
+          spCurVerIdx = idx;
+          document.getElementById('edit-title').textContent = '✏️ 编辑版本 — v' + v.version;
+          document.getElementById('e-version').value = v.version;
+          document.getElementById('e-status').value = v.status;
+          document.getElementById('e-note').value = v.note || '';
+          document.getElementById('e-content').value = v.content || '';
+          document.getElementById('edit-modal').classList.add('show');
+        };
+        window.closeEdit = function () {
+          document.getElementById('edit-modal').classList.remove('show');
+        };
+        window.saveEdit = function () {
+          var v = pt.versions[spCurVerIdx];
+          v.version = document.getElementById('e-version').value;
+          v.status = document.getElementById('e-status').value;
+          v.note = document.getElementById('e-note').value;
+          v.content = document.getElementById('e-content').value;
+          if (v.status === 'active') {
+            pt.versions.forEach(function (ver, i) {
+              if (i !== spCurVerIdx && ver.status === 'active') ver.status = 'old';
+            });
+            pt.currentVersion = v.version;
+          }
+          closeEdit();
+          saveData();
+          render();
+          showToast('✓ 版本已保存', 'success');
+        };
+
+        // ---- Prompt actions ----
+        window.copyContent = function () {
+          var cv = pt.versions.find(function (v) {
+            return v.version === pt.currentVersion;
+          });
+          navigator.clipboard.writeText(cv ? cv.content : '').then(function () {
+            showToast('✓ 已复制', 'success');
+          });
+        };
+        window.renamePrompt = function () {
+          var nn = prompt('重命名提示词', pt.name);
+          if (nn && nn.trim()) {
+            pt.name = nn.trim();
+            saveData();
+            render();
+            showToast('✓ 已重命名', 'success');
+          }
+        };
+        window.deletePrompt = function () {
+          if (spData.length <= 1) {
+            showToast('⚠️ 至少保留一个', 'warning');
+            return;
+          }
+          if (!confirm('确定删除「' + pt.name + '」？')) return;
+          spData = spData.filter(function (p) {
+            return p.id !== ptId;
+          });
+          saveData();
+          window.close();
+        };
+
+        // ---- Init ----
+        var urlParams = new URLSearchParams(window.location.search);
+        ptId = urlParams.get('id');
+        loadData();
+        pt = spData.find(function (p) {
+          return p.id === ptId;
+        });
+        if (!pt) {
+          document.body.innerHTML =
+            '<div style="padding:40px;text-align:center;color:var(--text-muted)">提示词不存在: ' +
+            escHtml(ptId) +
+            '</div>';
+        } else render();
+      })();
+    </script>
+  </body>
+</html>

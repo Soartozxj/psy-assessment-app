@@ -35,7 +35,7 @@ LNMP_SCALES_URL = 'https://www.soarto.com.cn/api/scales-json'
 # LNMP 服务器配置（前端 JS 文件需同步到此服务器）
 LNMP_SSH_HOST = 'root@101.43.43.125'
 LNMP_WWW_DIR = '/www/wwwroot/www.soarto.com.cn'
-LNMP_FRONTEND_FILES = ['shared-data.js', 'cloud-data.js', 'cloud-api.js', 'scoring-engine.js', 'asset-storage.js', 'data-monitor.js', 'index.html', 'admin-legacy.html', 'scale-onboard.html', 'default-prompts.js', 'miniprogram-qr.png', 'counselor.png']
+LNMP_FRONTEND_FILES = ['shared-data.js', 'cloud-data.js', 'cloud-api.js', 'scoring-engine.js', 'asset-storage.js', 'data-monitor.js', 'index.html', 'admin-legacy.html', 'admin-data.js', 'admin-scale-list.js', 'admin-ai-diag.js', 'admin-feedback.js', 'scale-onboard.html', 'default-prompts.js', 'miniprogram-qr.png', 'counselor.png']
 
 # AI 配置文件（DashScope API Key 等）
 AI_CONFIG_FILE = os.path.join(WORKSPACE, 'ai-config.json')
@@ -47,6 +47,10 @@ SCALE_TYPES_FILE = os.path.join(WORKSPACE, 'scale-types.json')
 DEPLOY_FILES = [
     'frontend/index.html',          # 前端页面
     'backend/admin-legacy.html',    # 后台管理（deploy → SCP → LNMP 服务器）
+    'backend/admin-feedback.js',    # 用户评价模块（从 admin-legacy.html 提取）
+    'backend/admin-data.js',        # 数据看板模块（从 admin-legacy.html 提取）
+    'backend/admin-ai-diag.js',     # AI 诊断 + 一键配置模块
+    'backend/admin-scale-list.js',  # 量表列表/筛选/排序模块
     'shared-data.js',               # 共享数据模块（将注入量表数据）
     'cloud-data.js',                # 云端数据适配层
     'cloud-api.js',                 # 云托管 HTTP API 通信模块（v11.0）

@@ -1,0 +1,109 @@
+<svg viewBox="0 0 680 780" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>场景二三：System Prompt 生成与 AI 诊断链路</title>
+  <desc>Meta Prompt 生成 System Prompt，前端消费 AI 诊断</desc>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="15" width="600" height="35" rx="8" fill="#185FA5"/>
+  <text x="340" y="37" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="500">场景三：System Prompt 生成（后台 admin-legacy）</text>
+
+  <rect x="40" y="60" width="600" height="65" rx="10" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.5"/>
+  <text x="60" y="80" fill="#042C53" font-size="11" font-family="sans-serif" font-weight="500">输入：量表完整数据</text>
+  <rect x="55" y="90" width="280" height="26" rx="5" fill="#378ADD"/>
+  <text x="195" y="107" text-anchor="middle" fill="white" font-size="11" font-family="sans-serif">题文 + 选项 + 计分 + 维度解释</text>
+  <rect x="355" y="90" width="270" height="26" rx="5" fill="#B5D4F4"/>
+  <text x="490" y="107" text-anchor="middle" fill="#0C447C" font-size="11" font-family="sans-serif">构建 scaleContext 上下文变量</text>
+
+  <polyline points="195,128 195,150" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="155" width="600" height="75" rx="10" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.5"/>
+  <text x="60" y="175" fill="#042C53" font-size="11" font-family="sans-serif" font-weight="500">Meta Prompt 整合</text>
+
+  <rect x="55" y="190" width="150" height="32" rx="5" fill="#185FA5"/>
+  <text x="130" y="210" text-anchor="middle" fill="white" font-size="11" font-family="sans-serif" font-weight="500">metaPrompt 模板</text>
+
+  <polyline points="205,206 235,206" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="240" y="190" width="180" height="32" rx="5" fill="#378ADD"/>
+  <text x="330" y="210" text-anchor="middle" fill="white" font-size="11" font-family="sans-serif">替换 scaleContext 占位符</text>
+
+  <polyline points="420,206 450,206" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="455" y="190" width="170" height="32" rx="5" fill="#B5D4F4"/>
+  <text x="540" y="210" text-anchor="middle" fill="#0C447C" font-size="11" font-family="sans-serif">role:user 消息</text>
+
+  <polyline points="330,232 330,250" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="255" width="600" height="50" rx="10" fill="#FAEEDA" stroke="#FAC775" stroke-width="0.5"/>
+  <text x="60" y="275" fill="#854F0B" font-size="11" font-family="sans-serif" font-weight="500">AI 调用：generateAiDiagPrompt()</text>
+  <rect x="55" y="282" width="570" height="18" rx="5" fill="#BA7517"/>
+  <text x="340" y="295" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">callAi([role:user metaPrompt+scaleContext]) → DeepSeek/Qwen</text>
+
+  <polyline points="330,305 330,325" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="330" width="600" height="65" rx="10" fill="#EEEDFE" stroke="#CECBF6" stroke-width="0.5"/>
+  <text x="60" y="350" fill="#26215C" font-size="11" font-family="sans-serif" font-weight="500">输出：System Prompt 文本 → 保存</text>
+  <rect x="55" y="363" width="280" height="24" rx="5" fill="#7F77DD"/>
+  <text x="195" y="379" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">AI 返回 Prompt → 写入 textarea 预览</text>
+  <rect x="355" y="363" width="270" height="24" rx="5" fill="#534AB7"/>
+  <text x="490" y="379" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">管理员保存 → scale.aiDiag.prompt</text>
+
+  <line x1="40" y1="415" x2="640" y2="415" stroke="#D3D1C7" stroke-width="1.5" stroke-dasharray="8,4"/>
+  <text x="340" y="410" text-anchor="middle" fill="#888780" font-size="10" font-family="sans-serif">psy_scales_data → LNMP → CloudBase 同步</text>
+
+  <rect x="40" y="430" width="600" height="35" rx="8" fill="#185FA5"/>
+  <text x="340" y="452" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="500">场景二：AI 诊断（前端 frontend/index）</text>
+
+  <rect x="40" y="475" width="600" height="65" rx="10" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.5"/>
+  <text x="60" y="495" fill="#042C53" font-size="11" font-family="sans-serif" font-weight="500">输入：用户测评数据（变量替换源）</text>
+  <rect x="55" y="505" width="115" height="26" rx="5" fill="#378ADD"/>
+  <text x="112" y="522" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">scaleName</text>
+  <rect x="182" y="505" width="100" height="26" rx="5" fill="#378ADD"/>
+  <text x="232" y="522" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">score/level</text>
+  <rect x="294" y="505" width="120" height="26" rx="5" fill="#378ADD"/>
+  <text x="354" y="522" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">dimensions</text>
+  <rect x="426" y="505" width="95" height="26" rx="5" fill="#378ADD"/>
+  <text x="473" y="522" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">answers</text>
+  <rect x="533" y="505" width="92" height="26" rx="5" fill="#B5D4F4"/>
+  <text x="579" y="522" text-anchor="middle" fill="#0C447C" font-size="10" font-family="sans-serif">provider?</text>
+
+  <polyline points="340,545 340,565" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="570" width="600" height="65" rx="10" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.5"/>
+  <text x="60" y="590" fill="#042C53" font-size="11" font-family="sans-serif" font-weight="500">Prompt 整合：变量替换 + 格式追加</text>
+
+  <rect x="55" y="600" width="160" height="28" rx="5" fill="#0C447C"/>
+  <text x="135" y="618" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">System Prompt 变量替换</text>
+
+  <polyline points="215,614 245,614" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="250" y="600" width="160" height="28" rx="5" fill="#378ADD"/>
+  <text x="330" y="618" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">追加 Output Format 约束</text>
+
+  <polyline points="410,614 440,614" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="445" y="600" width="180" height="28" rx="5" fill="#B5D4F4"/>
+  <text x="535" y="618" text-anchor="middle" fill="#0C447C" font-size="10" font-family="sans-serif">messages = [system, user]</text>
+
+  <polyline points="340,640 340,660" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="665" width="600" height="50" rx="10" fill="#FAEEDA" stroke="#FAC775" stroke-width="0.5"/>
+  <text x="60" y="685" fill="#854F0B" font-size="11" font-family="sans-serif" font-weight="500">AI 调用：CloudData.callAi(provider?)</text>
+  <rect x="55" y="692" width="280" height="18" rx="5" fill="#BA7517"/>
+  <text x="195" y="705" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif">WebView → CloudBase /api/ai-diagnose</text>
+  <rect x="350" y="692" width="275" height="18" rx="5" fill="#FAC775"/>
+  <text x="487" y="705" text-anchor="middle" fill="#854F0B" font-size="9" font-family="sans-serif">浏览器 → LNMP /api/ai-diagnose</text>
+
+  <polyline points="340,715 340,735" fill="none" stroke="#185FA5" stroke-width="1.2" marker-end="url(#a)"/>
+
+  <rect x="40" y="740" width="600" height="60" rx="10" fill="#EEEDFE" stroke="#CECBF6" stroke-width="0.5"/>
+  <text x="60" y="760" fill="#26215C" font-size="11" font-family="sans-serif" font-weight="500">输出：Markdown 诊断报告</text>
+  <rect x="55" y="770" width="280" height="22" rx="5" fill="#7F77DD"/>
+  <text x="195" y="785" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">纯 Markdown → markdown-it 渲染展示</text>
+  <rect x="355" y="770" width="270" height="22" rx="5" fill="#534AB7"/>
+  <text x="490" y="785" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">存入 history.aiDiagText + 浏览器存储</text>
+</svg>

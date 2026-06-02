@@ -1,9 +1,9 @@
 /**
  * 星蓝心镜 - 后端 API 服务
- * 
+ *
  * 部署：腾讯云轻量服务器 /www/server/psy-api/
  * 端口：3100（Nginx 反向代理 /api → :3100）
- * 
+ *
  * API 列表：
  *   健康检查：GET /
  *   测评记录：POST /api/submit, GET /api/history, GET /api/history/:id, DELETE /api/history/:id
@@ -29,11 +29,19 @@ const TOKEN_SECRET = process.env.TOKEN_SECRET || 'psy-default-secret';
 const TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 天
 
 // CORS 白名单：从环境变量读取，默认允许本地和已有域名
-const corsOrigins = (process.env.CORS_ORIGINS || 'https://www.soarto.com.cn,https://soarto.com.cn,http://localhost:8080,http://localhost:8081').split(',').map(s => s.trim()).filter(Boolean);
-app.use(cors({
-  origin: corsOrigins,
-  credentials: true
-}));
+const corsOrigins = (
+  process.env.CORS_ORIGINS ||
+  'https://www.soarto.com.cn,https://soarto.com.cn,http://localhost:8080,http://localhost:8081'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: corsOrigins,
+    credentials: true
+  })
+);
 
 // ====================================================
 // MySQL 连接池
@@ -77,13 +85,19 @@ function generateToken(openid, role) {
 }
 
 function verifyToken(token) {
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
   try {
     const [encoded, sig] = token.split('.');
     const expectedSig = crypto.createHmac('sha256', TOKEN_SECRET).update(encoded).digest('hex').substring(0, 16);
-    if (sig !== expectedSig) return null;
+    if (sig !== expectedSig) {
+      return null;
+    }
     const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString());
-    if (payload.exp < Date.now()) return null;
+    if (payload.exp < Date.now()) {
+      return null;
+    }
     return payload;
   } catch (e) {
     return null;
@@ -111,7 +125,9 @@ const pendingLogins = new Map();
 setInterval(() => {
   const now = Date.now();
   for (const [scene, data] of pendingLogins) {
-    if (now - data.createdAt > 5 * 60 * 1000) pendingLogins.delete(scene);
+    if (now - data.createdAt > 5 * 60 * 1000) {
+      pendingLogins.delete(scene);
+    }
   }
 }, 60 * 1000);
 
@@ -138,51 +154,57 @@ app.get('/api/auth/callback', async (req, res) => {
   }
   try {
     // 用 code 换 access_token
-    const tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token?' +
-      'appid=' + process.env.WECHAT_WEB_APPID +
-      '&secret=' + process.env.WECHAT_WEB_SECRET +
-      '&code=' + code +
+    const tokenUrl =
+      'https://api.weixin.qq.com/sns/oauth2/access_token?' +
+      'appid=' +
+      process.env.WECHAT_WEB_APPID +
+      '&secret=' +
+      process.env.WECHAT_WEB_SECRET +
+      '&code=' +
+      code +
       '&grant_type=authorization_code';
     const tokenRes = await fetch(tokenUrl);
     const tokenData = await tokenRes.json();
-    
+
     if (tokenData.errcode) {
       return res.redirect('/admin-legacy.html?auth=error&msg=' + (tokenData.errmsg || 'token_exchange_failed'));
     }
-    
+
     const webOpenid = tokenData.openid;
     const unionid = tokenData.unionid || '';
-    
+
     // 检查是否为管理员
     const db = await getPool();
-    const [admins] = await db.query(
-      'SELECT * FROM admins WHERE openid = ? OR (openid = ? AND openid != "") LIMIT 1',
-      [unionid, webOpenid]
-    );
-    
+    const [admins] = await db.query('SELECT * FROM admins WHERE openid = ? OR (openid = ? AND openid != "") LIMIT 1', [
+      unionid,
+      webOpenid
+    ]);
+
     if (admins.length === 0) {
-      if (pendingLogins.has(scene)) pendingLogins.get(scene).status = 'rejected';
+      if (pendingLogins.has(scene)) {
+        pendingLogins.get(scene).status = 'rejected';
+      }
       return res.redirect('/admin-legacy.html?auth=rejected');
     }
-    
+
     // 生成 token
     const admin = admins[0];
     const token = generateToken(admin.openid, admin.role);
-    
+
     // 更新状态
     if (pendingLogins.has(scene)) {
       pendingLogins.get(scene).status = 'approved';
       pendingLogins.get(scene).token = token;
     }
-    
+
     // 更新登录时间
     await db.query('UPDATE admins SET last_login_at = NOW() WHERE id = ?', [admin.id]);
-    
+
     // 自动补填 unionid
     if (unionid && !admin.unionid) {
       // admins 表暂无 unionid 字段，后续扩展
     }
-    
+
     res.redirect('/admin-legacy.html?auth=success&scene=' + scene);
   } catch (err) {
     console.error('[Auth Callback] 错误:', err);
@@ -238,18 +260,33 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/submit', async (req, res) => {
   try {
     const db = await getPool();
-    const { recordId, scaleId, scaleName, totalScore, maxScore, level, levelName, color, answers, dimensions, aiDiagnosis, source, duration, categoryName } = req.body;
-    
+    const {
+      recordId,
+      scaleId,
+      scaleName,
+      totalScore,
+      maxScore,
+      level,
+      levelName,
+      color,
+      answers,
+      dimensions,
+      aiDiagnosis,
+      source,
+      duration,
+      categoryName
+    } = req.body;
+
     if (!recordId || !scaleId) {
       return res.status(400).json({ code: -1, message: '参数错误：需要 recordId 和 scaleId' });
     }
-    
+
     // 检查是否已存在
     const [existing] = await db.query('SELECT id FROM assessments WHERE record_id = ?', [recordId]);
     if (existing.length > 0) {
       return res.json({ code: 0, message: '记录已存在', data: { id: existing[0].id } });
     }
-    
+
     const [result] = await db.query(
       `INSERT INTO assessments (record_id, openid, scale_id, scale_name, total_score, max_score, level, level_name, color, answers, dimensions, ai_diagnosis, source, duration, category_name)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -271,7 +308,7 @@ app.post('/api/submit', async (req, res) => {
         categoryName || ''
       ]
     );
-    
+
     res.json({ code: 0, data: { id: result.insertId, recordId } });
   } catch (err) {
     console.error('[Submit] 错误:', err);
@@ -290,24 +327,24 @@ app.get('/api/history', async (req, res) => {
     const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 20));
     const openid = req.query.openid || '';
     const offset = (page - 1) * pageSize;
-    
+
     let where = 'WHERE 1=1';
     const params = [];
     if (openid) {
       where += ' AND openid = ?';
       params.push(openid);
     }
-    
+
     const [list] = await db.query(
       `SELECT id, record_id, openid, scale_id, scale_name, total_score, max_score, level, level_name, color, dimensions, ai_diagnosis, source, duration, category_name, created_at
        FROM assessments ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [...params, pageSize, offset]
     );
-    
+
     const [countResult] = await db.query(`SELECT COUNT(*) as total FROM assessments ${where}`, params);
-    
+
     // 解析 JSON 字段，对齐前端 record 对象结构
-    const records = list.map(r => ({
+    const records = list.map((r) => ({
       id: r.record_id,
       scaleId: r.scale_id,
       scaleName: r.scale_name,
@@ -324,7 +361,7 @@ app.get('/api/history', async (req, res) => {
       date: r.created_at ? new Date(r.created_at).toLocaleDateString('zh-CN') : '',
       completedAt: r.created_at
     }));
-    
+
     res.json({
       code: 0,
       data: {
@@ -347,10 +384,7 @@ app.get('/api/history', async (req, res) => {
 app.get('/api/history/:id', async (req, res) => {
   try {
     const db = await getPool();
-    const [rows] = await db.query(
-      'SELECT * FROM assessments WHERE record_id = ? LIMIT 1',
-      [req.params.id]
-    );
+    const [rows] = await db.query('SELECT * FROM assessments WHERE record_id = ? LIMIT 1', [req.params.id]);
     if (rows.length === 0) {
       return res.status(404).json({ code: -1, message: '记录不存在' });
     }
@@ -407,54 +441,99 @@ app.delete('/api/history/:id', authMiddleware, async (req, res) => {
  * .env 中 DASHSCOPE_API_KEY 支持逗号分隔多个 Key，遇到 401/429 自动切换
  * 也可通过 POST /api/ai-config 动态更新
  */
-const _apiKeys = [];
-let _keyIndex = 0;
+/**
+ * 多 Key 管理
+ * .env 中支持 DASHSCOPE_API_KEY 和 DEEPSEEK_API_KEY（逗号分隔多个），遇到 401/429 自动切换
+ * 也可通过 POST /api/ai-config 动态更新
+ */
+const _apiKeys = { dashscope: [], deepseek: [] };
+const _keyIndex = { dashscope: 0, deepseek: 0 };
 
 // 从 .env 加载（逗号分隔）
-if (process.env.DASHSCOPE_API_KEY) {
-  process.env.DASHSCOPE_API_KEY.split(/[,，]/).forEach(k => {
-    const trimmed = k.trim();
-    if (trimmed.length > 10) _apiKeys.push(trimmed);
-  });
-}
-console.log('[AI] 已加载 ' + _apiKeys.length + ' 个 API Key');
+['DASHSCOPE_API_KEY', 'DEEPSEEK_API_KEY'].forEach(function (envKey) {
+  const provider = envKey === 'DASHSCOPE_API_KEY' ? 'dashscope' : 'deepseek';
+  if (process.env[envKey]) {
+    process.env[envKey].split(/[,，]/).forEach(function (k) {
+      const trimmed = k.trim();
+      if (trimmed.length > 10) {
+        _apiKeys[provider].push(trimmed);
+      }
+    });
+  }
+});
+console.log(
+  '[AI] 已加载 DashScope Key: ' + _apiKeys.dashscope.length + ' 个, DeepSeek Key: ' + _apiKeys.deepseek.length + ' 个'
+);
 
 /** 获取当前 Key（轮询） */
-function _nextKey() {
-  if (_apiKeys.length === 0) return '';
-  const key = _apiKeys[_keyIndex % _apiKeys.length];
-  _keyIndex = (_keyIndex + 1) % _apiKeys.length;
+function _nextKey(provider) {
+  const keys = _apiKeys[provider] || [];
+  if (keys.length === 0) {
+    return '';
+  }
+  const idx = _keyIndex[provider] || 0;
+  const key = keys[idx % keys.length];
+  _keyIndex[provider] = (idx + 1) % keys.length;
   return key;
 }
 
-/** 带 Key 轮询的 DashScope 调用 */
-async function _callDashScope(messages, model, temperature, maxTokens) {
-  if (_apiKeys.length === 0) {
-    throw new Error('AI API Key 未配置（.env DASHSCOPE_API_KEY 或 POST /api/ai-config）');
+/** 各 Provider 的 API 基础地址 */
+const _PROVIDER_BASE_URL = {
+  dashscope: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  deepseek: 'https://api.deepseek.com/v1/chat/completions'
+};
+
+/** 各 Provider 的默认模型 */
+const _PROVIDER_DEFAULT_MODEL = {
+  dashscope: 'qwen-plus',
+  deepseek: 'deepseek-chat'
+};
+
+/** 通用的 OpenAI 兼容格式 AI 调用（带 Key 轮询） */
+async function _callAi(messages, model, temperature, maxTokens, provider) {
+  const baseUrl = _PROVIDER_BASE_URL[provider];
+  if (!baseUrl) {
+    throw new Error('不支持的 AI 服务商: ' + provider);
   }
 
-  const startIdx = _keyIndex;
+  const keys = _apiKeys[provider] || [];
+  if (keys.length === 0) {
+    throw new Error(
+      'AI API Key 未配置（.env ' +
+        (provider === 'deepseek' ? 'DEEPSEEK' : 'DASHSCOPE') +
+        '_API_KEY 或 POST /api/ai-config）'
+    );
+  }
+
   let lastError = null;
 
-  for (let attempt = 0; attempt < _apiKeys.length; attempt++) {
-    const key = _apiKeys[_keyIndex % _apiKeys.length];
-    _keyIndex = (_keyIndex + 1) % _apiKeys.length;
-    console.log('[AI] 尝试 Key #' + ((_keyIndex - 1 + _apiKeys.length) % _apiKeys.length + 1) + '/' + _apiKeys.length);
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const key = keys[(_keyIndex[provider] || 0) % keys.length];
+    _keyIndex[provider] = ((_keyIndex[provider] || 0) + 1) % keys.length;
+    console.log('[AI][' + provider + '] 尝试 Key #' + attempt + '/' + keys.length);
 
     try {
-      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + key
+          Authorization: 'Bearer ' + key
         },
         body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature })
       });
       const data = await response.json();
 
       // 401/429 → 切换下一个 Key
-      if (data.error && (data.error.code === 'InvalidApiKey' || data.error.code === 'InvalidParameter' || response.status === 401 || response.status === 429)) {
-        console.warn('[AI] Key 失效 (' + response.status + '): ' + (data.error.message || '') + '，切换下一个');
+      if (
+        data.error &&
+        (data.error.code === 'InvalidApiKey' ||
+          data.error.code === 'InvalidParameter' ||
+          response.status === 401 ||
+          response.status === 429)
+      ) {
+        console.warn(
+          '[AI][' + provider + '] Key 失效 (' + response.status + '): ' + (data.error.message || '') + '，切换下一个'
+        );
         lastError = new Error(data.error.message || 'Key 失效 (HTTP ' + response.status + ')');
         continue;
       }
@@ -463,19 +542,25 @@ async function _callDashScope(messages, model, temperature, maxTokens) {
         return { error: true, message: data.error.message || 'AI 调用失败' };
       }
 
-      const result = data.choices && data.choices[0] && data.choices[0].message
-        ? data.choices[0].message.content : '';
-      if (!result) return { error: true, message: 'AI 返回为空' };
+      const result = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
+      if (!result) {
+        return { error: true, message: 'AI 返回为空' };
+      }
 
       return { error: false, data: result };
     } catch (err) {
-      console.warn('[AI] 请求异常:', err.message);
+      console.warn('[AI][' + provider + '] 请求异常:', err.message);
       lastError = err;
     }
   }
 
   // 所有 Key 都失败
   throw lastError || new Error('所有 API Key 均不可用');
+}
+
+/** 兼容旧代码的 _callDashScope 别名 */
+function _callDashScope(messages, model, temperature, maxTokens) {
+  return _callAi(messages, model, temperature, maxTokens, 'dashscope');
 }
 
 app.post('/api/ai-diagnose', async (req, res) => {
@@ -485,27 +570,43 @@ app.post('/api/ai-diagnose', async (req, res) => {
       return res.status(400).json({ code: -1, message: '参数错误：需要 messages 数组' });
     }
 
-    const effectiveModel = model || 'qwen-plus';
+    const effectiveProvider = provider || 'dashscope';
+    const baseUrl = _PROVIDER_BASE_URL[effectiveProvider];
+    if (!baseUrl) {
+      return res.status(400).json({ code: -1, message: '不支持的 AI 服务商: ' + effectiveProvider });
+    }
+    const effectiveModel = model || _PROVIDER_DEFAULT_MODEL[effectiveProvider] || 'qwen-plus';
     const effectiveTemp = Math.max(0, Math.min(2, temperature !== undefined ? temperature : 0.7));
     const effectiveMaxTokens = Math.max(100, Math.min(8000, maxTokens || 2000));
 
     // 如果请求体带了单个 apiKey（前端直连场景），直接用，不走轮询
     if (apiKey) {
-      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      const response = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-        body: JSON.stringify({ model: effectiveModel, messages, max_tokens: effectiveMaxTokens, temperature: effectiveTemp })
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+        body: JSON.stringify({
+          model: effectiveModel,
+          messages,
+          max_tokens: effectiveMaxTokens,
+          temperature: effectiveTemp
+        })
       });
       const data = await response.json();
-      if (data.error) return res.status(502).json({ code: -1, message: data.error.message || 'AI 调用失败' });
+      if (data.error) {
+        return res.status(502).json({ code: -1, message: data.error.message || 'AI 调用失败' });
+      }
       const result = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
-      if (!result) return res.status(502).json({ code: -1, message: 'AI 返回为空' });
+      if (!result) {
+        return res.status(502).json({ code: -1, message: 'AI 返回为空' });
+      }
       return res.json({ code: 0, data: result });
     }
 
     // 服务端多 Key 轮询
-    const result = await _callDashScope(messages, effectiveModel, effectiveTemp, effectiveMaxTokens);
-    if (result.error) return res.status(502).json({ code: -1, message: result.message });
+    const result = await _callAi(messages, effectiveModel, effectiveTemp, effectiveMaxTokens, effectiveProvider);
+    if (result.error) {
+      return res.status(502).json({ code: -1, message: result.message });
+    }
     res.json({ code: 0, data: result.data });
   } catch (err) {
     console.error('[AI] 错误:', err);
@@ -517,7 +618,9 @@ app.post('/api/ai-diagnose', async (req, res) => {
 // ADMIN_API_SECRET 环境变量，未设置则不验证（向后兼容）
 function adminSecretMiddleware(req, res, next) {
   const secret = process.env.ADMIN_API_SECRET;
-  if (!secret) return next(); // 未配置则放行
+  if (!secret) {
+    return next();
+  } // 未配置则放行
   const reqSecret = req.headers['x-admin-secret'] || req.query.admin_secret || '';
   if (reqSecret !== secret) {
     return res.status(403).json({ code: -1, message: '无管理员权限' });
@@ -528,39 +631,61 @@ function adminSecretMiddleware(req, res, next) {
 // 更新 AI Key 配置（管理员专用）
 app.put('/api/ai-config', adminSecretMiddleware, async (req, res) => {
   try {
-    const { keys } = req.body; // keys: string[] 或逗号分隔字符串
-    if (!keys) return res.status(400).json({ code: -1, message: '需要 keys 参数' });
-    const keyArr = typeof keys === 'string' ? keys.split(/[,，]/).map(k => k.trim()).filter(k => k.length > 10) : keys.filter(k => k.length > 10);
-    if (keyArr.length === 0) return res.status(400).json({ code: -1, message: '无有效 Key' });
+    const { keys, provider: reqProvider } = req.body;
+    if (!keys) {
+      return res.status(400).json({ code: -1, message: '需要 keys 参数' });
+    }
+    const provider = reqProvider || 'dashscope';
+    if (!_apiKeys[provider]) {
+      return res.status(400).json({ code: -1, message: '不支持的 provider: ' + provider });
+    }
 
-    _apiKeys.length = 0;
-    keyArr.forEach(k => _apiKeys.push(k));
-    _keyIndex = 0;
-    console.log('[AI] Key 配置已更新，共 ' + _apiKeys.length + ' 个');
+    const keyArr =
+      typeof keys === 'string'
+        ? keys
+            .split(/[,，]/)
+            .map((k) => k.trim())
+            .filter((k) => k.length > 10)
+        : keys.filter((k) => k.length > 10);
+    if (keyArr.length === 0) {
+      return res.status(400).json({ code: -1, message: '无有效 Key' });
+    }
+
+    _apiKeys[provider].length = 0;
+    keyArr.forEach((k) => _apiKeys[provider].push(k));
+    _keyIndex[provider] = 0;
+    console.log('[AI][' + provider + '] Key 配置已更新，共 ' + _apiKeys[provider].length + ' 个');
 
     // 持久化到 .env 文件，防止服务重启丢失
     try {
       const envPath = path.resolve(process.cwd(), '.env');
       let envContent = '';
-      try { envContent = fs.readFileSync(envPath, 'utf-8'); } catch (e) { /* 文件不存在则新建 */ }
+      try {
+        envContent = fs.readFileSync(envPath, 'utf-8');
+      } catch (e) {
+        /* 文件不存在则新建 */
+      }
       const envLines = envContent.split('\n');
-      const newLine = 'DASHSCOPE_API_KEY=' + keyArr.join(',');
+      const envKey = provider === 'deepseek' ? 'DEEPSEEK_API_KEY' : 'DASHSCOPE_API_KEY';
+      const newLine = envKey + '=' + keyArr.join(',');
       let found = false;
       for (let i = 0; i < envLines.length; i++) {
-        if (envLines[i].startsWith('DASHSCOPE_API_KEY=')) {
+        if (envLines[i].startsWith(envKey + '=')) {
           envLines[i] = newLine;
           found = true;
           break;
         }
       }
-      if (!found) envLines.push(newLine);
+      if (!found) {
+        envLines.push(newLine);
+      }
       fs.writeFileSync(envPath, envLines.join('\n'));
-      console.log('[AI] Key 已持久化到 .env');
+      console.log('[AI][' + provider + '] Key 已持久化到 .env');
     } catch (e) {
       console.warn('[AI] 持久化到 .env 失败:', e.message);
     }
 
-    res.json({ code: 0, data: { count: _apiKeys.length } });
+    res.json({ code: 0, data: { count: _apiKeys[provider].length } });
   } catch (err) {
     res.status(500).json({ code: -1, message: err.message });
   }
@@ -569,12 +694,21 @@ app.put('/api/ai-config', adminSecretMiddleware, async (req, res) => {
 // 查询当前 AI Key 配置状态（脱敏，管理员专用）
 app.get('/api/ai-config', adminSecretMiddleware, async (req, res) => {
   try {
-    const masked = _apiKeys.map((k, i) => ({
-      index: i + 1,
-      key: k.substring(0, 8) + '***' + k.substring(k.length - 4),
-      active: i === (_keyIndex % _apiKeys.length)
-    }));
-    res.json({ code: 0, data: { count: _apiKeys.length, keys: masked } });
+    const result = {};
+    ['dashscope', 'deepseek'].forEach(function (provider) {
+      const keys = _apiKeys[provider] || [];
+      result[provider] = {
+        count: keys.length,
+        keys: keys.map(function (k, i) {
+          return {
+            index: i + 1,
+            key: k.substring(0, 8) + '***' + k.substring(k.length - 4),
+            active: i === (_keyIndex[provider] || 0) % keys.length
+          };
+        })
+      };
+    });
+    res.json({ code: 0, data: result });
   } catch (err) {
     res.status(500).json({ code: -1, message: err.message });
   }
@@ -588,10 +722,10 @@ app.post('/api/feedback', async (req, res) => {
   try {
     const db = await getPool();
     const { recordId, scene, stars, tags, text, comment, source, scaleId, scaleName, assessmentData } = req.body;
-    
+
     // 兼容新旧字段名：text → comment
     const feedbackComment = text || comment || null;
-    
+
     if (!recordId || !scene) {
       return res.status(400).json({ code: -1, message: '参数错误：需要 recordId, scene' });
     }
@@ -600,10 +734,7 @@ app.post('/api/feedback', async (req, res) => {
     }
 
     // 检查是否已评价
-    const [existing] = await db.query(
-      'SELECT id FROM feedback WHERE record_id = ? AND scene = ?',
-      [recordId, scene]
-    );
+    const [existing] = await db.query('SELECT id FROM feedback WHERE record_id = ? AND scene = ?', [recordId, scene]);
     if (existing.length > 0) {
       return res.json({ code: 0, message: '已评价过' });
     }
@@ -639,7 +770,7 @@ app.get('/api/feedback/:recordId', async (req, res) => {
       [req.params.recordId]
     );
     // 解析 JSON 字段
-    const feedbackList = rows.map(r => ({
+    const feedbackList = rows.map((r) => ({
       scene: r.scene,
       stars: r.stars,
       tags: r.tags ? (typeof r.tags === 'string' ? JSON.parse(r.tags) : r.tags) : null,
@@ -647,7 +778,11 @@ app.get('/api/feedback/:recordId', async (req, res) => {
       source: r.source,
       scaleId: r.scale_id,
       scaleName: r.scale_name,
-      assessmentData: r.assessment_data ? (typeof r.assessment_data === 'string' ? JSON.parse(r.assessment_data) : r.assessment_data) : null,
+      assessmentData: r.assessment_data
+        ? typeof r.assessment_data === 'string'
+          ? JSON.parse(r.assessment_data)
+          : r.assessment_data
+        : null,
       createdAt: r.created_at
     }));
     res.json({ code: 0, data: feedbackList });
@@ -675,8 +810,7 @@ app.get('/api/scales-json', (req, res) => {
     const raw = fs.readFileSync(SCALES_JSON_PATH, 'utf-8');
     const allScales = JSON.parse(raw);
     // 只返回上架的量表（status === 1 或未设置）
-    const active = (Array.isArray(allScales) ? allScales : [])
-      .filter(s => s.status === 1 || s.status === undefined);
+    const active = (Array.isArray(allScales) ? allScales : []).filter((s) => s.status === 1 || s.status === undefined);
     res.set('Cache-Control', 'public, max-age=60');
     res.json({ code: 0, data: active, total: active.length });
   } catch (err) {
@@ -749,10 +883,14 @@ async function _synthesizeToBuffer(text, voice, rate) {
   const tmpFile = path.join(os.tmpdir(), 'tts_' + Date.now() + '.mp3');
   try {
     const args = [
-      '-m', 'edge_tts',
-      '--voice', voice || 'zh-CN-XiaoxiaoNeural',
-      '--text', text,
-      '--write-media', tmpFile
+      '-m',
+      'edge_tts',
+      '--voice',
+      voice || 'zh-CN-XiaoxiaoNeural',
+      '--text',
+      text,
+      '--write-media',
+      tmpFile
     ];
     if (rate && rate !== '+0%') {
       args.push('--rate', rate);
@@ -767,7 +905,9 @@ async function _synthesizeToBuffer(text, voice, rate) {
     const buffer = fs.readFileSync(tmpFile);
     return buffer;
   } finally {
-    try { fs.unlinkSync(tmpFile); } catch (e) {}
+    try {
+      fs.unlinkSync(tmpFile);
+    } catch (e) {}
   }
 }
 
@@ -830,7 +970,17 @@ app.post('/api/tts/segments', async (req, res) => {
       try {
         const audioBuffer = await _synthesizeToBuffer(segText, voice, rate);
         audios.push(audioBuffer.toString('base64'));
-        console.log('[TTS]   段 ' + (i + 1) + '/' + segments.length + ' (' + segText.length + '字, ' + (audioBuffer.length / 1024).toFixed(0) + 'KB)');
+        console.log(
+          '[TTS]   段 ' +
+            (i + 1) +
+            '/' +
+            segments.length +
+            ' (' +
+            segText.length +
+            '字, ' +
+            (audioBuffer.length / 1024).toFixed(0) +
+            'KB)'
+        );
       } catch (segErr) {
         console.error('[TTS]   段 ' + (i + 1) + ' 合成失败，跳过:', segErr.message.slice(0, 100));
         audios.push(''); // 跳过失败段落，继续合成后续段落
@@ -880,14 +1030,16 @@ if (process.env.SKIP_DB) {
     console.log('  ⚠️ 数据库未连接，仅 TTS 接口可用');
   });
 } else {
-  getPool().then(() => {
-    app.listen(PORT, '127.0.0.1', () => {
-      console.log('星蓝心镜 API 已启动');
-      console.log('  地址: http://127.0.0.1:' + PORT);
-      console.log('  数据库: ' + (process.env.DB_NAME || 'psy_assessment'));
+  getPool()
+    .then(() => {
+      app.listen(PORT, '127.0.0.1', () => {
+        console.log('星蓝心镜 API 已启动');
+        console.log('  地址: http://127.0.0.1:' + PORT);
+        console.log('  数据库: ' + (process.env.DB_NAME || 'psy_assessment'));
+      });
+    })
+    .catch((err) => {
+      console.error('数据库连接失败:', err);
+      process.exit(1);
     });
-  }).catch(err => {
-    console.error('数据库连接失败:', err);
-    process.exit(1);
-  });
 }

@@ -1,6 +1,6 @@
 /**
  * 星蓝心镜 - 云托管 API 服务 v1.1.0
- * 
+ *
  * 提供以下 API：
  *   POST /api/submit       — 提交测评答案，云端计分，存历史
  *   GET  /api/history       — 查询测评历史
@@ -14,10 +14,10 @@
  *   DELETE /api/npc-image   — 删除单张图片
  *   GET  /api/tts/voices    — TTS 语音列表
  *   POST /api/tts/segments  — TTS 批量合成
- * 
+ *
  * 部署方式：微信云托管（CloudBase Run）
  * 端口：由环境变量 PORT 指定（默认 80）
- * 
+ *
  * v1.1.0 变更：NPC 图片改为独立文档存储（config/npc_img_{id}），不再存 npc_config 内
  */
 
@@ -66,21 +66,31 @@ const port = process.env.PORT || 80;
 
 const ScoringEngine = (() => {
   function parseItems(items, totalQuestions) {
-    if (items === 'ALL') return Array.from({ length: totalQuestions }, (_, i) => i + 1);
-    if (Array.isArray(items)) return items;
+    if (items === 'ALL') {
+      return Array.from({ length: totalQuestions }, (_, i) => i + 1);
+    }
+    if (Array.isArray(items)) {
+      return items;
+    }
     const result = [];
     const parts = String(items).split(',');
     for (const part of parts) {
       const trimmed = part.trim();
-      if (!trimmed) continue;
+      if (!trimmed) {
+        continue;
+      }
       if (trimmed.includes('-')) {
-        const [startStr, endStr] = trimmed.split('-').map(s => parseInt(s.trim()));
+        const [startStr, endStr] = trimmed.split('-').map((s) => parseInt(s.trim()));
         if (!isNaN(startStr) && !isNaN(endStr)) {
-          for (let i = startStr; i <= endStr; i++) result.push(i);
+          for (let i = startStr; i <= endStr; i++) {
+            result.push(i);
+          }
         }
       } else {
         const num = parseInt(trimmed);
-        if (!isNaN(num)) result.push(num);
+        if (!isNaN(num)) {
+          result.push(num);
+        }
       }
     }
     return result;
@@ -89,72 +99,101 @@ const ScoringEngine = (() => {
   function collectScores(questions, itemIds, answers) {
     const scores = [];
     for (const qid of itemIds) {
-      const q = questions.find(q => q.id == qid);
-      if (!q) continue;
+      const q = questions.find((q) => q.id == qid);
+      if (!q) {
+        continue;
+      }
       const optIdx = answers[qid] !== undefined ? answers[qid] : answers[String(qid)];
-      if (optIdx === undefined || optIdx === null) continue;
+      if (optIdx === undefined || optIdx === null) {
+        continue;
+      }
       let opt;
       if (typeof optIdx === 'number' && optIdx < q.options.length) {
         opt = q.options[optIdx];
       } else if (typeof optIdx === 'string') {
-        opt = q.options.find(o => o.id === optIdx);
+        opt = q.options.find((o) => o.id === optIdx);
       } else {
-        opt = q.options.find(o => o.id === optIdx);
+        opt = q.options.find((o) => o.id === optIdx);
       }
-      if (opt) scores.push(opt.score || 0);
+      if (opt) {
+        scores.push(opt.score || 0);
+      }
     }
     return scores;
   }
 
   function normalizeCondition(condition) {
-    if (!condition) return null;
+    if (!condition) {
+      return null;
+    }
     if (condition.threshold !== undefined && condition.operator) {
       return { operator: condition.operator, value: Number(condition.threshold) };
     }
     const ops = ['>=', '<=', '!=', '==', '>', '<'];
     for (const op of ops) {
-      if (condition[op] !== undefined) return { operator: op, value: Number(condition[op]) };
+      if (condition[op] !== undefined) {
+        return { operator: op, value: Number(condition[op]) };
+      }
     }
     return null;
   }
 
   function compareValue(actual, operator, target) {
     switch (operator) {
-      case '>=': return actual >= target;
-      case '>':  return actual > target;
-      case '<=': return actual <= target;
-      case '<':  return actual < target;
-      case '==': return actual == target;
-      case '!=': return actual != target;
-      default: return false;
+      case '>=':
+        return actual >= target;
+      case '>':
+        return actual > target;
+      case '<=':
+        return actual <= target;
+      case '<':
+        return actual < target;
+      case '==':
+        return actual == target;
+      case '!=':
+        return actual != target;
+      default:
+        return false;
     }
   }
 
   function applyFormula(formula, scores, condition) {
-    if (scores.length === 0 && formula !== 'DERIVED') return 0;
+    if (scores.length === 0 && formula !== 'DERIVED') {
+      return 0;
+    }
     switch (formula) {
-      case 'SUM': return scores.reduce((a, b) => a + b, 0);
-      case 'AVG': return scores.length === 0 ? 0 : scores.reduce((a, b) => a + b, 0) / scores.length;
+      case 'SUM':
+        return scores.reduce((a, b) => a + b, 0);
+      case 'AVG':
+        return scores.length === 0 ? 0 : scores.reduce((a, b) => a + b, 0) / scores.length;
       case 'COUNT_IF': {
         const norm = normalizeCondition(condition);
-        if (!norm) return scores.length;
-        return scores.filter(s => compareValue(s, norm.operator, norm.value)).length;
+        if (!norm) {
+          return scores.length;
+        }
+        return scores.filter((s) => compareValue(s, norm.operator, norm.value)).length;
       }
-      case 'DERIVED': return 0;
-      default: return scores.reduce((a, b) => a + b, 0);
+      case 'DERIVED':
+        return 0;
+      default:
+        return scores.reduce((a, b) => a + b, 0);
     }
   }
 
   function applyTransform(value, transform) {
-    if (!transform) return value;
+    if (!transform) {
+      return value;
+    }
     let expression;
-    if (typeof transform === 'string') expression = transform;
-    else if (transform.expression) expression = transform.expression;
-    else return value;
+    if (typeof transform === 'string') {
+      expression = transform;
+    } else if (transform.expression) {
+      expression = transform.expression;
+    } else {
+      return value;
+    }
     try {
-      const expr = expression
-        .replace(/x/gi, `(${value})`)
-        .replace(/Math\.abs\(/g, '__ABS__(');
+      const expr = expression.replace(/x/gi, `(${value})`).replace(/Math\.abs\(/g, '__ABS__(');
       const safeExpr = expr.replace(/[^\d+\-*/(). 　_]/g, '').replace(/__ABS__/g, 'Math.abs');
       const result = new Function('return ' + safeExpr)();
       return Math.round(result * 100) / 100;
@@ -165,41 +204,55 @@ const ScoringEngine = (() => {
   }
 
   function matchInterpretation(score, rules) {
-    if (!rules || rules.length === 0) return null;
+    if (!rules || rules.length === 0) {
+      return null;
+    }
     for (const rule of rules) {
       if (rule.min !== undefined || rule.max !== undefined) {
         const minOk = rule.min === undefined || rule.min === null || score >= rule.min;
         const maxOk = rule.max === undefined || rule.max === null || score <= rule.max;
-        if (minOk && maxOk) return rule;
+        if (minOk && maxOk) {
+          return rule;
+        }
       }
       if (rule.condition) {
         const parsed = parseConditionStr(rule.condition);
-        if (parsed && compareValue(score, parsed.operator, parsed.value)) return rule;
+        if (parsed && compareValue(score, parsed.operator, parsed.value)) {
+          return rule;
+        }
       }
     }
     return null;
   }
 
   function parseConditionStr(str) {
-    if (typeof str !== 'string') return null;
+    if (typeof str !== 'string') {
+      return null;
+    }
     const match = str.trim().match(/^(>=|<=|!=|==|>|<)\s*(-?\d+\.?\d*)$/);
-    if (!match) return null;
+    if (!match) {
+      return null;
+    }
     return { operator: match[1], value: Number(match[2]) };
   }
 
   function collectMaxScores(questions, itemIds) {
     const maxScores = [];
     for (const qid of itemIds) {
-      const q = questions.find(q => q.id == qid);
-      if (!q || !q.options || q.options.length === 0) continue;
-      maxScores.push(Math.max(...q.options.map(o => o.score || 0)));
+      const q = questions.find((q) => q.id == qid);
+      if (!q || !q.options || q.options.length === 0) {
+        continue;
+      }
+      maxScores.push(Math.max(...q.options.map((o) => o.score || 0)));
     }
     return maxScores;
   }
 
   function inferMaxFromInterpretation(interpretation) {
-    if (!interpretation || interpretation.length === 0) return null;
-    const allMax = interpretation.filter(r => r.max !== undefined && r.max !== null).map(r => r.max);
+    if (!interpretation || interpretation.length === 0) {
+      return null;
+    }
+    const allMax = interpretation.filter((r) => r.max !== undefined && r.max !== null).map((r) => r.max);
     return allMax.length > 0 ? Math.max(...allMax) : null;
   }
 
@@ -208,54 +261,73 @@ const ScoringEngine = (() => {
     let totalMax = null;
     if (scoring.dimensions && scoring.dimensions.length > 0) {
       for (const dim of scoring.dimensions) {
-        if (dim.maxScore !== undefined && dim.maxScore > 0) { dimsMax[dim.key] = dim.maxScore; continue; }
+        if (dim.maxScore !== undefined && dim.maxScore > 0) {
+          dimsMax[dim.key] = dim.maxScore;
+          continue;
+        }
         if (dim.interpretation && dim.interpretation.length > 0) {
           const interpMax = inferMaxFromInterpretation(dim.interpretation);
-          if (interpMax !== null && interpMax > 0) { dimsMax[dim.key] = interpMax; continue; }
+          if (interpMax !== null && interpMax > 0) {
+            dimsMax[dim.key] = interpMax;
+            continue;
+          }
         }
         const itemIds = parseItems(dim.items, questions.length);
         const maxScores = collectMaxScores(questions, itemIds);
         let maxVal = applyFormula(dim.formula || 'SUM', maxScores, dim.condition);
-        if (dim.transform) maxVal = applyTransform(maxVal, dim.transform);
+        if (dim.transform) {
+          maxVal = applyTransform(maxVal, dim.transform);
+        }
         dimsMax[dim.key] = Math.round(maxVal * 100) / 100;
       }
     }
     if (scoring.metrics && scoring.metrics.length > 0) {
-      let tsMetric = scoring.metrics.find(m =>
-        (m.key || m.name) === 'totalScore' || (m.key || m.name) === 'total_score' || (m.key || m.name) === '总分'
+      const tsMetric = scoring.metrics.find(
+        (m) => (m.key || m.name) === 'totalScore' || (m.key || m.name) === 'total_score' || (m.key || m.name) === '总分'
       );
       if (tsMetric) {
-        if (tsMetric.maxScore !== undefined && tsMetric.maxScore > 0) totalMax = tsMetric.maxScore;
-        else {
+        if (tsMetric.maxScore !== undefined && tsMetric.maxScore > 0) {
+          totalMax = tsMetric.maxScore;
+        } else {
           const tsKey = tsMetric.key || tsMetric.name;
-          const tsRules = (scoring.interpretation || []).filter(r => r.metric === tsKey);
+          const tsRules = (scoring.interpretation || []).filter((r) => r.metric === tsKey);
           if (tsRules.length > 0) {
             const interpMax = inferMaxFromInterpretation(tsRules);
-            if (interpMax !== null && interpMax > 0) totalMax = interpMax;
+            if (interpMax !== null && interpMax > 0) {
+              totalMax = interpMax;
+            }
           }
           if (totalMax === null && tsMetric.formula !== 'DERIVED') {
             const itemIds = parseItems(tsMetric.items, questions.length);
             const maxScores = collectMaxScores(questions, itemIds);
             let maxVal = applyFormula(tsMetric.formula || 'SUM', maxScores, tsMetric.condition);
-            if (tsMetric.transform) maxVal = applyTransform(maxVal, tsMetric.transform);
+            if (tsMetric.transform) {
+              maxVal = applyTransform(maxVal, tsMetric.transform);
+            }
             totalMax = Math.round(maxVal * 100) / 100;
           }
         }
       }
     }
     if (totalMax === null && scoring.interpretation && scoring.interpretation.length > 0) {
-      const noMetricRules = scoring.interpretation.filter(r => !r.metric);
+      const noMetricRules = scoring.interpretation.filter((r) => !r.metric);
       const interpMax = inferMaxFromInterpretation(noMetricRules);
-      if (interpMax !== null && interpMax > 0) totalMax = interpMax;
+      if (interpMax !== null && interpMax > 0) {
+        totalMax = interpMax;
+      }
     }
     if (totalMax === null) {
-      const allMax = questions.map(q => {
-        if (!q.options || q.options.length === 0) return 0;
-        return Math.max(...q.options.map(o => o.score || 0));
+      const allMax = questions.map((q) => {
+        if (!q.options || q.options.length === 0) {
+          return 0;
+        }
+        return Math.max(...q.options.map((o) => o.score || 0));
       });
       totalMax = allMax.reduce((a, b) => a + b, 0);
     }
-    if (totalMax <= 0) totalMax = 100;
+    if (totalMax <= 0) {
+      totalMax = 100;
+    }
     return { total: totalMax, dimensions: dimsMax };
   }
 
@@ -266,7 +338,10 @@ const ScoringEngine = (() => {
   function evaluateDerived(derivedMetrics, currentValues) {
     const results = {};
     for (const dm of derivedMetrics) {
-      if (!dm.expression) { results[dm.key] = 0; continue; }
+      if (!dm.expression) {
+        results[dm.key] = 0;
+        continue;
+      }
       try {
         let expr = dm.expression;
         const keys = Object.keys(currentValues).sort((a, b) => b.length - a.length);
@@ -293,7 +368,7 @@ const ScoringEngine = (() => {
     const scoring = scale.scoring;
     const questions = (scale.questions || []).map((q, qi) => ({
       ...q,
-      id: q.id || (qi + 1),
+      id: q.id || qi + 1,
       options: (q.options || []).map((o, oi) => ({
         ...o,
         id: o.id !== undefined ? o.id : String.fromCharCode(65 + oi)
@@ -301,13 +376,18 @@ const ScoringEngine = (() => {
     }));
 
     if (!scoring) {
-      const scores = questions.map(q => {
+      const scores = questions.map((q) => {
         const optIdx = answers[q.id];
-        if (optIdx === undefined || optIdx === null) return 0;
+        if (optIdx === undefined || optIdx === null) {
+          return 0;
+        }
         let opt;
-        if (typeof optIdx === 'number' && optIdx < q.options.length) opt = q.options[optIdx];
-        else opt = q.options.find(o => o.id === optIdx);
-        return opt ? (opt.score || 0) : 0;
+        if (typeof optIdx === 'number' && optIdx < q.options.length) {
+          opt = q.options[optIdx];
+        } else {
+          opt = q.options.find((o) => o.id === optIdx);
+        }
+        return opt ? opt.score || 0 : 0;
       });
       return {
         metrics: { totalScore: scores.reduce((a, b) => a + b, 0) },
@@ -332,7 +412,9 @@ const ScoringEngine = (() => {
         const itemIds = parseItems(dim.items, questions.length);
         const scores = collectScores(questions, itemIds, answers);
         let dimScore = applyFormula(dim.formula || 'SUM', scores, dim.condition);
-        if (dim.transform) dimScore = applyTransform(dimScore, dim.transform);
+        if (dim.transform) {
+          dimScore = applyTransform(dimScore, dim.transform);
+        }
         result.dimensions.push({
           key: dim.key,
           label: dim.label,
@@ -345,11 +427,15 @@ const ScoringEngine = (() => {
     }
 
     // 2. 指标分（先直接，再派生）
-    const directMetrics = [], derivedMetrics = [];
+    const directMetrics = [],
+      derivedMetrics = [];
     if (scoring.metrics && scoring.metrics.length > 0) {
       for (const metric of scoring.metrics) {
-        if (metric.formula === 'DERIVED') derivedMetrics.push(metric);
-        else directMetrics.push(metric);
+        if (metric.formula === 'DERIVED') {
+          derivedMetrics.push(metric);
+        } else {
+          directMetrics.push(metric);
+        }
       }
     }
 
@@ -357,7 +443,9 @@ const ScoringEngine = (() => {
       const itemIds = parseItems(metric.items, questions.length);
       const scores = collectScores(questions, itemIds, answers);
       let metricValue = applyFormula(metric.formula || 'SUM', scores, metric.condition);
-      if (metric.transform) metricValue = applyTransform(metricValue, metric.transform);
+      if (metric.transform) {
+        metricValue = applyTransform(metricValue, metric.transform);
+      }
       result.metrics[metric.key || metric.name] = Math.round(metricValue * 100) / 100;
     }
 
@@ -365,14 +453,20 @@ const ScoringEngine = (() => {
       const valueMap = { ...result.metrics };
       for (const dm of directMetrics) {
         const k = dm.key || dm.name;
-        if (dm.label || dm.name) valueMap[dm.label || dm.name] = result.metrics[k];
+        if (dm.label || dm.name) {
+          valueMap[dm.label || dm.name] = result.metrics[k];
+        }
       }
       for (const dim of result.dimensions) {
         valueMap[dim.key] = dim.score;
-        if (dim.label && dim.label !== dim.key) valueMap[dim.label] = dim.score;
+        if (dim.label && dim.label !== dim.key) {
+          valueMap[dim.label] = dim.score;
+        }
       }
       const derivedResults = evaluateDerived(derivedMetrics, valueMap);
-      for (const [k, v] of Object.entries(derivedResults)) result.metrics[k] = v;
+      for (const [k, v] of Object.entries(derivedResults)) {
+        result.metrics[k] = v;
+      }
     }
 
     // 3. 解释规则
@@ -382,13 +476,18 @@ const ScoringEngine = (() => {
         if (rule.metric) {
           score = result.metrics[rule.metric];
           if (score === undefined) {
-            for (const m of (scoring.metrics || [])) {
-              if ((m.label || m.name) === rule.metric) { score = result.metrics[m.key || m.name]; break; }
+            for (const m of scoring.metrics || []) {
+              if ((m.label || m.name) === rule.metric) {
+                score = result.metrics[m.key || m.name];
+                break;
+              }
             }
           }
           if (score === undefined) {
-            const dim = result.dimensions.find(d => d.label === rule.metric);
-            if (dim) score = dim.score;
+            const dim = result.dimensions.find((d) => d.label === rule.metric);
+            if (dim) {
+              score = dim.score;
+            }
           }
         } else {
           score = result.metrics.totalScore || result.metrics.total_score;
@@ -411,24 +510,34 @@ const ScoringEngine = (() => {
     // 4. 筛查
     if (scoring.screening && scoring.screening.conditions) {
       const screenValues = { ...result.metrics, _dimensions: result.dimensions };
-      const results = scoring.screening.conditions.map(cond => {
+      const results = scoring.screening.conditions.map((cond) => {
         const metricName = cond.metric;
         const operator = cond.op || cond.operator;
         const threshold = cond.value !== undefined ? cond.value : cond.threshold;
-        if (!metricName || operator === undefined || threshold === undefined) return false;
+        if (!metricName || operator === undefined || threshold === undefined) {
+          return false;
+        }
         let actual = screenValues[metricName];
         if (actual === undefined) {
-          const dimResult = (screenValues._dimensions || []).find(d => d.label === metricName);
-          if (dimResult) actual = dimResult.score;
+          const dimResult = (screenValues._dimensions || []).find((d) => d.label === metricName);
+          if (dimResult) {
+            actual = dimResult.score;
+          }
         }
-        if (actual === undefined) return false;
+        if (actual === undefined) {
+          return false;
+        }
         return compareValue(Number(actual), operator, Number(threshold));
       });
       const triggered = [];
-      scoring.screening.conditions.forEach((cond, i) => { if (results[i]) triggered.push(cond); });
+      scoring.screening.conditions.forEach((cond, i) => {
+        if (results[i]) {
+          triggered.push(cond);
+        }
+      });
       const logicFn = screening.logic === 'AND' ? results.every(Boolean) : results.some(Boolean);
       result.screening = {
-        result: logicFn ? (screening.positiveLabel || '阳性') : (screening.negativeLabel || '阴性'),
+        result: logicFn ? screening.positiveLabel || '阳性' : screening.negativeLabel || '阴性',
         triggeredRules: triggered,
         matchedConditions: triggered
       };
@@ -461,16 +570,26 @@ app.get('/', (req, res) => {
  * 返回：{ code, data: Scale[] }（仅 status=1 的量表，不含 completedCount/rating 等管理字段）
  */
 app.get('/api/scales', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const { data } = await db.collection('scales').where({ status: 1 }).limit(100).get();
-    const list = (data || []).map(function(s) {
+    const list = (data || []).map(function (s) {
       return {
-        id: s.id, name: s.name, shortName: s.shortName, code: s.code,
-        category: s.category, categoryName: s.categoryName,
-        emoji: s.emoji, color: s.color, duration: s.duration,
-        questionCount: s.questionCount, desc: s.desc,
-        instruction: s.instruction, tags: s.tags || [],
+        id: s.id,
+        name: s.name,
+        shortName: s.shortName,
+        code: s.code,
+        category: s.category,
+        categoryName: s.categoryName,
+        emoji: s.emoji,
+        color: s.color,
+        duration: s.duration,
+        questionCount: s.questionCount,
+        desc: s.desc,
+        instruction: s.instruction,
+        tags: s.tags || [],
         npcConfig: s.npcConfig || { counselorId: '', backgroundId: '' },
         questions: s.questions || []
       };
@@ -489,10 +608,17 @@ app.get('/api/scales', async (req, res) => {
  * 会覆盖云端所有量表数据
  */
 app.put('/api/scales', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const openid = req.body.openid || req.body._openid || '';
-    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(openid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
@@ -504,8 +630,10 @@ app.put('/api/scales', async (req, res) => {
 
     // 先删除旧数据，再逐个写入
     const { data: oldData } = await db.collection('scales').limit(100).get();
-    for (const doc of (oldData || [])) {
-      try { await db.collection('scales').doc(doc._id).remove(); } catch (e) {}
+    for (const doc of oldData || []) {
+      try {
+        await db.collection('scales').doc(doc._id).remove();
+      } catch (e) {}
     }
 
     let saved = 0;
@@ -534,7 +662,9 @@ app.put('/api/scales', async (req, res) => {
  * Returns: { code, data: { id, score, maxScore, level, levelName, color, interp, dims, screening } }
  */
 app.post('/api/submit', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
 
   try {
     const { scaleId, answers, duration, _openid: clientOpenid } = req.body;
@@ -544,7 +674,11 @@ app.post('/api/submit', async (req, res) => {
     const openid = clientOpenid || '';
 
     // 1. 从云数据库查量表配置
-    const scaleRes = await db.collection('scales').where({ id: Number(scaleId) || scaleId }).limit(1).get();
+    const scaleRes = await db
+      .collection('scales')
+      .where({ id: Number(scaleId) || scaleId })
+      .limit(1)
+      .get();
     if (!scaleRes.data || scaleRes.data.length === 0) {
       return res.status(404).json({ code: -1, message: '量表不存在: ' + scaleId });
     }
@@ -555,14 +689,18 @@ app.post('/api/submit', async (req, res) => {
     console.log('[Submit] 计分完成, scale:', scale.name, 'metrics:', Object.keys(scoringResult.metrics).join(','));
 
     // 3. 取总分
-    let totalScore = scoringResult.metrics.totalScore || scoringResult.metrics.total_score || 0;
+    const totalScore = scoringResult.metrics.totalScore || scoringResult.metrics.total_score || 0;
     const totalMaxScore = (scoringResult.maxScores && scoringResult.maxScores.total) || 100;
 
     // 4. 匹配解释
-    let level = 'normal', levelName = '正常', color = '#4A90D9', interp = '';
-    const interpTotal = (scoringResult.interpretation || []).find(r =>
-      !r.metric || r.metric === '总分' || r.metric === 'totalScore' || r.metric === 'total_score'
-    ) || (scoringResult.interpretation || [])[0];
+    let level = 'normal',
+      levelName = '正常',
+      color = '#4A90D9',
+      interp = '';
+    const interpTotal =
+      (scoringResult.interpretation || []).find(
+        (r) => !r.metric || r.metric === '总分' || r.metric === 'totalScore' || r.metric === 'total_score'
+      ) || (scoringResult.interpretation || [])[0];
     if (interpTotal) {
       level = interpTotal.label ? normalizeLevel(interpTotal.label) : 'normal';
       levelName = interpTotal.label || '正常';
@@ -572,7 +710,7 @@ app.post('/api/submit', async (req, res) => {
 
     // 5. 维度数据
     const dimMaxScores = (scoringResult.maxScores && scoringResult.maxScores.dimensions) || {};
-    const dims = (scoringResult.dimensions || []).map(d => {
+    const dims = (scoringResult.dimensions || []).map((d) => {
       const dimMax = dimMaxScores[d.key] || 5;
       const pct = dimMax > 0 ? Math.min(100, Math.round((d.score / dimMax) * 100)) : 0;
       return {
@@ -611,16 +749,21 @@ app.post('/api/submit', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     // 写入 _openid 用于按用户筛选（云数据库自动 _openid 需要 wx context，这里手动写入）
-    if (openid) historyRecord._openid = openid;
+    if (openid) {
+      historyRecord._openid = openid;
+    }
 
     await db.collection('history').add({ data: historyRecord });
 
     // 8. 更新量表完成次数
     try {
       const _ = db.command;
-      await db.collection('scales').where({ id: Number(scaleId) || scaleId }).update({
-        data: { completedCount: _.inc(1), updatedAt: new Date().toISOString() }
-      });
+      await db
+        .collection('scales')
+        .where({ id: Number(scaleId) || scaleId })
+        .update({
+          data: { completedCount: _.inc(1), updatedAt: new Date().toISOString() }
+        });
     } catch (e) {
       console.warn('[Submit] 更新完成次数失败:', e.message);
     }
@@ -653,7 +796,9 @@ app.post('/api/submit', async (req, res) => {
  * openid 为必传参数，确保只能查自己的记录
  */
 app.get('/api/history', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
 
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -692,7 +837,9 @@ app.get('/api/history', async (req, res) => {
  * 删除单条历史（需要 openid 权限验证）
  */
 app.delete('/api/history/:id', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
 
   try {
     const id = req.params.id;
@@ -701,11 +848,18 @@ app.delete('/api/history/:id', async (req, res) => {
       return res.status(403).json({ code: -1, message: '需要 openid 参数' });
     }
 
-    const records = await db.collection('history').where({ id: Number(id) || id }).limit(1).get();
+    const records = await db
+      .collection('history')
+      .where({ id: Number(id) || id })
+      .limit(1)
+      .get();
     if (records.data && records.data.length > 0) {
       // 权限校验：只能删除自己的记录（管理员 OpenID 放行）
       const record = records.data[0];
-      const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+      const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (record._openid && record._openid !== openid && !ADMIN_OPENIDS.includes(openid)) {
         return res.status(403).json({ code: -1, message: '无权删除此记录' });
       }
@@ -731,7 +885,9 @@ let _cloudKeysLoaded = false;
 
 /** 从 CloudBase DB 加载 AI Key 配置 */
 async function _loadCloudAiKeys() {
-  if (!db) return;
+  if (!db) {
+    return;
+  }
   try {
     const configRes = await db.collection('config').doc('ai_config').get();
     let aiConfigRaw = configRes.data;
@@ -743,9 +899,11 @@ async function _loadCloudAiKeys() {
 
     // 优先读 keys 数组（新格式：[{key, name}, ...]）
     if (ds.keys && Array.isArray(ds.keys)) {
-      ds.keys.forEach(function(k) {
-        var keyVal = typeof k === 'object' ? (k.key || '') : k;
-        if (keyVal && keyVal.length > 10) keys.push(keyVal);
+      ds.keys.forEach(function (k) {
+        const keyVal = typeof k === 'object' ? k.key || '' : k;
+        if (keyVal && keyVal.length > 10) {
+          keys.push(keyVal);
+        }
       });
     }
 
@@ -753,9 +911,11 @@ async function _loadCloudAiKeys() {
     if (keys.length === 0 && ds.apiKey && ds.apiKey.length > 10) {
       keys.push(ds.apiKey);
       if (ds.fallbacks && Array.isArray(ds.fallbacks)) {
-        ds.fallbacks.forEach(function(fb) {
-          var keyVal = typeof fb === 'object' ? (fb.key || '') : fb;
-          if (keyVal && keyVal.length > 10) keys.push(keyVal);
+        ds.fallbacks.forEach(function (fb) {
+          const keyVal = typeof fb === 'object' ? fb.key || '' : fb;
+          if (keyVal && keyVal.length > 10) {
+            keys.push(keyVal);
+          }
         });
       }
     }
@@ -772,7 +932,9 @@ async function _loadCloudAiKeys() {
 
 /** 获取下一个 Key（轮询） */
 function _nextCloudKey() {
-  if (_cloudApiKeys.length === 0) return '';
+  if (_cloudApiKeys.length === 0) {
+    return '';
+  }
   const key = _cloudApiKeys[_cloudKeyIndex % _cloudApiKeys.length];
   _cloudKeyIndex = (_cloudKeyIndex + 1) % _cloudApiKeys.length;
   return key;
@@ -781,7 +943,9 @@ function _nextCloudKey() {
 /** 带 Key 轮询的 DashScope 调用（CloudBase 版） */
 async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
   // 确保已加载
-  if (!_cloudKeysLoaded) await _loadCloudAiKeys();
+  if (!_cloudKeysLoaded) {
+    await _loadCloudAiKeys();
+  }
 
   if (_cloudApiKeys.length === 0) {
     throw new Error('AI API Key 未配置，请在管理后台设置');
@@ -791,18 +955,29 @@ async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
   for (let attempt = 0; attempt < _cloudApiKeys.length; attempt++) {
     const key = _cloudApiKeys[_cloudKeyIndex % _cloudApiKeys.length];
     _cloudKeyIndex = (_cloudKeyIndex + 1) % _cloudApiKeys.length;
-    console.log('[AI] 尝试 Key #' + ((_cloudKeyIndex - 1 + _cloudApiKeys.length) % _cloudApiKeys.length + 1) + '/' + _cloudApiKeys.length);
+    console.log(
+      '[AI] 尝试 Key #' +
+        (((_cloudKeyIndex - 1 + _cloudApiKeys.length) % _cloudApiKeys.length) + 1) +
+        '/' +
+        _cloudApiKeys.length
+    );
 
     try {
       const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
         body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature })
       });
       const data = await response.json();
 
       // 401/429 → 切换下一个 Key
-      if (data.error && (data.error.code === 'InvalidApiKey' || data.error.code === 'InvalidParameter' || response.status === 401 || response.status === 429)) {
+      if (
+        data.error &&
+        (data.error.code === 'InvalidApiKey' ||
+          data.error.code === 'InvalidParameter' ||
+          response.status === 401 ||
+          response.status === 429)
+      ) {
         console.warn('[AI] Key 失效 (' + response.status + '): ' + (data.error.message || '') + '，切换下一个');
         lastError = new Error(data.error.message || 'Key 失效 (HTTP ' + response.status + ')');
         continue;
@@ -812,9 +987,10 @@ async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
         return { error: true, message: data.error.message || 'AI 调用失败' };
       }
 
-      const result = data.choices && data.choices[0] && data.choices[0].message
-        ? data.choices[0].message.content : '';
-      if (!result) return { error: true, message: 'AI 返回为空' };
+      const result = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
+      if (!result) {
+        return { error: true, message: 'AI 返回为空' };
+      }
       return { error: false, data: result };
     } catch (err) {
       console.warn('[AI] 请求异常:', err.message);
@@ -829,7 +1005,9 @@ async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
 // AI 诊断（代理调用）
 // ====================================================
 app.post('/api/ai-diagnose', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
 
   try {
     const { messages, provider, model, temperature, maxTokens, openid } = req.body;
@@ -839,7 +1017,12 @@ app.post('/api/ai-diagnose', async (req, res) => {
       return res.status(400).json({ code: -1, message: '参数错误：需要 messages 数组' });
     }
     // 必须传入 openid，防止匿名滥用 AI 额度（开发环境 localhost 豁免）
-    if (!effectiveOpenid && req.headers.host && !req.headers.host.includes('localhost') && !req.headers.host.includes('127.0.0.1')) {
+    if (
+      !effectiveOpenid &&
+      req.headers.host &&
+      !req.headers.host.includes('localhost') &&
+      !req.headers.host.includes('127.0.0.1')
+    ) {
       return res.status(403).json({ code: -1, message: '需要 openid 参数' });
     }
 
@@ -877,18 +1060,25 @@ app.post('/api/ai-diagnose', async (req, res) => {
 app.get('/api/ai-config', async (req, res) => {
   try {
     // 管理员权限验证
-    var openid = req.query.openid || req.query._openid || '';
-    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    const openid = req.query.openid || req.query._openid || '';
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(openid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
 
-    if (!_cloudKeysLoaded) await _loadCloudAiKeys();
-    const masked = _cloudApiKeys.map(function(k, i) {
+    if (!_cloudKeysLoaded) {
+      await _loadCloudAiKeys();
+    }
+    const masked = _cloudApiKeys.map(function (k, i) {
       return {
         index: i + 1,
         key: k.substring(0, 8) + '***' + k.substring(k.length - 4),
-        active: i === (_cloudKeyIndex % Math.max(1, _cloudApiKeys.length))
+        active: i === _cloudKeyIndex % Math.max(1, _cloudApiKeys.length)
       };
     });
     res.json({ code: 0, data: { count: _cloudApiKeys.length, keys: masked } });
@@ -904,24 +1094,51 @@ app.get('/api/ai-config', async (req, res) => {
  * 同时更新内存缓存和 CloudBase DB
  */
 app.put('/api/ai-config', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     // 管理员权限验证
-    var bodyOpenid = req.body._openid || req.body.openid || '';
-    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    const bodyOpenid = req.body._openid || req.body.openid || '';
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(bodyOpenid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
 
-    var body = req.body;
-    var keys = body.keys;
-    if (!keys) return res.status(400).json({ code: -1, message: '需要 keys 参数' });
+    const body = req.body;
+    const keys = body.keys;
+    if (!keys) {
+      return res.status(400).json({ code: -1, message: '需要 keys 参数' });
+    }
 
-    var keyArr = typeof keys === 'string' ? keys.split(/[,，]/).map(function(k) { return k.trim(); }).filter(function(k) { return k.length > 10; })
-      : Array.isArray(keys) ? keys.filter(function(k) { return typeof k === 'string' && k.trim().length > 10; }).map(function(k) { return k.trim(); })
-      : [];
+    const keyArr =
+      typeof keys === 'string'
+        ? keys
+            .split(/[,，]/)
+            .map(function (k) {
+              return k.trim();
+            })
+            .filter(function (k) {
+              return k.length > 10;
+            })
+        : Array.isArray(keys)
+          ? keys
+              .filter(function (k) {
+                return typeof k === 'string' && k.trim().length > 10;
+              })
+              .map(function (k) {
+                return k.trim();
+              })
+          : [];
 
-    if (keyArr.length === 0) return res.status(400).json({ code: -1, message: '无有效 Key（需超过10个字符）' });
+    if (keyArr.length === 0) {
+      return res.status(400).json({ code: -1, message: '无有效 Key（需超过10个字符）' });
+    }
 
     // 更新内存
     _cloudApiKeys = keyArr;
@@ -932,19 +1149,25 @@ app.put('/api/ai-config', async (req, res) => {
     // 持久化到 CloudBase DB
     try {
       // 读取现有配置，只更新 keys 部分
-      var existingConfig = {};
+      let existingConfig = {};
       try {
-        var configRes = await db.collection('config').doc('ai_config').get();
-        var raw = configRes.data;
+        const configRes = await db.collection('config').doc('ai_config').get();
+        let raw = configRes.data;
         if (Array.isArray(raw) && raw.length > 0 && raw[0].data !== undefined) {
           raw = raw[0].data;
         }
-        if (raw && typeof raw === 'object') existingConfig = raw;
-      } catch (e) { /* 文档不存在，用空配置 */ }
+        if (raw && typeof raw === 'object') {
+          existingConfig = raw;
+        }
+      } catch (e) {
+        /* 文档不存在，用空配置 */
+      }
 
-      if (!existingConfig.dashscope) existingConfig.dashscope = {};
+      if (!existingConfig.dashscope) {
+        existingConfig.dashscope = {};
+      }
       // 新格式：keys 数组，保留名称信息
-      existingConfig.dashscope.keys = keyArr.map(function(k, i) {
+      existingConfig.dashscope.keys = keyArr.map(function (k, i) {
         return { key: k, name: i === 0 ? '主 Key' : '备用 #' + i };
       });
       existingConfig.provider = existingConfig.provider || 'dashscope';
@@ -979,27 +1202,36 @@ function synthesizeTTS(text, voice, rate) {
     }
     const safeText = text.trim().slice(0, TTS_MAX_TEXT_LEN);
     const args = [
-      '--voice', voice || 'zh-CN-XiaoxiaoNeural',
-      '--rate', rate || '+0%',
-      '--text', safeText,
-      '--write-media', '-' // 输出到 stdout
+      '--voice',
+      voice || 'zh-CN-XiaoxiaoNeural',
+      '--rate',
+      rate || '+0%',
+      '--text',
+      safeText,
+      '--write-media',
+      '-' // 输出到 stdout
     ];
 
-    const proc = execFile('python3', ['-m', 'edge_tts', ...args], {
-      timeout: TTS_TIMEOUT_MS,
-      maxBuffer: 10 * 1024 * 1024, // 10MB
-      encoding: 'buffer' // 二进制输出
-    }, (err, stdout, stderr) => {
-      if (err) {
-        console.error('[TTS] edge-tts 错误:', err.message);
-        return reject(new Error('TTS 合成失败: ' + err.message));
+    const proc = execFile(
+      'python3',
+      ['-m', 'edge_tts', ...args],
+      {
+        timeout: TTS_TIMEOUT_MS,
+        maxBuffer: 10 * 1024 * 1024, // 10MB
+        encoding: 'buffer' // 二进制输出
+      },
+      (err, stdout, stderr) => {
+        if (err) {
+          console.error('[TTS] edge-tts 错误:', err.message);
+          return reject(new Error('TTS 合成失败: ' + err.message));
+        }
+        if (stdout && stdout.length > 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error('TTS 合成结果为空'));
+        }
       }
-      if (stdout && stdout.length > 0) {
-        resolve(stdout);
-      } else {
-        reject(new Error('TTS 合成结果为空'));
-      }
-    });
+    );
   });
 }
 
@@ -1009,25 +1241,32 @@ function synthesizeTTS(text, voice, rate) {
 app.get('/api/tts/voices', async (req, res) => {
   try {
     const result = await new Promise((resolve, reject) => {
-      execFile('python3', ['-m', 'edge_tts', '--list-voices'], {
-        timeout: 15000,
-        maxBuffer: 1024 * 1024,
-        encoding: 'utf-8'
-      }, (err, stdout) => {
-        if (err) return reject(err);
-        try {
-          const lines = stdout.trim().split('\n').slice(2); // 跳过表头
-          const voices = lines
-            .map(line => {
-              const parts = line.split(/\s{2,}/);
-              return parts.length >= 2 ? { name: parts[0], locale: parts[1] } : null;
-            })
-            .filter(v => v && v.locale && v.locale.startsWith('zh-'));
-          resolve(voices);
-        } catch (e) {
-          reject(e);
+      execFile(
+        'python3',
+        ['-m', 'edge_tts', '--list-voices'],
+        {
+          timeout: 15000,
+          maxBuffer: 1024 * 1024,
+          encoding: 'utf-8'
+        },
+        (err, stdout) => {
+          if (err) {
+            return reject(err);
+          }
+          try {
+            const lines = stdout.trim().split('\n').slice(2); // 跳过表头
+            const voices = lines
+              .map((line) => {
+                const parts = line.split(/\s{2,}/);
+                return parts.length >= 2 ? { name: parts[0], locale: parts[1] } : null;
+              })
+              .filter((v) => v && v.locale && v.locale.startsWith('zh-'));
+            resolve(voices);
+          } catch (e) {
+            reject(e);
+          }
         }
-      });
+      );
     });
     res.json({ code: 0, data: result });
   } catch (err) {
@@ -1053,23 +1292,25 @@ app.post('/api/tts/segments', async (req, res) => {
     console.log('[TTS] 开始合成', segments.length, '段');
     const startTime = Date.now();
 
-    const results = await Promise.all(segments.map(async (seg, i) => {
-      try {
-        const audioBuf = await synthesizeTTS(seg.text, seg.voice || globalVoice, seg.rate || globalRate);
-        return {
-          index: i,
-          success: true,
-          audio: 'data:audio/mp3;base64,' + audioBuf.toString('base64'),
-          duration: Math.round(audioBuf.length / 4000) // 粗估时长（128kbps mp3）
-        };
-      } catch (e) {
-        console.error('[TTS] 段', i, '合成失败:', e.message);
-        return { index: i, success: false, error: e.message };
-      }
-    }));
+    const results = await Promise.all(
+      segments.map(async (seg, i) => {
+        try {
+          const audioBuf = await synthesizeTTS(seg.text, seg.voice || globalVoice, seg.rate || globalRate);
+          return {
+            index: i,
+            success: true,
+            audio: 'data:audio/mp3;base64,' + audioBuf.toString('base64'),
+            duration: Math.round(audioBuf.length / 4000) // 粗估时长（128kbps mp3）
+          };
+        } catch (e) {
+          console.error('[TTS] 段', i, '合成失败:', e.message);
+          return { index: i, success: false, error: e.message };
+        }
+      })
+    );
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    const successCount = results.filter(r => r.success).length;
+    const successCount = results.filter((r) => r.success).length;
     console.log('[TTS] 合成完成:', successCount + '/' + segments.length, '段,', elapsed + 's');
 
     res.json({
@@ -1093,7 +1334,9 @@ app.post('/api/tts/segments', async (req, res) => {
  * 注意：不再返回 images 字段（图片已迁移到独立文档），请用 GET /api/npc-images 获取图片列表
  */
 app.get('/api/npc-config', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const configRes = await db.collection('config').doc('npc_config').get();
     let configData = configRes.data;
@@ -1123,10 +1366,15 @@ app.get('/api/npc-config', async (req, res) => {
  * 注意：不再处理 images 字段（图片已迁移到独立文档）
  */
 app.put('/api/npc-config', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const openid = req.body._openid || req.body.openid || '';
-    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(openid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
@@ -1151,18 +1399,20 @@ app.put('/api/npc-config', async (req, res) => {
  * 返回 { code: 0, data: { imageIds: [...], count: N } }
  */
 app.get('/api/npc-images', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     // CloudBase where 子句不支持对 _id 使用正则/startsWith，改为全量扫描 + 内存过滤
     const queryRes = await db.collection('config').limit(200).get();
-    
+
     let ids = [];
     if (queryRes.data && Array.isArray(queryRes.data)) {
       ids = queryRes.data
-        .filter(doc => doc._id && doc._id.startsWith('npc_img_'))
-        .map(doc => doc._id.replace('npc_img_', ''));
+        .filter((doc) => doc._id && doc._id.startsWith('npc_img_'))
+        .map((doc) => doc._id.replace('npc_img_', ''));
     }
-    
+
     console.log('[NPC-Images] 查询到', ids.length, '张图片');
     res.json({ code: 0, data: { imageIds: ids, count: ids.length } });
   } catch (e) {
@@ -1178,7 +1428,9 @@ app.get('/api/npc-images', async (req, res) => {
  * 返回 { code: 0, data: { imageId, base64 } }
  */
 app.get('/api/npc-image', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const { imageId } = req.query;
     if (!imageId) {
@@ -1191,11 +1443,11 @@ app.get('/api/npc-image', async (req, res) => {
     if (Array.isArray(imgData) && imgData.length > 0 && imgData[0].data !== undefined) {
       imgData = imgData[0].data;
     }
-    
+
     if (!imgData || !imgData.base64) {
       return res.status(404).json({ code: -1, message: '图片不存在' });
     }
-    
+
     res.json({ code: 0, data: { imageId, base64: imgData.base64 } });
   } catch (e) {
     if (e.message && e.message.includes('not exist')) {
@@ -1213,10 +1465,15 @@ app.get('/api/npc-image', async (req, res) => {
  * Body: { _openid, imageId, base64 }
  */
 app.put('/api/npc-image', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const openid = req.body._openid || req.body.openid || '';
-    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(openid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
@@ -1230,9 +1487,12 @@ app.put('/api/npc-image', async (req, res) => {
 
     // 存储为独立文档（不再合并到 npc_config，避免单文档 16MB 限制）
     const docId = 'npc_img_' + imageId;
-    await db.collection('config').doc(docId).set({ 
-      data: { imageId, base64, uploadTime: new Date().toISOString() }
-    });
+    await db
+      .collection('config')
+      .doc(docId)
+      .set({
+        data: { imageId, base64, uploadTime: new Date().toISOString() }
+      });
 
     res.json({ code: 0, message: '图片已保存', imageId, size: base64.length });
     console.log('[NPC-Image] 图片已保存:', imageId, ', size:', base64.length, 'B');
@@ -1249,10 +1509,15 @@ app.put('/api/npc-image', async (req, res) => {
  * 删除独立文档（不再操作 npc_config）
  */
 app.delete('/api/npc-image', async (req, res) => {
-  if (!db) return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  if (!db) {
+    return res.status(503).json({ code: -1, message: '数据库未初始化' });
+  }
   try {
     const openid = req.body._openid || req.body.openid || '';
-    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+    const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (!ADMIN_OPENIDS.includes(openid)) {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
@@ -1280,16 +1545,34 @@ app.delete('/api/npc-image', async (req, res) => {
 // 等级标签标准化
 // ====================================================
 function normalizeLevel(label) {
-  if (!label) return 'normal';
+  if (!label) {
+    return 'normal';
+  }
   const lower = label.toLowerCase();
-  if (/^(low|normal|none|minimal)$/i.test(lower.trim())) return 'normal';
-  if (/^(mild|slight|light)$/i.test(lower.trim())) return 'mild';
-  if (/^(medium|moderate|middle)$/i.test(lower.trim())) return 'moderate';
-  if (/^(high|severe|extreme|heavy)$/i.test(lower.trim())) return 'severe';
-  if (/正常|健康|无|良好/.test(lower)) return 'normal';
-  if (/轻度|轻微|偏轻/.test(lower)) return 'mild';
-  if (/中度|中等|明显/.test(lower)) return 'moderate';
-  if (/重度|严重|极端|偏重/.test(lower)) return 'severe';
+  if (/^(low|normal|none|minimal)$/i.test(lower.trim())) {
+    return 'normal';
+  }
+  if (/^(mild|slight|light)$/i.test(lower.trim())) {
+    return 'mild';
+  }
+  if (/^(medium|moderate|middle)$/i.test(lower.trim())) {
+    return 'moderate';
+  }
+  if (/^(high|severe|extreme|heavy)$/i.test(lower.trim())) {
+    return 'severe';
+  }
+  if (/正常|健康|无|良好/.test(lower)) {
+    return 'normal';
+  }
+  if (/轻度|轻微|偏轻/.test(lower)) {
+    return 'mild';
+  }
+  if (/中度|中等|明显/.test(lower)) {
+    return 'moderate';
+  }
+  if (/重度|严重|极端|偏重/.test(lower)) {
+    return 'severe';
+  }
   return 'normal';
 }
 
@@ -1308,7 +1591,9 @@ app.listen(port, () => {
  */
 async function migrateImagesFromConfig() {
   try {
-    if (!db) return;
+    if (!db) {
+      return;
+    }
     const configRes = await db.collection('config').doc('npc_config').get();
     let configData = configRes.data;
     if (Array.isArray(configData) && configData.length > 0 && configData[0].data !== undefined) {
@@ -1328,11 +1613,16 @@ async function migrateImagesFromConfig() {
     for (const id of imageIds) {
       try {
         const base64 = images[id];
-        if (!base64 || typeof base64 !== 'string') continue;
+        if (!base64 || typeof base64 !== 'string') {
+          continue;
+        }
         const docId = 'npc_img_' + id;
-        await db.collection('config').doc(docId).set({
-          data: { imageId: id, base64, uploadTime: new Date().toISOString() }
-        });
+        await db
+          .collection('config')
+          .doc(docId)
+          .set({
+            data: { imageId: id, base64, uploadTime: new Date().toISOString() }
+          });
         migrated++;
         console.log('[Migrate] 迁移成功:', id, '(' + Math.round(base64.length / 1024) + 'KB)');
       } catch (e) {

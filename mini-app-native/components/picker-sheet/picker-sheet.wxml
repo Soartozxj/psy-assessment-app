@@ -1,0 +1,28 @@
+<view class="picker-sheet-overlay {{visible ? 'visible' : ''}}" wx:if="{{visible}}" bindtap="onOverlayTap">
+  <view class="picker-sheet {{animClass}}" catchtap="preventBubble">
+    <!-- 标题栏 -->
+    <view class="sheet-header">
+      <text class="sheet-title">{{title}}</text>
+      <view class="sheet-cancel" bindtap="onCancel">
+        <text>取消</text>
+      </view>
+    </view>
+
+    <!-- 选项列表 -->
+    <scroll-view class="sheet-body" scroll-y="true">
+      <view
+        class="sheet-option"
+        wx:for="{{options}}"
+        wx:key="index"
+        data-index="{{index}}"
+        bindtap="onSelect"
+        hover-class="sheet-option-active"
+      >
+        <text class="sheet-option-text">{{item.label}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- 安全区底部 -->
+    <view class="sheet-safe-bottom"></view>
+  </view>
+</view>

@@ -1,0 +1,68 @@
+<h2>云托管 API 服务</h2>
+<h3>7.1 基本信息</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>值</th>
+  </tr>
+  <tr>
+    <td>服务名</td>
+    <td><code>psy-api</code></td>
+  </tr>
+  <tr>
+    <td>源码目录</td>
+    <td><code>cloudbase-run/</code></td>
+  </tr>
+  <tr>
+    <td>访问域名</td>
+    <td><code>https://identity.soarto.com.cn</code></td>
+  </tr>
+  <tr>
+    <td>容器镜像</td>
+    <td>Node.js 18 Alpine</td>
+  </tr>
+  <tr>
+    <td>监听端口</td>
+    <td>80</td>
+  </tr>
+</table>
+<h3>7.2 API 接口列表</h3>
+<table>
+  <tr>
+    <th>方法</th>
+    <th>路径</th>
+    <th>说明</th>
+  </tr>
+  <tr>
+    <td>GET</td>
+    <td><code>/</code></td>
+    <td>健康检查</td>
+  </tr>
+  <tr>
+    <td>POST</td>
+    <td><code>/api/submit</code></td>
+    <td>提交测评（计分+存历史）</td>
+  </tr>
+  <tr>
+    <td>GET</td>
+    <td><code>/api/history?page=1&amp;pageSize=20</code></td>
+    <td>查询历史</td>
+  </tr>
+  <tr>
+    <td>DELETE</td>
+    <td><code>/api/history/:id</code></td>
+    <td>删除单条历史</td>
+  </tr>
+  <tr>
+    <td>POST</td>
+    <td><code>/api/ai-diagnose</code></td>
+    <td>AI 诊断</td>
+  </tr>
+</table>
+<h3>7.3 部署/更新</h3>
+<ol>
+  <li>修改 <code>cloudbase-run/index.js</code></li>
+  <li>重新打包 zip</li>
+  <li>云托管 → 服务 → 重新部署</li>
+  <li>等待构建完成（约 1-2 分钟）</li>
+</ol>

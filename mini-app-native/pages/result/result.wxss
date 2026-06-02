@@ -1,0 +1,222 @@
+/* ===== 测评结果页 — 对齐 H5 暖棕风格 ===== */
+
+.page-result {
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+  padding-bottom: 140rpx;
+}
+
+/* 结果头部 — 对齐H5: sticky紫色渐变+装饰圆 */
+.result-header {
+  position: relative;
+  padding: 88rpx 32rpx 32rpx;
+  color: #fff;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* 装饰圆 — 对齐H5: result-header::before */
+.header-deco-circle {
+  position: absolute;
+  top: -40rpx;
+  right: -20rpx;
+  width: 160rpx;
+  height: 160rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+
+/* 紧凑信息行 — 对齐H5: result-compact */
+.result-compact {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  position: relative;
+  z-index: 1;
+}
+
+.result-compact-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.result-compact-label {
+  opacity: 0.85;
+}
+
+.result-compact-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+/* 结果内容区 */
+.result-content {
+  padding: 0 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  position: relative;
+  z-index: 2;
+}
+
+/* 卡片 — 对齐H5: 暖色半透明 */
+.card {
+  background: rgba(250, 240, 228, 0.7);
+  border: 1rpx solid rgba(220, 195, 165, 0.35);
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+/* 分数卡 */
+.score-card {
+  padding: 20rpx 32rpx;
+}
+
+/* 分数区 — 对齐H5: 纵向居中 */
+.score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 8rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.interp-text {
+  font-size: 26rpx;
+  color: #5a4a38;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 分隔线 */
+.section-divider {
+  height: 2rpx;
+  background: rgba(139, 110, 80, 0.12);
+  margin: 0 32rpx;
+}
+
+/* 维度标题 */
+.dims-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #3a2e22;
+  margin: 20rpx 32rpx 16rpx;
+}
+
+/* 维度列表 */
+.dim-list {
+  padding: 0 32rpx;
+}
+
+/* 筛查 */
+.screening-section {
+  padding-bottom: 16rpx;
+}
+
+.screening-card {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin: 0 32rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+}
+
+.screening-card.positive {
+  background: #fff3e0;
+}
+
+.screening-card.negative {
+  background: #e8f5e9;
+}
+
+.screening-icon { font-size: 32rpx; }
+.screening-label { font-size: 28rpx; font-weight: 600; color: #3a2e22; }
+
+/* 底部操作栏 — fixed，z-index:100，避免被子元素遮挡 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 20rpx;
+  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 16rpx 0;
+  border-radius: 12rpx;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.action-btn.retake {
+  flex: 1.1;
+  background: rgba(250, 240, 228, 0.7);
+  color: #8b6e50;
+  border: 2rpx solid rgba(139, 110, 80, 0.3);
+}
+
+.action-btn.history {
+  flex: 1.1;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.action-btn.ai-action {
+  flex: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+}
+
+.action-btn.feedback-action {
+  flex: 0.9;
+  background: rgba(250, 240, 228, 0.6);
+  color: #8b6e50;
+  border: 2rpx solid rgba(139, 110, 80, 0.25);
+}
+
+.action-btn.share {
+  flex: 0.9;
+  background: #4a90d9;
+  color: #fff;
+  border: none;
+  line-height: normal;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.ai-action-icon,
+.fb-action-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}

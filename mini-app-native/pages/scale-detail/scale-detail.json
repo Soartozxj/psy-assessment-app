@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "量表详情",
+  "usingComponents": {
+    "npc-scene": "/components/npc-scene/npc-scene"
+  }
+}

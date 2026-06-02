@@ -1,0 +1,49 @@
+<view class="feedback-overlay" wx:if="{{visible}}" bindtap="onCancel">
+  <view class="feedback-card" catchtap="preventBubble">
+    <!-- 标题 -->
+    <view class="fb-title">
+      <text>评价本次测评</text>
+    </view>
+
+    <!-- 星级评分 -->
+    <view class="fb-stars">
+      <view
+        class="star {{rating >= item ? 'active' : ''}}"
+        wx:for="{{[1,2,3,4,5]}}"
+        wx:key="*this"
+        data-star="{{item}}"
+        bindtap="onStarTap"
+      >★</view>
+    </view>
+
+    <!-- 标签选择 -->
+    <view class="fb-tags">
+      <view
+        class="fb-tag {{selectedTagsMap[item.key] ? 'selected' : ''}}"
+        wx:for="{{presetTags}}"
+        wx:key="key"
+        data-key="{{item.key}}"
+        bindtap="onTagTap"
+      >{{item.label}}</view>
+    </view>
+
+    <!-- 文本输入 -->
+    <textarea
+      class="fb-textarea"
+      placeholder="说说你的感受..."
+      value="{{feedbackText}}"
+      bindinput="onTextInput"
+      maxlength="200"
+    />
+
+    <!-- 按钮 -->
+    <view class="fb-actions">
+      <view class="fb-btn cancel" bindtap="onCancel">
+        <text>取消</text>
+      </view>
+      <view class="fb-btn submit {{submitting ? 'disabled' : ''}}" bindtap="onSubmit">
+        <text>{{submitting ? '提交中...' : '提交'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

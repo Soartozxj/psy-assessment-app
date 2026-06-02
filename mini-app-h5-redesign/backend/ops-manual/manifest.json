@@ -1,0 +1,100 @@
+[
+  {
+    "id": "overview",
+    "title": "1. 系统全景图",
+    "icon": "🗺️",
+    "file": "01-overview.html",
+    "searchable": "系统全景图 关键ID 小程序 AppID 云开发环境 管理员OpenID"
+  },
+  {
+    "id": "accounts",
+    "title": "2. 平台账号清单",
+    "icon": "🔑",
+    "file": "02-accounts.html",
+    "searchable": "微信公众平台 开发者工具 腾讯云 轻量服务器 阿里云 宝塔面板"
+  },
+  {
+    "id": "dns",
+    "title": "3. 域名体系与DNS",
+    "icon": "🌐",
+    "file": "03-dns.html",
+    "searchable": "域名 DNS CNAME A记录 域名校验"
+  },
+  {
+    "id": "ssl",
+    "title": "4. SSL证书管理",
+    "icon": "🔐",
+    "file": "04-ssl.html",
+    "searchable": "SSL证书 续期 Let's Encrypt 阿里云 DV"
+  },
+  {
+    "id": "miniprogram",
+    "title": "5. 微信小程序配置",
+    "icon": "📱",
+    "file": "05-miniprogram.html",
+    "searchable": "小程序 AppID 基础库 业务域名 隐私保护 审核发布"
+  },
+  {
+    "id": "cloudbase",
+    "title": "6. 微信云开发配置",
+    "icon": "☁️",
+    "file": "06-cloudbase.html",
+    "searchable": "云数据库 云函数 静态托管 环境ID 套餐"
+  },
+  {
+    "id": "cloudrun",
+    "title": "7. 云托管API服务",
+    "icon": "🚀",
+    "file": "07-cloudrun.html",
+    "searchable": "云托管 API identity 容器 部署"
+  },
+  {
+    "id": "static",
+    "title": "8. 静态网站托管",
+    "icon": "📦",
+    "file": "08-static.html",
+    "searchable": "静态托管 rich Deploy 文件清单"
+  },
+  {
+    "id": "build",
+    "title": "9. 构建部署流程",
+    "icon": "🔨",
+    "file": "09-build.html",
+    "searchable": "构建 deploy scales-data ai-config 本地预览"
+  },
+  {
+    "id": "server",
+    "title": "10. 独立Web端",
+    "icon": "🖥️",
+    "file": "10-server.html",
+    "searchable": "独立Web端 www 服务器 宝塔 SSL 备案"
+  },
+  {
+    "id": "ai",
+    "title": "11. AI接口配置",
+    "icon": "🤖",
+    "file": "11-ai.html",
+    "searchable": "AI DashScope API Key 模型 代理 直连"
+  },
+  {
+    "id": "checklist",
+    "title": "12. 运维检查清单",
+    "icon": "✅",
+    "file": "12-checklist.html",
+    "searchable": "运维 检查清单 每月 部署后 版本发布"
+  },
+  {
+    "id": "faq",
+    "title": "13. 常见问题排查",
+    "icon": "❓",
+    "file": "13-faq.html",
+    "searchable": "FAQ 问题排查 WebView空白 测评无结果 AI报错 历史丢失"
+  },
+  {
+    "id": "links",
+    "title": "附录：链接速查",
+    "icon": "🔗",
+    "file": "14-links.html",
+    "searchable": "链接速查 项目结构 文件目录"
+  }
+]

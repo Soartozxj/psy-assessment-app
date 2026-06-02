@@ -1,0 +1,170 @@
+{
+  "summary": {
+    "total": 20,
+    "perfect": 12,
+    "rate": "60.0%",
+    "timestamp": "2026-05-09T07:54:16.524002"
+  },
+  "results": [
+    {
+      "code": "PPCRS",
+      "name": "父母共同教养关系感知量表",
+      "displayName": "父母教养互动模式",
+      "shortDesc": "你和父母如何一起照顾孩子？从协作默契、分歧处理、角色分工三个角度，了解家庭教养中的真实互动方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "FACES II-CV",
+      "name": "家庭亲密度和适应性",
+      "displayName": "家庭互动模式",
+      "shortDesc": "你和家人的相处方式是怎样的？从亲密度、灵活性两个维度，了解家庭成员间的联结方式与适应风格。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CBF-PI-B-2024",
+      "name": "中国大五人格问卷（简式版）",
+      "displayName": "性格全貌分析",
+      "shortDesc": "你是什么样的人？从情绪稳定性、做事风格、待人方式等维度，全面了解自己的性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SCL-90",
+      "name": "90项症状清单",
+      "displayName": "心理状态评估",
+      "shortDesc": "最近压力大、睡不好、容易烦躁？从情绪反应、躯体感受等维度，了解你近一周的心理状态。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CPTI",
+      "name": "儿童问题特质问卷",
+      "displayName": "儿童行为特质观察",
+      "shortDesc": "您的孩子在3-12岁阶段有哪些典型行为特点？从冷酷倾向、冲动控制、欺骗倾向三个维度，温和了解孩子的行为特质表现。",
+      "issues": ["shortDesc 超过50字(56)"],
+      "perfect": false
+    },
+    {
+      "code": "RPQ_SC",
+      "name": "反应性-主动性攻击量表（简式中文版）",
+      "displayName": "冲突反应模式",
+      "shortDesc": "你面对冲突时更易冲动反击，还是主动出击？从反应性与主动性两个维度，了解你的典型冲突应对方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "SCSQ",
+      "name": "简易应对方式问卷",
+      "displayName": "应对方式分析",
+      "shortDesc": "遇到压力时，你习惯怎么反应？了解你的积极行动力与情绪缓冲方式。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "ASSS",
+      "name": "青少年社会支持量表",
+      "displayName": "社会支持资源分析",
+      "shortDesc": "青少年专属｜了解你在生活中实际获得的支持、内心感受到的关心，以及遇到困难时调动帮助的能力。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "CBF_PI_15",
+      "name": "中国大五人格问卷(极简式版)(CBF-PI-15)",
+      "displayName": "性格五维分析",
+      "shortDesc": "你是什么样的人？从外向活力、待人友善度、做事条理性、情绪稳定性、思维开放性五个方面，全面了解你的性格特点。",
+      "issues": ["shortDesc 超过50字(53)"],
+      "perfect": false
+    },
+    {
+      "code": "SSRS",
+      "name": "社会支持评定量表(SSRS)",
+      "displayName": "社会支持分析",
+      "shortDesc": "你感受到的支持够吗？从主观感受、实际帮助和资源运用三方面，了解你的社会支持状况。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "BFFP_CAS",
+      "name": "中文形容词大五人格量表(简式版)(BFFP-CAS)",
+      "displayName": "性格五维分析",
+      "shortDesc": "你是什么样的人？从外向活力、待人亲和、做事条理、情绪稳定、思维开放五个方面，全面了解你的性格特点。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "ZHONGYONG",
+      "name": "中庸实践思维方式量表",
+      "displayName": "中庸思维模式",
+      "shortDesc": "你如何面对矛盾与选择？从灵活变通、平衡取舍两个维度，了解你的日常思维习惯。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "BFI2",
+      "name": "大五人格问卷(第2版)(BFI-2)",
+      "displayName": "性格全貌分析",
+      "shortDesc": "你是什么样的人？从外向活力、待人温度、做事条理、情绪稳度、思维开放五个维度，全面了解自己的稳定特质。",
+      "issues": [],
+      "perfect": true
+    },
+    {
+      "code": "TMMS",
+      "name": "特质性元情绪量表(TMMS)",
+      "displayName": "情绪管理三维度分析",
+      "shortDesc": "你如何觉察、理解并调整自己的情绪？从情绪觉察力、情绪分辨力、情绪修复力三个角度，全面了解你的情绪管理特点。",
+      "issues": ["shortDesc 超过50字(53)"],
+      "perfect": false
+    },
+    {
+      "code": "TMD",
+      "name": "手机依赖测验（中文版）（TMD）",
+      "displayName": "手机使用行为与失控感",
+      "shortDesc": "你刷手机时是否常感到停不下来？从使用强度、情绪依赖、行为控制和戒断反应四个维度，了解你的日常使用模式。",
+      "issues": ["shortDesc 超过50字(51)", "shortDesc 包含负面词: 依赖"],
+      "perfect": false
+    },
+    {
+      "code": "SASSV",
+      "name": "智能手机成瘾量表(简式版)(SAS-SV)",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "你刷手机时是否常有停不下来的感觉？了解你的使用强度、情境依赖和行为控制状态。",
+      "issues": ["shortDesc 包含负面词: 依赖"],
+      "perfect": false
+    },
+    {
+      "code": "PMSMU_SQ",
+      "name": "问题性移动社交媒体使用筛查问卷(PMSMU-SQ)",
+      "displayName": "手机使用行为模式",
+      "shortDesc": "你刷手机时容易停不下来吗？从使用强度、失控感和习惯依赖三个角度，了解你的移动社交媒体使用特点。",
+      "issues": ["shortDesc 包含负面词: 依赖"],
+      "perfect": false
+    },
+    {
+      "code": "PMSMU_AQ",
+      "name": "问题性移动社交媒体使用评估问卷",
+      "displayName": "手机使用行为与失控感",
+      "shortDesc": "刷手机停不下来？从生理反应、心理依赖和行为控制三个角度，了解你的移动社交媒体使用模式。",
+      "issues": ["shortDesc 包含负面词: 依赖"],
+      "perfect": false
+    },
+    {
+      "code": "PMVGS",
+      "name": "问题性移动视频游戏使用量表(PMVGS)",
+      "displayName": "游戏使用行为与失控感",
+      "shortDesc": "你最近是否难以放下手机游戏？从戒断反应、情绪调节和现实冲突三个角度，了解你的移动游戏使用习惯与自我控制状态。",
+      "issues": ["shortDesc 超过50字(54)"],
+      "perfect": false
+    },
+    {
+      "code": "NMP_C",
+      "name": "无手机恐惧量表(中文版)(NMP-C)",
+      "displayName": "手机使用与失控感",
+      "shortDesc": "手机不在身边时，你是否容易紧张、坐立不安？了解你的使用强度和情绪调节反应。",
+      "issues": [],
+      "perfect": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+.share-canvas-wrap {
+  position: fixed;
+  left: -9999rpx;
+  top: -9999rpx;
+  width: 600rpx;
+  height: 480rpx;
+  overflow: hidden;
+}
+
+.share-canvas {
+  display: block;
+}

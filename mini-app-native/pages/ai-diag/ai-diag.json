@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "AI 智能解读",
+  "usingComponents": {
+    "npc-scene": "/components/npc-scene/npc-scene"
+  }
+}

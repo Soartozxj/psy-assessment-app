@@ -1,0 +1,67 @@
+<view class="question-grouped">
+  <view class="q-header" wx:if="{{showIndex && index > 0}}">
+    <text class="q-number">【第{{index}}题】</text>
+  </view>
+  <view class="q-content" wx:if="{{npcMode !== 'immersive'}}">{{question.content}}</view>
+
+  <!-- allowRepeat 模式：条目列表 + 添加 -->
+  <block wx:if="{{question.allowRepeat}}">
+    <!-- 已添加条目 -->
+    <view class="repeat-list" wx:if="{{repeatItems.length > 0}}">
+      <view class="repeat-item" wx:for="{{repeatItems}}" wx:key="index">
+        <view class="repeat-item-info">
+          <text class="repeat-item-label">第{{index + 1}}条</text>
+        </view>
+        <view class="repeat-item-del" data-index="{{index}}" bindtap="onDeleteRepeatItem">✕</view>
+      </view>
+    </view>
+
+    <!-- 编辑态 -->
+    <view class="repeat-edit" wx:if="{{repeatEditing}}">
+      <view class="repeat-edit-title">第{{repeatItems.length + 1}}条</view>
+      <view class="repeat-form">
+        <view class="repeat-row" wx:for="{{groups}}" wx:key="id">
+          <text class="repeat-row-label">{{item.label}}</text>
+          <picker
+            class="repeat-picker"
+            range="{{item.options}}"
+            range-key="label"
+            data-group-id="{{item.id}}"
+            bindchange="onRepeatPickerChange"
+          >
+            <view class="picker-text">请选择 ▾</view>
+          </picker>
+        </view>
+      </view>
+      <view class="repeat-edit-actions">
+        <view class="repeat-btn confirm" bindtap="onConfirmRepeatItem">确认添加</view>
+        <view class="repeat-btn cancel" bindtap="onAddRepeatItem">取消</view>
+      </view>
+    </view>
+
+    <!-- 空态：添加按钮 -->
+    <view class="repeat-add" wx:if="{{!repeatEditing}}" bindtap="onAddRepeatItem">
+      <text class="repeat-add-text">+ 添加{{question.repeatLabel || '事件'}}</text>
+    </view>
+  </block>
+
+  <!-- 普通模式：每组一行 picker -->
+  <block wx:else>
+    <view class="group-list">
+      <view class="group-row" wx:for="{{groups}}" wx:key="id">
+        <text class="group-label">{{item.label}}</text>
+        <picker
+          class="group-picker"
+          range="{{item.options}}"
+          range-key="label"
+          data-group-id="{{item.id}}"
+          bindchange="onPickerChange"
+        >
+          <view class="picker-text {{selectionFlags[item.id] ? 'selected' : ''}}">
+            {{selectionFlags[item.id] ? '已选择' : '请选择'}} ▾
+          </view>
+        </picker>
+      </view>
+    </view>
+  </block>
+</view>

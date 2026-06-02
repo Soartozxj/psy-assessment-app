@@ -1,0 +1,174 @@
+{
+  "summary": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "passRate": "100.0%",
+    "startTime": "2026-06-01T11:09:36.655Z",
+    "endTime": "2026-06-01T11:09:45.960Z",
+    "duration": 9305
+  },
+  "tests": [
+    {
+      "name": "访问admin页面成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:40.893Z"
+    },
+    {
+      "name": "PluginLoader已加载",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:43.910Z"
+    },
+    {
+      "name": "Diary插件文件存在",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:43.919Z"
+    },
+    {
+      "name": "Diary插件加载成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.929Z"
+    },
+    {
+      "name": "插件有execute方法",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.930Z"
+    },
+    {
+      "name": "list action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.934Z"
+    },
+    {
+      "name": "list返回的是数组",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.935Z"
+    },
+    {
+      "name": "list返回至少1条数据",
+      "passed": true,
+      "error": null,
+      "details": "实际: 2",
+      "timestamp": "2026-06-01T11:09:45.935Z"
+    },
+    {
+      "name": "日记数据有必需字段(id/title/content)",
+      "passed": true,
+      "error": null,
+      "details": "字段: id, title, content, mood, date",
+      "timestamp": "2026-06-01T11:09:45.935Z"
+    },
+    {
+      "name": "get action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.940Z"
+    },
+    {
+      "name": "get返回了日记数据",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.940Z"
+    },
+    {
+      "name": "create action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.945Z"
+    },
+    {
+      "name": "创建的日记有ID",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.945Z"
+    },
+    {
+      "name": "日记标题正确",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.945Z"
+    },
+    {
+      "name": "update action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.949Z"
+    },
+    {
+      "name": "日记标题已更新",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.949Z"
+    },
+    {
+      "name": "search action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.953Z"
+    },
+    {
+      "name": "search返回数组",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.953Z"
+    },
+    {
+      "name": "search找到至少1条结果",
+      "passed": true,
+      "error": null,
+      "details": "实际: 1",
+      "timestamp": "2026-06-01T11:09:45.953Z"
+    },
+    {
+      "name": "delete action执行成功",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.956Z"
+    },
+    {
+      "name": "日记已成功删除",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.956Z"
+    },
+    {
+      "name": "未知action抛出错误",
+      "passed": true,
+      "error": null,
+      "details": "错误信息: 未知的日记操作: unknown_action",
+      "timestamp": "2026-06-01T11:09:45.958Z"
+    },
+    {
+      "name": "get不存在的日记返回null",
+      "passed": true,
+      "error": null,
+      "details": null,
+      "timestamp": "2026-06-01T11:09:45.960Z"
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+.npc-scene {
+  position: relative;
+  width: 100%;
+  min-height: 400rpx;
+  overflow: hidden;
+}
+
+/* full 模式：固定全屏背景，不占据文档流空间 */
+.npc-scene.full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: auto;
+  z-index: 0;
+  display: block;
+}
+
+/* 渐变背景 — 对齐H5: detail-npc-scene absolute inset:0 z-index:0 */
+.scene-bg-default {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #e8d5c4 0%, #d4b8a0 30%, #c9a882 60%, #b8956e 100%);
+  z-index: 0;
+}
+
+/* 光晕叠加 — 对齐H5: npc-scene-bg z-index:1, 椭圆200px×280px=400rpx×560rpx */
+.scene-bg-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 400rpx 560rpx at 65% 15%, rgba(255,248,220,0.6) 0%, transparent 70%),
+    linear-gradient(90deg, rgba(139,105,78,0.15) 0%, transparent 25%),
+    linear-gradient(180deg, transparent 65%, rgba(160,120,80,0.3) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 自定义背景图透明度占位 */
+.scene-bg-custom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* 角色立绘区 — 对齐H5: npc-character-area bottom:0 height:58% z-index:10 */
+.character-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 58%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-top: 0;
+  width: 100%;
+  overflow: visible;
+}
+
+/* 立绘图片 — 对齐H5: npc-character-img height:100% scale(1.2) object-fit:contain */
+.character-img {
+  height: 100%;
+  width: 100%;
+  transform: scale(1.2);
+  transform-origin: bottom center;
+  transition: opacity 0.3s ease;
+}
+
+/* 图片加载中 — 半透明 */
+.character-img.img-loading {
+  opacity: 0.3;
+}
+
+/* 图片加载完成 — 淡入全显 */
+.character-img.img-loaded {
+  opacity: 1;
+}
+
+.npc-scene.card .character-img {
+  width: 240rpx;
+  height: 360rpx;
+}
+
+/* 名牌 — 对齐H5: npc-nameplate top:9% z-index:20 */
+.nameplate {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  margin-top: 0;
+}
+
+/* 名牌内框 — 对齐H5: padding:5px 16px=10rpx 32rpx border-radius:18px=36rpx font-size:12px=24rpx */
+.np-inner {
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 36rpx;
+  padding: 10rpx 32rpx;
+  text-align: center;
+  border: 2rpx solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+}
+
+/* 名牌名称 — 对齐H5: font-size:12px=24rpx font-weight:600 */
+.np-name {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* 名牌格言 — 对齐H5: font-size:10px=20rpx italic rgba(255,255,255,0.8) */
+.np-motto {
+  display: block;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4rpx;
+  font-style: italic;
+}

@@ -1,0 +1,140 @@
+.npc-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dialog-box {
+  padding: 16rpx 24rpx;
+}
+
+/* 嵌入模式：去掉 dialog-box 的内边距，由外层容器控制 */
+.dialog-box.embedded {
+  padding: 0;
+}
+
+.dialog-frame {
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 20rpx;
+  padding: 24rpx;
+  position: relative;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 嵌入模式：融入外层卡片，去掉独立背景/圆角/阴影 */
+.dialog-frame.embedded {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 0 16rpx 0;
+}
+
+.dialog-frame.embedded::before {
+  display: none;
+}
+
+/* 顶部蓝色装饰线 */
+.dialog-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #5b8fb9, #7eb5d6, #5b8fb9);
+}
+
+.dialog-speaker {
+  margin-bottom: 16rpx;
+}
+
+.speaker-name {
+  font-size: 26rpx;
+  color: #3a6d8c;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+/* 对齐H5: 说话人名字前的蓝色圆点装饰 */
+.speaker-name::before {
+  content: '';
+  width: 14rpx;
+  height: 14rpx;
+  background: #5b8fb9;
+  border-radius: 50%;
+  margin-right: 10rpx;
+  flex-shrink: 0;
+}
+
+.dialog-text {
+  font-size: 28rpx;
+  color: #3a3a3a;
+  line-height: 1.7;
+  min-height: 80rpx;
+  word-break: break-word;
+  font-weight: 600;
+}
+
+.typing-cursor {
+  animation: blink 0.8s infinite;
+  color: #5b8fb9;
+  font-weight: 300;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.skip-hint {
+  text-align: right;
+  margin-top: 8rpx;
+}
+
+.skip-text {
+  font-size: 20rpx;
+  color: rgba(91, 143, 185, 0.5);
+}
+
+/* 确认栏 */
+.confirm-bar {
+  margin-top: 16rpx;
+  padding: 16rpx 24rpx 0;
+  border-top: 2rpx solid rgba(91, 143, 185, 0.12);
+  display: none;
+  align-items: center;
+}
+
+.confirm-bar.visible {
+  display: flex;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 20rpx 32rpx;
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6rpx 24rpx rgba(91, 143, 185, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-btn.disabled {
+  opacity: 0.4;
+  background: #b0c4d1;
+  box-shadow: none;
+}
+
+/* 最后一题绿色 — 对齐H5 */
+.confirm-btn.is-last {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  box-shadow: 0 6rpx 24rpx rgba(67, 160, 71, 0.3);
+}

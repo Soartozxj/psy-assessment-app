@@ -1,0 +1,75 @@
+<h2>构建部署流程</h2>
+<h3>9.1 前置配置文件</h3>
+<p>所有配置文件位于项目根目录（与 build-deploy.py 同级）：</p>
+<table>
+  <tr>
+    <th>文件</th>
+    <th>用途</th>
+    <th>必需？</th>
+  </tr>
+  <tr>
+    <td><code>scales-data.json</code></td>
+    <td>量表数据（后台导出）</td>
+    <td>✅ 必需</td>
+  </tr>
+  <tr>
+    <td><code>ai-config.json</code></td>
+    <td>AI 接口配置</td>
+    <td>✅ 必需</td>
+  </tr>
+  <tr>
+    <td><code>scale-types.json</code></td>
+    <td>量表分类配置</td>
+    <td>可选</td>
+  </tr>
+</table>
+<h3>9.2 ai-config.json 格式</h3>
+<pre>
+{
+  "provider": "dashscope",
+  "dashscope": {
+    "apiKey": "sk-你的API密钥",
+    "model": "qwen-plus"
+  },
+  "ollama": {
+    "baseUrl": "http://localhost:11434",
+    "model": "qwen2.5:7b"
+  }
+}</pre
+>
+<blockquote>
+  <p>注意：AI 配置有两处 —— ai-config.json（构建注入）和云数据库 config.ai_config（云托管读取），API Key 可能不同。</p>
+</blockquote>
+<h3>9.3 构建命令</h3>
+<pre>
+cd /Users/rich/WorkBuddy/20260407113106
+python3 build-deploy.py</pre
+>
+<h3>9.4 构建输出</h3>
+<p>输出目录：<code>deploy/</code></p>
+<p>构建脚本自动完成：</p>
+<ol>
+  <li>读取 scales-data.json 中的量表数据</li>
+  <li>读取 ai-config.json 中的 AI 配置</li>
+  <li>将量表数据注入 shared-data.js 的 DEFAULT_SCALES</li>
+  <li>将 AI 配置注入 shared-data.js 的 DEFAULT_AI_CONFIG</li>
+  <li>将量表类型注入 admin-legacy.html 的 BUNDLED_SCALE_TYPES</li>
+  <li>修改 HTML 中的 JS/CSS 引用路径</li>
+  <li>替换 localhost URL 为部署路径</li>
+  <li>生成 manifest.json 构建清单</li>
+  <li>保留 fQJW4aYeSL.txt 域名校验文件</li>
+</ol>
+<h3>9.5 完整部署流程</h3>
+<pre>
+修改代码 → 后台导出量表数据 → 保存为 scales-data.json
+        → 编辑 ai-config.json（如有变更）
+        → python3 build-deploy.py
+        → 云开发控制台 → 静态网站托管 → 上传 deploy/ 文件
+        → 验证线上访问</pre
+>
+<h3>9.6 本地开发预览</h3>
+<pre>
+cd /Users/rich/WorkBuddy/20260407113106
+python3 -m http.server 8080 --directory .
+# 访问 http://localhost:8080/mini-app-h5/frontend/index.html</pre
+>

@@ -219,15 +219,17 @@ def main():
             traceback.print_exc()
             return 1
     
-    # 构建后验证：确保每个版本的 content 非空
+    # 构建后验证：确保 active 版本的 content 非空
     errors = []
     for p in prompts:
         for v in p.get('versions', []):
-            if not v.get('content') or len(v['content'].strip()) == 0:
-                errors.append(f"  ❌ {p['id']} v{v['version']}: content 为空！检查 Markdown 是否有对应的 ## ✅ v{v['version']} 章节")
+            content = v.get('content', '')
+            if v.get('status') == 'active' and (not content or len(content.strip()) == 0):
+                errors.append(f"  ❌ {p['id']} v{v['version']} (active): content 为空！检查 Markdown 是否有对应的 ## ✅ v{v['version']} 章节")
+            # old 版本允许短内容（归档摘要），不做非空校验
     if errors:
         print('\n'.join(errors))
-        print('\n⚠️ 构建中止：发现空 content，请修复后重试')
+        print('\n⚠️ 构建中止：发现 active 版本空 content，请修复后重试')
         return 1
     
     js_content = 'window.DEFAULT_PROMPTS = ' + json.dumps(prompts, ensure_ascii=False, separators=(',', ':')) + ';\n'

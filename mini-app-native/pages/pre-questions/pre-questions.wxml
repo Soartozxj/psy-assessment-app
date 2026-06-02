@@ -1,0 +1,85 @@
+<view class="page-preq">
+  <npc-scene
+    scene="full"
+    background="{{backgroundImage}}"
+    counselorImage="{{counselorImage}}"
+  />
+
+  <view class="preq-content">
+  <view class="preq-card">
+    <!-- 当前问题 -->
+    <view class="preq-field" wx:for="{{questions}}" wx:key="id" wx:if="{{item.id === visibleIds[pageIdx]}}">
+      <view class="preq-label">
+        <text class="preq-label-text">{{item.label}}</text>
+        <text class="preq-required" wx:if="{{item.required !== false}}">*</text>
+      </view>
+
+      <!-- text -->
+      <input
+        wx:if="{{item.type === 'text' || !item.type}}"
+        class="preq-input"
+        placeholder="{{item.placeholder || '请输入'}}"
+        value="{{answers[item.id] || ''}}"
+        data-qid="{{item.id}}"
+        bindinput="onInputChange"
+      />
+
+      <!-- number -->
+      <input
+        wx:if="{{item.type === 'number'}}"
+        class="preq-input"
+        type="number"
+        placeholder="{{item.placeholder || '请输入数字'}}"
+        value="{{answers[item.id] || ''}}"
+        data-qid="{{item.id}}"
+        bindinput="onInputChange"
+      />
+
+      <!-- select：内联按钮组（替代原生picker，避免弹窗遮挡） -->
+      <view class="preq-option-group" wx:if="{{item.type === 'select'}}">
+        <view
+          class="preq-option-btn {{answers[item.id] === opt.value ? 'active' : ''}}"
+          wx:for="{{item.options}}"
+          wx:key="value"
+          wx:for-item="opt"
+          data-qid="{{item.id}}"
+          data-value="{{opt.value}}"
+          data-label="{{opt.label}}"
+          bindtap="onSelectOption"
+        >
+          <text>{{opt.label}}</text>
+        </view>
+      </view>
+
+      <!-- checkbox -->
+      <checkbox-group
+        wx:if="{{item.type === 'checkbox'}}"
+        data-qid="{{item.id}}"
+        bindchange="onCheckboxChange"
+      >
+        <view class="preq-check-list">
+          <label class="preq-check-item" wx:for="{{item.options}}" wx:key="label" wx:for-item="opt">
+            <checkbox value="{{opt.label}}" color="#5b8fb9" />
+            <text class="preq-check-text">{{opt.label}}</text>
+          </label>
+        </view>
+      </checkbox-group>
+    </view>
+
+    <!-- 导航按钮 -->
+    <view class="preq-nav">
+      <view class="preq-btn prev {{pageIdx === 0 ? 'disabled' : ''}}" bindtap="onPrev" wx:if="{{pageIdx > 0}}">
+        <text>上一步</text>
+      </view>
+      <view class="preq-btn next" bindtap="onNextOrSubmit">
+        <text>{{isLast ? '开始测评' : '下一步'}}</text>
+      </view>
+    </view>
+
+    <!-- 步骤指示 -->
+    <view class="preq-steps">
+      <text class="step-text">{{pageIdx + 1}} / {{visibleIds.length}}</text>
+    </view>
+  </view>
+  </view>
+</view>

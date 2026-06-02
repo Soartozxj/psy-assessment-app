@@ -1,0 +1,36 @@
+<view class="question-matrix">
+  <view class="q-header" wx:if="{{showIndex && index > 0}}">
+    <text class="q-number">【第{{index}}题】</text>
+  </view>
+  <view class="q-content" wx:if="{{npcMode !== 'immersive'}}">{{question.content}}</view>
+
+  <scroll-view class="matrix-scroll" scroll-x="true">
+    <view class="matrix-table">
+      <!-- 表头 -->
+      <view class="matrix-row matrix-header">
+        <view class="matrix-cell matrix-corner"></view>
+        <view class="matrix-cell matrix-col-head" wx:for="{{cols}}" wx:key="index">
+          <text class="col-head-text">{{item.label}}</text>
+        </view>
+      </view>
+      <!-- 表体：每行一个 radio-group -->
+      <view class="matrix-row" wx:for="{{rows}}" wx:key="id" wx:for-item="row" wx:for-index="rowIdx">
+        <view class="matrix-cell matrix-row-label">
+          <text class="row-label-text">{{row.label || row.id}}</text>
+        </view>
+        <radio-group class="matrix-radio-group" data-row-id="{{row.id}}" bindchange="onRadioChange">
+          <label class="radio-label" wx:for="{{cols}}" wx:key="index" wx:for-item="col" wx:for-index="colIdx">
+            <view class="matrix-cell matrix-radio-cell">
+              <radio
+                value="{{colIdx}}"
+                checked="{{answers[row.id] === colIdx}}"
+                color="#5b8fb9"
+                disabled="{{disabled}}"
+              />
+            </view>
+          </label>
+        </radio-group>
+      </view>
+    </view>
+  </scroll-view>
+</view>

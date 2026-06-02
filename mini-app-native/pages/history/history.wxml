@@ -1,0 +1,47 @@
+<view class="page-history">
+  <!-- 分类标签 -->
+  <scroll-view class="cat-tabs" scroll-x="true">
+    <view
+      class="cat-tab {{currentCategory === index ? 'active' : ''}}"
+      wx:for="{{categories}}"
+      wx:key="index"
+      data-index="{{index}}"
+      bindtap="onCategoryTap"
+    >{{item}}</view>
+  </scroll-view>
+
+  <!-- 记录列表 -->
+  <view class="record-list" wx:if="{{groupedRecords.length > 0}}">
+    <view class="date-group" wx:for="{{groupedRecords}}" wx:key="date">
+      <view class="date-label">
+        <text>{{item.date}}</text>
+      </view>
+      <view class="record-item"
+        wx:for="{{item.items}}"
+        wx:for-item="record"
+        wx:key="id"
+        data-record="{{record}}"
+        bindtap="onRecordTap"
+      >
+        <view class="record-emoji">{{record.emoji || '📋'}}</view>
+        <view class="record-info">
+          <text class="record-name">{{record.scaleName}}</text>
+          <text class="record-meta">{{record.categoryName || ''}} · {{record.levelName || ''}}</text>
+        </view>
+        <view class="record-score" style="color:{{record.color || '#5b8fb9'}}">
+          {{record.score}}分
+        </view>
+        <view class="record-delete" data-id="{{record.id}}" catchtap="onDeleteRecord">✕</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{groupedRecords.length === 0}}">
+    <text class="empty-icon">📝</text>
+    <text class="empty-text">{{emptyText}}</text>
+    <view class="empty-action" bindtap="onGoToScales">
+      <text>去测评</text>
+    </view>
+  </view>
+</view>

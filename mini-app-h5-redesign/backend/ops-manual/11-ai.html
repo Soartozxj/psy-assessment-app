@@ -1,0 +1,58 @@
+<h2>AI 接口配置</h2>
+<h3>11.1 架构说明</h3>
+<p>AI 功能有两个调用路径：</p>
+<pre>
+路径 1（前端直连）：H5 → shared-data.js 读取 Key → 直连 DashScope
+路径 2（代理调用）：H5 → 云托管 API → 云数据库读配置 → 调用 DashScope</pre
+>
+<ul>
+  <li><strong>WebView 模式</strong>（小程序内）：主要走路径 2，更安全</li>
+  <li><strong>独立 Web 端</strong>（浏览器）：走路径 1，需要 ai-config.json 有有效 Key</li>
+</ul>
+<h3>11.2 API Key 管理</h3>
+<table>
+  <tr>
+    <th>位置</th>
+    <th>配置方式</th>
+    <th>说明</th>
+  </tr>
+  <tr>
+    <td><code>ai-config.json</code></td>
+    <td>手动编辑</td>
+    <td>构建时注入到 H5 前端</td>
+  </tr>
+  <tr>
+    <td><code>shared-data.js</code></td>
+    <td>build-deploy.py 注入</td>
+    <td>线上运行的配置</td>
+  </tr>
+  <tr>
+    <td>云数据库 config.ai_config</td>
+    <td>后台或控制台</td>
+    <td>云托管 API 读取</td>
+  </tr>
+  <tr>
+    <td>DashScope 控制台</td>
+    <td><a href="https://dashscope.console.aliyun.com" target="_blank">在线管理</a></td>
+    <td>管理 Key / 查看用量</td>
+  </tr>
+</table>
+<h3>11.3 当前模型</h3>
+<table>
+  <tr>
+    <th>项目</th>
+    <th>值</th>
+  </tr>
+  <tr>
+    <td>提供商</td>
+    <td>阿里云 DashScope</td>
+  </tr>
+  <tr>
+    <td>模型</td>
+    <td>qwen-plus</td>
+  </tr>
+  <tr>
+    <td>API 端点</td>
+    <td><code>https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions</code></td>
+  </tr>
+</table>

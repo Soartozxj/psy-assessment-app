@@ -1,0 +1,42 @@
+<h2>SSL 证书管理</h2>
+<h3>4.1 证书清单</h3>
+<table>
+  <tr>
+    <th>域名</th>
+    <th>来源</th>
+    <th>到期</th>
+    <th>续期</th>
+  </tr>
+  <tr>
+    <td><code>rich.soarto.com.cn</code></td>
+    <td>微信云开发</td>
+    <td>2026-07-20</td>
+    <td>自动</td>
+  </tr>
+  <tr>
+    <td><code>identity.soarto.com.cn</code></td>
+    <td>阿里云 DV</td>
+    <td>2026-07-23</td>
+    <td>手动</td>
+  </tr>
+  <tr>
+    <td><code>www.soarto.com.cn</code></td>
+    <td>待申请</td>
+    <td>—</td>
+    <td>—</td>
+  </tr>
+</table>
+<h3>4.2 续期 identity.soarto.com.cn 证书</h3>
+<ol>
+  <li>登录阿里云控制台 → SSL 证书</li>
+  <li>找到 identity.soarto.com.cn 的证书</li>
+  <li>到期前 30 天申请免费续签</li>
+  <li>下载后到云开发控制台 → 云托管 → 服务设置 → 更新证书</li>
+</ol>
+<h3>4.3 www.soarto.com.cn 申请 SSL</h3>
+<blockquote>
+  <p>
+    重要：必须在 ICP 接入备案审核通过后才能申请！<br />
+    备案通过后：宝塔面板 → 网站 → SSL → Let's Encrypt → 申请 → 开启强制 HTTPS
+  </p>
+</blockquote>

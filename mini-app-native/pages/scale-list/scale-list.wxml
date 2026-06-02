@@ -1,0 +1,47 @@
+<view class="page-scale-list">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <picker class="filter-picker" range="{{categoryList}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+      <view class="filter-text">{{categoryList[categoryIndex]}} ▾</view>
+    </picker>
+    <picker class="filter-picker" range="{{sortList}}" value="{{sortIndex}}" bindchange="onSortChange">
+      <view class="filter-text">{{sortList[sortIndex]}} ▾</view>
+    </picker>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-wrap">
+    <input
+      class="search-input"
+      placeholder="搜索量表..."
+      value="{{keyword}}"
+      bindinput="onSearchInput"
+      confirm-type="search"
+    />
+  </view>
+
+  <!-- 量表列表 -->
+  <scroll-view class="scale-scroll" scroll-y="true" refresher-enabled="true" bindrefresherrefresh="onPullDownRefresh">
+    <view class="scale-list" wx:if="{{filteredScales.length > 0}}">
+      <view class="scale-item" wx:for="{{filteredScales}}" wx:key="id">
+        <scale-card
+          scale="{{item}}"
+          color="{{item.color || '#5b8fb9'}}"
+          done="{{item.done}}"
+          bind:scaletap="onScaleTap"
+        />
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && filteredScales.length === 0}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">{{emptyText}}</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-more" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+  </scroll-view>
+</view>

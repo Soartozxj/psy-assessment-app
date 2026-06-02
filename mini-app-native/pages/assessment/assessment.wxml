@@ -1,0 +1,140 @@
+<view class="page-assessment">
+  <!-- NPC 场景背景 -->
+  <npc-scene
+    scene="full"
+    background="{{backgroundImage}}"
+    counselorImage="{{counselorImage}}"
+    counselorName="{{npcSettings.counselorName}}"
+    motto="{{npcSettings.motto}}"
+  />
+
+  <!-- 顶部进度条（对齐H5: npc-progress-bar） -->
+  <view class="progress-area">
+    <view class="progress-bar-wrap">
+      <view class="progress-bar" style="width:{{progress}}%;"></view>
+    </view>
+  </view>
+  <!-- 进度信息胶囊（对齐H5: npc-progress-info 居中黑底胶囊） -->
+  <view class="progress-info-pill">
+    <text class="pill-text">{{currentIndex + 1}} / {{totalQuestions}}</text>
+    <text class="pill-exit" bindtap="onExit">退出 ✕</text>
+  </view>
+
+  <!-- 模式切换（绝对定位右上角） -->
+  <view class="mode-toggle">
+    <view
+      class="mode-btn {{npcMode === 'immersive' ? 'active' : ''}}"
+      data-mode="immersive"
+      bindtap="onSwitchMode"
+    >沉浸</view>
+    <view
+      class="mode-btn {{npcMode === 'normal' ? 'active' : ''}}"
+      data-mode="normal"
+      bindtap="onSwitchMode"
+    >普通</view>
+  </view>
+
+  <!-- 内容区（底部吸附） -->
+  <view class="assessment-content">
+    <!-- 题目区 -->
+    <view class="question-area {{npcMode === 'immersive' ? 'with-npc' : ''}}">
+      <!-- NPC 对话框（沉浸模式：嵌入题目区内） -->
+      <npc-dialog
+        wx:if="{{npcMode === 'immersive'}}"
+        speaker="{{npcSettings.counselorName}}"
+        text="{{dialogText}}"
+        showConfirm="{{false}}"
+        confirmDisabled="{{confirmDisabled}}"
+        confirmText="{{confirmText}}"
+        npcMode="{{npcMode}}"
+        embedded="true"
+        bindconfirm="onConfirm"
+        bindtypingcomplete="onTypingComplete"
+      />
+      <!-- 根据题型动态渲染（沉浸模式下打字完成后才显示选项） -->
+      <view wx:if="{{showOptions}}">
+        <question-single
+          wx:if="{{currentType === 'single' || (!currentType && currentQuestion)}}"
+          question="{{currentQuestion}}"
+          value="{{currentAnswer}}"
+          index="{{currentIndex + 1}}"
+          showIndex="{{npcMode === 'normal'}}"
+          npcMode="{{npcMode}}"
+          bindanswer="onAnswer"
+        />
+
+        <question-matrix
+          wx:if="{{currentType === 'matrix'}}"
+          question="{{currentQuestion}}"
+          value="{{currentAnswer}}"
+          index="{{currentIndex + 1}}"
+          showIndex="{{npcMode === 'normal'}}"
+          npcMode="{{npcMode}}"
+          bindanswer="onAnswer"
+        />
+
+        <question-parent-child
+          wx:if="{{currentType === 'parent-child'}}"
+          question="{{currentQuestion}}"
+          value="{{currentAnswer}}"
+          index="{{currentIndex + 1}}"
+          showIndex="{{npcMode === 'normal'}}"
+          npcMode="{{npcMode}}"
+          bindanswer="onAnswer"
+        />
+
+        <question-grouped
+          wx:if="{{currentType === 'grouped'}}"
+          question="{{currentQuestion}}"
+          value="{{currentAnswer}}"
+          index="{{currentIndex + 1}}"
+          showIndex="{{npcMode === 'normal'}}"
+          npcMode="{{npcMode}}"
+          bindanswer="onAnswer"
+        />
+
+        <question-text
+          wx:if="{{currentType === 'text'}}"
+          question="{{currentQuestion}}"
+          value="{{currentAnswer}}"
+          index="{{currentIndex + 1}}"
+          showIndex="{{npcMode === 'normal'}}"
+          npcMode="{{npcMode}}"
+          bindanswer="onAnswer"
+        />
+      </view>
+
+      <!-- 普通模式确认按钮 -->
+      <view class="normal-confirm" wx:if="{{npcMode === 'normal'}}">
+        <view class="nav-btn prev-btn {{currentIndex === 0 ? 'disabled' : ''}}" bindtap="onPrev">
+          <text>上一题</text>
+        </view>
+        <view
+          class="nav-btn next-btn {{confirmDisabled ? 'disabled' : ''}} {{isLastQuestion ? 'is-last' : ''}}"
+          bindtap="onConfirm"
+        >
+          <text>{{confirmText}}</text>
+        </view>
+      </view>
+
+      <!-- 沉浸模式确认按钮 -->
+      <view class="immersive-confirm" wx:if="{{npcMode === 'immersive' && showConfirm}}">
+        <view
+          class="confirm-btn {{confirmDisabled ? 'disabled' : ''}} {{isLastQuestion ? 'is-last' : ''}}"
+          bindtap="onConfirm"
+        >
+          <text>{{confirmText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交加载 -->
+  <view class="submit-loading" wx:if="{{submitting}}">
+    <view class="loading-mask">
+      <view class="loading-content">
+        <text class="loading-text">正在计算结果...</text>
+      </view>
+    </view>
+  </view>
+</view>

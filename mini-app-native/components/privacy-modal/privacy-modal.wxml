@@ -1,0 +1,23 @@
+<view class="privacy-overlay" wx:if="{{visible}}" bindtap="onReject">
+  <view class="privacy-card" catchtap="preventBubble">
+    <!-- 标题 -->
+    <view class="privacy-title">
+      <text>{{title}}</text>
+    </view>
+
+    <!-- 协议内容 -->
+    <scroll-view class="privacy-content" scroll-y="true">
+      <text class="privacy-text">{{content}}</text>
+    </scroll-view>
+
+    <!-- 按钮区 -->
+    <view class="privacy-actions">
+      <view class="privacy-btn reject" bindtap="onReject">
+        <text>不同意</text>
+      </view>
+      <view class="privacy-btn agree" bindtap="onAgree">
+        <text>同意</text>
+      </view>
+    </view>
+  </view>
+</view>

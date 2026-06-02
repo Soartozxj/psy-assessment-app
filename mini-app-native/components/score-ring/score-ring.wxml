@@ -1,0 +1,14 @@
+<view class="score-ring-wrap" style="width:{{size}}rpx;height:{{size}}rpx;">
+  <canvas
+    id="scoreRingCanvas"
+    type="2d"
+    class="score-ring-canvas"
+    style="width:{{size}}rpx;height:{{size}}rpx;"
+  ></canvas>
+  <view class="score-ring-info">
+    <text class="ring-val" style="color:{{color}}">{{displayScore}}</text>
+    <text class="ring-max">/ {{maxScore}}</text>
+    <text class="ring-pct" wx:if="{{maxScore > 0}}">{{pctText}}%</text>
+    <text class="level-label" wx:if="{{levelLabel}}" style="background:{{color}}">{{levelLabel}}</text>
+  </view>
+</view>

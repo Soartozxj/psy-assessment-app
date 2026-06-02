@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>步骤1 导入量表 - 重新设计方案草图 v2</title>
+    <style>
+      :root {
+        --primary: #4a90d9;
+        --primary-dark: #3a7bc8;
+        --primary-light: #ebf4ff;
+        --success: #52c41a;
+        --warning: #faad14;
+        --danger: #ff4d4f;
+        --bg: #f0f2f5;
+        --card: #ffffff;
+        --text: #333;
+        --text-sec: #666;
+        --text-muted: #999;
+        --border: #e8e8e8;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px;
+      }
+      .wizard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: var(--card);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+      .wizard-steps {
+        display: flex;
+        padding: 16px 24px;
+        background: #fafafa;
+        border-bottom: 1px solid var(--border);
+        gap: 8px;
+      }
+      .wizard-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .wizard-step.completed {
+        background: #e6f7e6;
+        color: var(--success);
+      }
+      .wizard-step.active {
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--bg);
+        color: var(--text-muted);
+      }
+      .wizard-step.completed .step-num {
+        background: var(--success);
+        color: #fff;
+      }
+      .wizard-step.active .step-num {
+        background: var(--primary);
+        color: #fff;
+      }
+      .wizard-content {
+        padding: 24px;
+      }
+
+      /* 两列布局 */
+      .step1-layout {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .step1-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .step1-side {
+        width: 360px;
+        flex-shrink: 0;
+      }
+
+      /* 卡片 */
+      .section-card {
+        background: #fafafa;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+      }
+      .section-card.primary {
+        background: #fff;
+        border-color: var(--primary-light);
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .section-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* 文本区 */
+      textarea,
+      input[type='text'] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.6;
+        resize: vertical;
+        background: #fff;
+        transition: border-color 0.2s;
+      }
+      textarea:focus,
+      input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-light);
+      }
+
+      /* 工具栏 */
+      .textarea-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: var(--bg);
+        border-radius: 8px;
+        flex-wrap: wrap;
+      }
+      .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .toolbar-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      /* 按钮 */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        font-family: inherit;
+        text-decoration: none;
+      }
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-default {
+        background: #fff;
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .btn-default:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+      .btn-outline:hover {
+        background: var(--primary-light);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: transparent;
+        padding: 4px 8px;
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+        background: #f0f0f0;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: auto;
+      }
+
+      /* 上传伪装 */
+      .upload-btn-wrap {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .upload-btn-wrap input[type='file'] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      /* AI区 */
+      .ai-zone {
+        margin-top: 12px;
+        padding: 14px;
+        background: var(--bg);
+        border-radius: 8px;
+        transition: opacity 0.3s;
+      }
+      .ai-zone.disabled {
+        opacity: 0.45;
+      }
+      .ai-zone .ai-config-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .ai-zone select {
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: #fff;
+        min-width: 140px;
+      }
+      .temp-wrap {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .temp-wrap input[type='range'] {
+        width: 70px;
+      }
+
+      /* JSON 查看区 */
+      .json-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .json-area {
+        width: 100%;
+        min-height: 320px;
+        font-size: 11px;
+        line-height: 1.5;
+        font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #1e1e2e;
+        color: #cdd6f4;
+        resize: vertical;
+      }
+      .json-area:focus {
+        border-color: var(--primary);
+      }
+      .json-toolbar {
+        display: flex;
+        gap: 6px;
+      }
+      .json-placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 40px 20px;
+        min-height: 320px;
+        color: var(--text-muted);
+        text-align: center;
+        background: #fafafa;
+      }
+      .json-placeholder .placeholder-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+      .json-placeholder p {
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      .json-placeholder .small {
+        font-size: 11px;
+        margin-top: 4px;
+      }
+
+      /* 解析预览 */
+      .parse-result {
+        display: none;
+        margin-top: 20px;
+      }
+      .parse-result .section-card {
+        background: #fff;
+      }
+      .basic-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .basic-info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .basic-info-item label {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .basic-info-item input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 13px;
+        background: #fff;
+      }
+
+      /* 提示框 */
+      .hint-box {
+        background: #fffbe6;
+        border: 1px solid #ffe58f;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #d48806;
+        margin-bottom: 12px;
+      }
+      /* 底部 */
+      .step-footer {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        text-align: right;
+      }
+      /* Toast */
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #fff;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .toast.info {
+        background: var(--primary);
+      }
+      .toast.success {
+        background: var(--success);
+      }
+
+      /* 响应式 */
+      @media (max-width: 780px) {
+        .step1-layout {
+          flex-direction: column;
+        }
+        .step1-side {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wizard-container">
+      <!-- 步骤条 -->
+      <div class="wizard-steps">
+        <div class="wizard-step active"><span class="step-num">1</span> 导入量表</div>
+        <div class="wizard-step"><span class="step-num">2</span> 生成计分说明</div>
+        <div class="wizard-step"><span class="step-num">3</span> 计分配置</div>
+        <div class="wizard-step"><span class="step-num">4</span> 提示词配置</div>
+        <div class="wizard-step"><span class="step-num">5</span> 确认上架</div>
+      </div>
+
+      <div class="wizard-content">
+        <!-- ===== 左右两列布局 ===== -->
+        <div class="step1-layout">
+          <!-- 左列：量表说明文本 + AI 生成 + 文件上传 -->
+          <div class="step1-main">
+            <!-- ===== 量表说明文本 ===== -->
+            <div class="section-card primary">
+              <div class="section-header">
+                <div class="section-header-left">📝 量表说明文本</div>
+              </div>
+              <div class="hint-box">
+                💡 粘贴量表手册内容（题目列表、选项说明、计分规则等），或上传 DOCX/TXT/Markdown 文件自动填充。AI
+                将据此智能生成完整的量表 JSON。
+              </div>
+
+              <textarea
+                id="main-textarea"
+                rows="10"
+                placeholder="请粘贴量表手册内容……
+
+例如：
+SDS 抑郁自评量表包含 20 个条目，采用 1-4 级评分，评估个体最近一周的抑郁症状严重程度。
+各条目按 1=没有或很少时间、2=少部分时间、3=相当多时间、4=绝大部分或全部时间 进行计分。
+题目 1：我觉得闷闷不乐、情绪低沉
+题目 2：我觉得一天之中早晨最好
+……"
+              ></textarea>
+
+              <div class="textarea-toolbar">
+                <div class="toolbar-left">
+                  <span class="upload-btn-wrap">
+                    <button class="btn btn-default btn-sm">📁 上传文件</button>
+                    <input
+                      type="file"
+                      id="file-input"
+                      accept=".json,.csv,.xlsx,.xls,.docx,.doc,.txt,.md"
+                      onchange="handleFileUpload(this)"
+                      title="上传 JSON/CSV/Excel 直接导入，DOCX/TXT/MD 填充到上方文本框"
+                    />
+                  </span>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    onclick="
+                      document.getElementById('main-textarea').value = '';
+                      updateTextStats();
+                    "
+                  >
+                    ✕ 清空
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="toast('内容已复制到剪贴板', 'info')">📋 复制</button>
+                </div>
+                <div class="toolbar-right">
+                  <span id="file-format-hint" style="color: var(--text-muted)"> 支持: JSON CSV Excel DOCX TXT MD </span>
+                  <span id="char-count" style="color: var(--text-muted)">0 字</span>
+                </div>
+              </div>
+
+              <!-- ===== AI 智能生成 ===== -->
+              <div class="ai-zone disabled" id="ai-zone">
+                <div class="section-header" style="margin-bottom: 8px">
+                  <div class="section-header-left">🤖 AI 智能生成量表</div>
+                </div>
+                <div class="ai-config-row">
+                  <span style="font-size: 12px; color: var(--text-muted)">提示词版本:</span>
+                  <select id="prompt-version" disabled>
+                    <option>CSV导入解析 (v3)</option>
+                  </select>
+                  <span style="font-size: 12px; color: var(--text-muted)">Temp:</span>
+                  <div class="temp-wrap">
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value="0.3"
+                      id="temp-slider"
+                      disabled
+                      oninput="document.getElementById('temp-val').textContent = this.value"
+                    />
+                    <span id="temp-val" style="font-size: 12px; min-width: 26px">0.3</span>
+                  </div>
+                </div>
+                <button
+                  class="btn btn-primary"
+                  id="ai-gen-btn"
+                  disabled
+                  style="width: 100%; justify-content: center; padding: 10px; font-size: 14px"
+                >
+                  🤖 AI 生成量表
+                </button>
+                <div
+                  id="ai-gen-notice"
+                  style="margin-top: 6px; font-size: 11px; color: var(--text-muted); text-align: center"
+                >
+                  ⬆ 上方"量表说明文本"有内容后激活
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右列：JSON 展示 / 粘贴区 -->
+          <div class="step1-side">
+            <div class="section-card" style="height: 100%; display: flex; flex-direction: column">
+              <div class="section-header">
+                <div class="section-header-left">📋 量表 JSON</div>
+                <span style="font-size: 11px; color: var(--text-muted)">可粘贴 / 编辑 / 复制</span>
+              </div>
+
+              <div class="json-section">
+                <!-- 有 JSON 时显示代码区 -->
+                <textarea
+                  id="json-area"
+                  class="json-area"
+                  style="display: none"
+                  placeholder="AI 生成或文件导入成功后这里会显示量表 JSON 结构……"
+                  oninput="updateJsonCopyBtn()"
+                ></textarea>
+
+                <!-- 无 JSON 时显示占位 -->
+                <div class="json-placeholder" id="json-placeholder">
+                  <div class="placeholder-icon">📭</div>
+                  <p>暂无量表数据</p>
+                  <p class="small">上传 JSON/CSV/Excel 文件直接导入<br />或点击左侧「AI 生成量表」自动填充</p>
+                  <button class="btn btn-outline btn-sm" style="margin-top: 12px" onclick="showPasteDemo()">
+                    📋 粘贴 JSON
+                  </button>
+                </div>
+
+                <div class="json-toolbar" id="json-toolbar" style="display: none">
+                  <button
+                    class="btn btn-default btn-sm"
+                    id="json-copy-btn"
+                    onclick="toast('JSON 已复制到剪贴板', 'info')"
+                  >
+                    📋 复制
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="formatJson()">格式化</button>
+                  <button class="btn btn-ghost btn-sm" onclick="clearJson()">✕ 清空</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 解析结果预览（初始隐藏） ===== -->
+        <div class="parse-result" id="parse-result">
+          <div class="section-card">
+            <div class="section-header"><div class="section-header-left">📝 基本信息（可编辑）</div></div>
+            <div class="basic-info-grid">
+              <div class="basic-info-item">
+                <label>量表名称</label>
+                <input type="text" value="SDS 抑郁自评量表" id="edit-name" />
+              </div>
+              <div class="basic-info-item">
+                <label>量表编码</label>
+                <input type="text" value="sds" id="edit-code" />
+              </div>
+            </div>
+            <div class="basic-info-item" style="margin-top: 12px">
+              <label>量表说明 / 引导语</label>
+              <input type="text" value="请根据最近一周的实际情况作答" id="edit-instruction" />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header"><div class="section-header-left">📋 解析结果预览</div></div>
+            <div style="font-size: 13px; color: var(--text-sec); line-height: 1.7">
+              已解析 <strong>20</strong> 道题目 · 评分方式：<strong>1-4 级</strong> · 计分维度：待步骤3配置
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-header-left">📖 题目预览（共 <span id="q-count-demo">20</span> 题）</div>
+              <span style="font-size: 11px; color: var(--text-muted); cursor: pointer">▼ 展开</span>
+            </div>
+            <div style="max-height: 200px; overflow-y: auto; font-size: 12px">
+              <table style="width: 100%; border-collapse: collapse">
+                <thead>
+                  <tr style="background: #f5f5f5">
+                    <th style="padding: 6px 8px; text-align: left; border: 1px solid var(--border)">#</th>
+                    <th style="padding: 6px 8px; text-align: left; border: 1px solid var(--border)">题目</th>
+                    <th style="padding: 6px 8px; text-align: left; border: 1px solid var(--border)">选项</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">1</td>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">我觉得闷闷不乐、情绪低沉</td>
+                    <td
+                      style="
+                        padding: 6px 8px;
+                        border: 1px solid var(--border);
+                        font-size: 11px;
+                        color: var(--text-muted);
+                      "
+                    >
+                      1-4 级
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">2</td>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">我觉得一天之中早晨最好</td>
+                    <td
+                      style="
+                        padding: 6px 8px;
+                        border: 1px solid var(--border);
+                        font-size: 11px;
+                        color: var(--text-muted);
+                      "
+                    >
+                      1-4 级
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">3</td>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">我一阵阵哭出来或觉得想哭</td>
+                    <td
+                      style="
+                        padding: 6px 8px;
+                        border: 1px solid var(--border);
+                        font-size: 11px;
+                        color: var(--text-muted);
+                      "
+                    >
+                      1-4 级
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">...</td>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">...</td>
+                    <td style="padding: 6px 8px; border: 1px solid var(--border)">...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="step-footer">
+          <button class="btn btn-default" onclick="simulateParse()">🔄 模拟导入成功（草图演示）</button>
+          <button class="btn btn-default" onclick="toast('草稿已保存', 'success')">💾 保存草稿</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // ===== 文本区字数统计 + AI 按钮联动 =====
+      var ta = document.getElementById('main-textarea');
+      ta.addEventListener('input', updateTextStats);
+
+      function updateTextStats() {
+        var len = ta.value.length;
+        document.getElementById('char-count').textContent = len + ' 字';
+        var hasText = len > 0;
+        document.getElementById('ai-gen-btn').disabled = !hasText;
+        document.getElementById('temp-slider').disabled = !hasText;
+        document.getElementById('prompt-version').disabled = !hasText;
+        var zone = document.getElementById('ai-zone');
+        if (hasText) zone.classList.remove('disabled');
+        else zone.classList.add('disabled');
+        document.getElementById('ai-gen-notice').style.display = hasText ? 'none' : '';
+      }
+
+      // ===== 统一文件上传 =====
+      function handleFileUpload(input) {
+        if (!input.files[0]) return;
+        var name = input.files[0].name;
+        var ext = name.split('.').pop().toLowerCase();
+
+        if (['docx', 'doc', 'txt', 'md'].includes(ext)) {
+          // DOCX/TXT/MD → 填充文本区
+          ta.value = '【模拟填充】已从「' + name + '」读取内容：\n\nSDS抑郁自评量表包含20个条目，采用1-4级评分...';
+          ta.dispatchEvent(new Event('input'));
+          toast('「' + name + '」已填充到文本区', 'success');
+        } else {
+          // JSON/CSV/Excel → 直接导入，JSON 展示在右侧
+          simulateJsonImport(name);
+        }
+      }
+
+      // ===== 模拟 JSON 导入 =====
+      function simulateJsonImport(name) {
+        var demoJson = JSON.stringify(
+          {
+            name: 'SDS 抑郁自评量表',
+            code: 'sds',
+            instruction: '请根据最近一周的实际情况作答',
+            questions: [
+              {
+                id: 'q1',
+                text: '我觉得闷闷不乐、情绪低沉',
+                options: [
+                  { id: 'a', label: '没有或很少时间', score: 1 },
+                  { id: 'b', label: '少部分时间', score: 2 },
+                  { id: 'c', label: '相当多时间', score: 3 },
+                  { id: 'd', label: '绝大部分或全部时间', score: 4 }
+                ]
+              },
+              { id: 'q2', text: '我觉得一天之中早晨最好', options: [...Array(4)] },
+              { text: '…共20题' }
+            ]
+          },
+          null,
+          2
+        );
+
+        document.getElementById('json-placeholder').style.display = 'none';
+        var ja = document.getElementById('json-area');
+        ja.style.display = 'block';
+        ja.value = demoJson;
+        document.getElementById('json-toolbar').style.display = 'flex';
+        toast('「' + name + '」已解析，JSON 显示在右侧', 'success');
+        showParseResult();
+      }
+
+      // ===== 粘贴 JSON Demo =====
+      function showPasteDemo() {
+        document.getElementById('json-placeholder').style.display = 'none';
+        var ja = document.getElementById('json-area');
+        ja.style.display = 'block';
+        ja.value = '';
+        ja.placeholder = '在此粘贴量表 JSON……';
+        ja.focus();
+        document.getElementById('json-toolbar').style.display = 'flex';
+      }
+
+      // ===== JSON 操作 =====
+      function clearJson() {
+        var ja = document.getElementById('json-area');
+        ja.value = '';
+        ja.style.display = 'none';
+        document.getElementById('json-placeholder').style.display = 'flex';
+        document.getElementById('json-toolbar').style.display = 'none';
+        document.getElementById('parse-result').style.display = 'none';
+      }
+      function formatJson() {
+        var ja = document.getElementById('json-area');
+        try {
+          ja.value = JSON.stringify(JSON.parse(ja.value), null, 2);
+        } catch (e) {
+          toast('JSON 格式错误', 'info');
+        }
+      }
+      function updateJsonCopyBtn() {}
+
+      // ===== 解析结果 =====
+      function showParseResult() {
+        document.getElementById('parse-result').style.display = 'block';
+      }
+      function simulateParse() {
+        simulateJsonImport('demo-scale.json');
+      }
+
+      // ===== Toast =====
+      function toast(msg, type) {
+        var el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast ' + (type || 'info') + ' show';
+        setTimeout(function () {
+          el.className = 'toast ' + (type || 'info');
+        }, 2000);
+      }
+    </script>
+  </body>
+</html>

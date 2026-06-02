@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "测前问卷",
+  "usingComponents": {
+    "npc-scene": "/components/npc-scene/npc-scene"
+  }
+}

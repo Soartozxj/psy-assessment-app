@@ -1,0 +1,152 @@
+<view class="page-ai-diag">
+  <!-- NPC 场景背景层 -->
+  <npc-scene
+    scene="full"
+    background="{{backgroundImage}}"
+    counselorImage="{{counselorImage}}"
+    counselorName="{{npcSettings.counselorName}}"
+  />
+
+  <!-- 头部色块（对齐 H5 diag-hero） -->
+  <view class="diag-hero" style="background: linear-gradient(135deg, {{themeColor}} 0%, {{themeColor}} 100%)">
+    <view class="diag-nav">
+      <view class="diag-back" bindtap="onBackToResult">←</view>
+      <text class="diag-nav-title">测评详情报告</text>
+      <view class="diag-nav-actions">
+        <view class="diag-action-btn" bindtap="onToggleFavorite">
+          <text>{{isFavorited ? '★' : '☆'}}</text>
+        </view>
+        <button class="diag-share-btn" open-type="share">
+          <text>↗</text>
+        </button>
+      </view>
+    </view>
+    <view class="diag-hero-compact">
+      <text class="diag-hero-icon">📋</text>
+      <text class="diag-hero-scale">{{scaleName}}</text>
+      <text class="diag-hero-divider">|</text>
+      <text class="diag-hero-score">{{scoreText}}</text>
+      <text class="diag-hero-level">{{levelName}}</text>
+    </view>
+  </view>
+
+  <view class="diag-content">
+    <!-- 状态1：未获取 -->
+    <view class="diag-idle" wx:if="{{state === 'idle'}}">
+      <view class="diag-placeholder">
+        <text class="diag-placeholder-icon">🤖</text>
+        <text class="diag-placeholder-title">测评详情报告</text>
+        <text class="diag-placeholder-desc">基于您的测评结果，系统将为您生成一份专业的个性化测评分析报告</text>
+        <view class="diag-start-btn" bindtap="onStartDiag">
+          <text>✨ 开始测评</text>
+        </view>
+        <text class="diag-error" wx:if="{{errorMessage}}">{{errorMessage}}</text>
+      </view>
+    </view>
+
+    <!-- 状态2：加载中 -->
+    <view class="diag-loading" wx:if="{{state === 'loading'}}">
+      <view class="diag-loading-wrap">
+        <view class="diag-loading-spinner"></view>
+        <text class="diag-loading-label">系统正在分析您的测评结果...</text>
+        <text class="diag-loading-sub">预计需要 5-15 秒</text>
+      </view>
+    </view>
+
+    <!-- 状态3：已获取 -->
+    <view class="diag-done" wx:if="{{state === 'done'}}">
+      <!-- 诊断正文 -->
+      <view class="diag-section">
+        <view class="diag-section-header">
+          <view class="diag-section-icon">📋</view>
+          <text class="diag-section-title">测评分析</text>
+        </view>
+        <view class="diag-report-text">
+          <view class="diag-block" wx:for="{{parsedBlocks}}" wx:key="index">
+            <!-- 分隔线 -->
+            <view class="diag-hr" wx:if="{{item.type === 'hr'}}"></view>
+            <!-- 标题 -->
+            <view class="diag-heading diag-heading-{{item.level || 2}}" wx:if="{{item.type === 'heading'}}">
+              <text>{{item.text}}</text>
+            </view>
+            <!-- 引用块 -->
+            <view class="diag-quote" wx:if="{{item.type === 'quote'}}">
+              <text>{{item.text}}</text>
+            </view>
+            <!-- 无序列表 -->
+            <view class="diag-bullet" wx:if="{{item.type === 'list'}}">
+              <text class="diag-bullet-dot">•</text>
+              <text class="diag-bullet-text">{{item.text}}</text>
+            </view>
+            <!-- 有序列表 -->
+            <view class="diag-bullet" wx:if="{{item.type === 'olist'}}">
+              <text class="diag-bullet-dot">▸</text>
+              <text class="diag-bullet-text">{{item.text}}</text>
+            </view>
+            <!-- 表格行 -->
+            <view class="diag-table-row" wx:if="{{item.type === 'tablerow'}}">
+              <view class="diag-table-cell" wx:for="{{item.cells}}" wx:for-item="cell" wx:key="index">
+                <text>{{cell}}</text>
+              </view>
+            </view>
+            <!-- 段落（含行内格式） -->
+            <view class="diag-paragraph" wx:if="{{item.type === 'paragraph'}}">
+              <text wx:for="{{item.parts}}" wx:for-item="p" wx:key="index"
+                class="{{p.type === 'bold' ? 'diag-bold' : p.type === 'italic' ? 'diag-italic' : p.type === 'del' ? 'diag-del' : p.type === 'code' ? 'diag-code' : ''}}">{{p.text}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 免责声明 -->
+      <view class="diag-disclaimer">
+        <text>{{disclaimerText}}</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="diag-actions">
+        <view class="diag-btn retry" bindtap="onRetry">
+          <text>重新解读</text>
+        </view>
+        <view class="diag-btn tts {{ttsLoading ? 'tts-loading' : ''}}" bindtap="onToggleTts">
+          <text>{{ttsLoading ? '⏳ 合成中...' : ttsPlaying ? '⏹ 停止' : '🎧 语音播报'}}</text>
+        </view>
+        <view class="diag-btn share" bindtap="onToggleFavorite">
+          <text>{{isFavorited ? '★ 已收藏' : '☆ 收藏报告'}}</text>
+        </view>
+      </view>
+
+      <!-- TTS 播放器面板 -->
+      <view class="tts-panel {{ttsPlaying || ttsLoading ? 'tts-panel-open' : ''}}" wx:if="{{ttsPlaying || ttsLoading}}">
+        <view class="tts-panel-inner">
+          <!-- 进度条 -->
+          <view class="tts-progress-wrap">
+            <view class="tts-progress-bar">
+              <view class="tts-progress-fill" style="width: {{ttsProgress}}%"></view>
+            </view>
+            <view class="tts-time-row">
+              <text class="tts-time">{{ttsCurrentTime > 0 ? ttsCurrentTime : '0:00'}}</text>
+              <text class="tts-time">{{ttsDuration > 0 ? ttsDuration : '--:--'}}</text>
+            </view>
+          </view>
+          <!-- 语速选择 -->
+          <view class="tts-rate-row">
+            <text class="tts-rate-label">语速</text>
+            <view class="tts-rate-btn {{ttsRate === 0.8 ? 'tts-rate-active' : ''}}" data-rate="0.8" bindtap="onSetTtsRate">0.8x</view>
+            <view class="tts-rate-btn {{ttsRate === 1.0 ? 'tts-rate-active' : ''}}" data-rate="1.0" bindtap="onSetTtsRate">1.0x</view>
+            <view class="tts-rate-btn {{ttsRate === 1.2 ? 'tts-rate-active' : ''}}" data-rate="1.2" bindtap="onSetTtsRate">1.2x</view>
+            <view class="tts-rate-btn {{ttsRate === 1.5 ? 'tts-rate-active' : ''}}" data-rate="1.5" bindtap="onSetTtsRate">1.5x</view>
+          </view>
+          <!-- 语气选择 -->
+          <view class="tts-emotion-row">
+            <text class="tts-rate-label">语气</text>
+            <view class="tts-emotion-btn {{ttsEmotion === 'empathetic' ? 'tts-emotion-active' : ''}}" data-emotion="empathetic" bindtap="onSetTtsEmotion">共情</view>
+            <view class="tts-emotion-btn {{ttsEmotion === 'gentle' ? 'tts-emotion-active' : ''}}" data-emotion="gentle" bindtap="onSetTtsEmotion">温和</view>
+            <view class="tts-emotion-btn {{ttsEmotion === 'serious' ? 'tts-emotion-active' : ''}}" data-emotion="serious" bindtap="onSetTtsEmotion">严肃</view>
+            <view class="tts-emotion-btn {{ttsEmotion === 'cheerful' ? 'tts-emotion-active' : ''}}" data-emotion="cheerful" bindtap="onSetTtsEmotion">开朗</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

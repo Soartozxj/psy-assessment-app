@@ -16,3 +16,11 @@ scale-publish-dialog-final-v2.html
 mini-app-h5/design/feedback-tag-redesign.html
 mini-app-h5-redesign/design/feedback-tag-redesign.html
 mini-app-h5-redesign/backend/scale-onboard.html
+
+# 符号链接文件（Prettier 无法处理）
+mini-app-h5-redesign/frontend/asset-storage.js
+mini-app-h5-redesign/frontend/cloud-api.js
+mini-app-h5-redesign/frontend/cloud-data.js
+mini-app-h5-redesign/frontend/data-monitor.js
+mini-app-h5-redesign/frontend/scoring-engine.js
+mini-app-h5-redesign/frontend/shared-data.js

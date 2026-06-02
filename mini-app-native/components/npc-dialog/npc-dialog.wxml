@@ -1,0 +1,30 @@
+<view class="npc-dialog">
+  <!-- 对话框 -->
+  <view class="dialog-box {{embedded ? 'embedded' : ''}}">
+    <view class="dialog-frame {{embedded ? 'embedded' : ''}}">
+      <!-- 说话人名牌 -->
+      <view class="dialog-speaker" wx:if="{{speaker}}">
+        <text class="speaker-name">{{speaker}}</text>
+      </view>
+      <!-- 对话文本 -->
+      <view class="dialog-text" bindtap="skipTyping">
+        <text>{{displayText}}</text>
+        <text class="typing-cursor" wx:if="{{isTyping}}">|</text>
+      </view>
+      <!-- 跳过提示 -->
+      <view class="skip-hint" wx:if="{{isTyping}}">
+        <text class="skip-text">点击跳过 ▸▸</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 确认按钮 -->
+  <view class="confirm-bar {{showConfirm ? 'visible' : ''}}">
+    <view
+      class="confirm-btn {{confirmDisabled ? 'disabled' : ''}}"
+      bindtap="onConfirm"
+    >
+      <text>{{confirmText}}</text>
+    </view>
+  </view>
+</view>

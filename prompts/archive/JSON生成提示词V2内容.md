@@ -3,18 +3,20 @@
 我接下来会发送一份量表手册的原文给你。这份手册可能包含一张或多张量表（可能以"附："、"附录"、"量表一"等形式分隔），也可能存在题目缺失、编号不连续、选项数量不统一、反向计分、特殊题型（矩阵题/父子题/文字题）等实际情况。
 
 你的任务是：
+
 1. 通读全文，识别其中所有量表
 2. 对每张量表，提取其基本信息（名称、编码、分类、描述、指导语等）和全部题目（题号、题目内容、所属维度、选项及分值）
    ⚠️ 题目内容和选项文本必须逐字照搬手册原文，严禁改写、意译、简化、润色、替换措辞或用自己的话重述
 3. 识别特殊题型（矩阵题、父子题、文字题），使用对应的 JSON 格式
 4. 检测是否存在题目异常（缺失、重复、错乱、残缺等），并逐一向我报告
-5. ⭐ 在 ```json ``` 代码块中直接输出完整的 JSON 数据
+5. ⭐ 在 `json ` 代码块中直接输出完整的 JSON 数据
 
 你的输出分为两部分，按顺序执行：
-- 第一部分：摘要 — 先用普通文本简要告诉我：识别到几张量表、各多少题、发现哪些异常（若无异常也说明"未发现异常"）、有无特殊题型（矩阵题/父子题/文字题）。
-- 第二部分：JSON 数据 — 在 ```json ``` 代码块中直接输出完整的 JSON 数组，不要生成文件，必须用 ```json ... ``` 代码块输出。
 
-⚠️ 第二部分必须是一个 ```json ``` 代码块，包含完整的、可直接解析的 JSON 数组。不要输出文件下载链接，必须用 ```json ... ``` 代码块输出 JSON 内容，不要省略任何字段。
+- 第一部分：摘要 — 先用普通文本简要告诉我：识别到几张量表、各多少题、发现哪些异常（若无异常也说明"未发现异常"）、有无特殊题型（矩阵题/父子题/文字题）。
+- 第二部分：JSON 数据 — 在 `json ` 代码块中直接输出完整的 JSON 数组，不要生成文件，必须用 `json ... ` 代码块输出。
+
+⚠️ 第二部分必须是一个 `json ` 代码块，包含完整的、可直接解析的 JSON 数组。不要输出文件下载链接，必须用 `json ... ` 代码块输出 JSON 内容，不要省略任何字段。
 
 以下是具体的处理规则和 JSON 格式规范，请严格遵守。
 
@@ -27,6 +29,7 @@
 ⚠️ 题目内容和选项文本必须逐字照搬手册原文，这是一条不可违反的硬性规则。
 
 具体要求：
+
 - 题目内容：必须与手册原文中的文字完全一致，一个字都不能改
 - 选项文本：必须与手册原文中的选项文字完全一致
 - 允许的操作：删除题号前缀（如手册写"1.用温和友好的语气与我说话"，提取为"用温和友好的语气与我说话"）；删除题号后的空格和多余标点
@@ -39,6 +42,7 @@
 手册中可能包含多张量表，常见标识："附："、"附1："、"附2："、"附录一"、"附录二"、"量表一"、"量表二"、或章节标题中的量表名称。
 
 处理方式：
+
 - 逐一识别，每张量表生成一个 JSON 对象
 - 所有量表放在同一个 JSON 数组中
 - 摘要中说明：共识别到 N 张量表：[名称列表]
@@ -56,6 +60,7 @@
 分值方向的核心原则：正向表述的题目，选择"最符合/最严重"应得最高分；反向计分题翻转后也应满足这一原则。
 
 第一步：判断题目表述方向
+
 - 正向表述：题目描述的是"好的/desirable/期望的"的行为、品质或感受。选"非常符合"应得最高分，分值递增（如 0,1,2,3）
 - 负向表述：题目描述的是"不好的/undesirable/不期望的"的行为、品质或感受。这是反向计分题，需要翻转分值
 
@@ -75,11 +80,13 @@
 常见场景：对多个行为/感受/症状分别评分的量表。
 
 识别规则：
+
 - 手册以表格形式呈现题目（行=评分项，列=选项等级）
 - 题目描述为"请对以下各项..."、"以下各项目..."等
 - 多个评分项目共用同一组选项
 
 JSON 格式：
+
 - "type": "matrix"
 - "options": 所有行共用的一组选项（和标准题一样）
 - "content": 矩阵题的总体描述文字
@@ -93,10 +100,12 @@ JSON 格式：
 常见场景：压力源清单、症状筛查、社会支持来源等。
 
 识别规则：
+
 - 题目分为两层：先选"有/无"或"是/否"，再从列表中多选具体项目
 - 手册明确说"如果选择有，请继续选择以下..."、"请勾选所有适用的项目"
 
 JSON 格式：
+
 - "type": "parent-child"
 - "options": 主选项（通常只有 2 个：无=0分，有=1分）
 - "content": 父题的描述文字
@@ -110,11 +119,13 @@ JSON 格式：
 常见场景：开放式问题、补充说明、详细描述等。
 
 识别规则：
+
 - 手册要求用户"请描述..."、"请写出..."、"请说明..."等
 - 没有固定选项列表，用户自由填写
 - 通常出现在量表末尾作为补充信息收集
 
 JSON 格式：
+
 - "type": "text"
 - "content": 题目内容
 - "placeholder": 占位提示文字（如"请详细描述..."）
@@ -126,10 +137,12 @@ JSON 格式：
 特征：某个选项被选中后，需要用户补充填写具体内容。适用于"其他（请说明）"这类选项。
 
 识别规则：
+
 - 选项文本包含"其他"、"请说明"、"请填写"、"请具体描述"等
 - 选项需要用户补充说明才能完整表达
 
 JSON 格式：在对应选项对象中添加：
+
 - "hasInput": true
 - "inputPlaceholder": "请填写具体内容"（可自定义提示文字）
 
@@ -143,20 +156,21 @@ JSON 格式：在对应选项对象中添加：
 
 逐一检查以下 6 类异常，发现任何一项都必须在摘要中报告：
 
-异常类型        判定条件                          处理方式
+异常类型 判定条件 处理方式
 ─────────────────────────────────────────────────────────────────
-编号缺失        题号不连续（如 5 后直接 7）      跳过缺失题（不编造），报告中说明位置
-编号重复        同一题号出现多次                  后续重编为顺序编号，报告
-编号错乱        题号顺序不对但内容完整            按内容顺序重编 1,2,3...，列出原->新映射
-内容残缺        有题号但文字缺失或不完整          如实输出现有内容，报告
-选项缺失        题目存在但选项不完整              如实输出，空缺留空，报告
-维度不明        手册有维度列表但部分题无法归属    按内容推断，列出不确定的题号
+编号缺失 题号不连续（如 5 后直接 7） 跳过缺失题（不编造），报告中说明位置
+编号重复 同一题号出现多次 后续重编为顺序编号，报告
+编号错乱 题号顺序不对但内容完整 按内容顺序重编 1,2,3...，列出原->新映射
+内容残缺 有题号但文字缺失或不完整 如实输出现有内容，报告
+选项缺失 题目存在但选项不完整 如实输出，空缺留空，报告
+维度不明 手册有维度列表但部分题无法归属 按内容推断，列出不确定的题号
 
 报告格式示例：
 ⚠️ [量表名称] 题目异常：
-  - 缺失：第 7、13 题在原文中未找到，已跳过
-  - 重复：第 9 题出现两次，第二次重编为第 10 题
-  - 内容残缺：第 12 题仅有选项无题目文字
+
+- 缺失：第 7、13 题在原文中未找到，已跳过
+- 重复：第 9 题出现两次，第二次重编为第 10 题
+- 内容残缺：第 12 题仅有选项无题目文字
 
 ═══════════════════════════════════════
 
@@ -167,71 +181,71 @@ JSON 格式：在对应选项对象中添加：
 输出一个 JSON 数组，每个元素是一张量表的完整数据：
 
 [
-  { "量表对象1" },
-  { "量表对象2" }
+{ "量表对象1" },
+{ "量表对象2" }
 ]
 
 【量表对象字段】
 
-字段名            类型      必填  说明
+字段名 类型 必填 说明
 ─────────────────────────────────────────────────────────────────
-name              string    是    完整名称，如"PHQ-9 抑郁症筛查量表"
-shortName         string    否    缩写，如"PHQ-9"
-code              string    是    仅字母+数字+下划线，全大写，如"PHQ9"
-category          string    是    anxiety / depression / personality / comprehensive / stress / unknown
-desc              string    否    量表描述
-emoji             string    否    单个 emoji，默认 📋
-color             string    否    十六进制颜色，如"#4A90D9"
-duration          number    否    预计时长（分钟）
-applicablePeople  string    否    适用人群
-instruction       string    否    指导语
-tags              array     否    标签数组，如["抑郁筛查", "临床常用"]
-status            number    否    1=上架，2=草稿
-sortOrder         number    否    排序权重，越大越靠前
-questions         array     是    题目数组，每个元素是一道题
+name string 是 完整名称，如"PHQ-9 抑郁症筛查量表"
+shortName string 否 缩写，如"PHQ-9"
+code string 是 仅字母+数字+下划线，全大写，如"PHQ9"
+category string 是 anxiety / depression / personality / comprehensive / stress / unknown
+desc string 否 量表描述
+emoji string 否 单个 emoji，默认 📋
+color string 否 十六进制颜色，如"#4A90D9"
+duration number 否 预计时长（分钟）
+applicablePeople string 否 适用人群
+instruction string 否 指导语
+tags array 否 标签数组，如["抑郁筛查", "临床常用"]
+status number 否 1=上架，2=草稿
+sortOrder number 否 排序权重，越大越靠前
+questions array 是 题目数组，每个元素是一道题
 
 【题目对象字段】
 
-字段名            类型      必填  说明
+字段名 类型 必填 说明
 ─────────────────────────────────────────────────────────────────
-id                number    是    题号，从 1 开始连续编号
-content           string    是    题目内容（逐字照搬手册原文）
-dimension         string    否    维度/因子名称
-reverse           boolean   否    是否反向计分题（分值已预处理翻转，统一填 false）
-type              string    否    留空/省略（标准题）/ "matrix" / "parent-child" / "text"
-options           array     条件  选项数组（文字题不设置此字段）
-rows              array     条件  行项目数组（仅矩阵题）
-subOptions        array     条件  子选项数组（仅父子题）
-placeholder       string    条件  占位提示（仅文字题）
-maxLength         number    条件  最大字数（仅文字题，默认500）
-required          boolean   条件  是否必填（仅文字题，默认false）
+id number 是 题号，从 1 开始连续编号
+content string 是 题目内容（逐字照搬手册原文）
+dimension string 否 维度/因子名称
+reverse boolean 否 是否反向计分题（分值已预处理翻转，统一填 false）
+type string 否 留空/省略（标准题）/ "matrix" / "parent-child" / "text"
+options array 条件 选项数组（文字题不设置此字段）
+rows array 条件 行项目数组（仅矩阵题）
+subOptions array 条件 子选项数组（仅父子题）
+placeholder string 条件 占位提示（仅文字题）
+maxLength number 条件 最大字数（仅文字题，默认500）
+required boolean 条件 是否必填（仅文字题，默认false）
 
 【选项对象字段】
 
-字段名              类型      必填  说明
+字段名 类型 必填 说明
 ─────────────────────────────────────────────────────────────────
-id                  string    是    选项标识，如"A"、"B"、"C"（依次 A~Z）
-label               string    是    选项文本（逐字照搬手册原文）
-score               number    是    选项分值（反向题已翻转）
-hasInput            boolean   否    是否需要用户补充填写（默认false）
-inputPlaceholder    string    否    填空提示文字（hasInput为true时设置）
+id string 是 选项标识，如"A"、"B"、"C"（依次 A~Z）
+label string 是 选项文本（逐字照搬手册原文）
+score number 是 选项分值（反向题已翻转）
+hasInput boolean 否 是否需要用户补充填写（默认false）
+inputPlaceholder string 否 填空提示文字（hasInput为true时设置）
 
 【子选项对象字段】（仅父子题）
 
-字段名              类型      必填  说明
+字段名 类型 必填 说明
 ─────────────────────────────────────────────────────────────────
-id                  string    是    子选项标识，如"sub_1"、"sub_2"
-label               string    是    子选项文本
-score               number    否    子选项分值（默认0，用于子选项计分量表）
-hasInput            boolean   否    是否需要用户补充填写
-inputPlaceholder    string    否    填空提示文字
+id string 是 子选项标识，如"sub_1"、"sub_2"
+label string 是 子选项文本
+score number 否 子选项分值（默认0，用于子选项计分量表）
+hasInput boolean 否 是否需要用户补充填写
+inputPlaceholder string 否 填空提示文字
 
 【行项目对象字段】（仅矩阵题）
 
-字段名    类型      必填  说明
+字段名 类型 必填 说明
 ─────────────────────────────────────────────────────────────────
-id        string    是    行项目标识，如"row_1"、"row_2"
-label     string    是    行项目文本（逐字照搬手册原文）
+id string 是 行项目标识，如"row_1"、"row_2"
+label string 是 行项目文本（逐字照搬手册原文）
 
 【样式建议】
 
@@ -245,128 +259,128 @@ label     string    是    行项目文本（逐字照搬手册原文）
 【示例 A：标准单选题（PHQ-2）】
 
 [
-  {
-    "name": "PHQ-2抑郁筛查量表",
-    "shortName": "PHQ-2",
-    "code": "PHQ2",
-    "category": "depression",
-    "emoji": "💙",
-    "color": "#5B8DEF",
-    "duration": 2,
-    "applicablePeople": "18岁以上",
-    "desc": "两题快速抑郁筛查工具。",
-    "instruction": "在过去两周内，以下问题困扰您的频率？",
-    "tags": ["抑郁筛查"],
-    "status": 1,
-    "sortOrder": 10,
-    "questions": [
-      {
-        "id": 1,
-        "content": "做事时提不起劲或没有兴趣",
-        "options": [
-          {"id": "A", "label": "完全没有", "score": 0},
-          {"id": "B", "label": "有几天", "score": 1},
-          {"id": "C", "label": "几乎每天", "score": 2}
-        ]
-      },
-      {
-        "id": 2,
-        "content": "感到心情低落、沮丧或绝望",
-        "options": [
-          {"id": "A", "label": "完全没有", "score": 0},
-          {"id": "B", "label": "有几天", "score": 1},
-          {"id": "C", "label": "几乎每天", "score": 2}
-        ]
-      }
-    ]
-  }
+{
+"name": "PHQ-2抑郁筛查量表",
+"shortName": "PHQ-2",
+"code": "PHQ2",
+"category": "depression",
+"emoji": "💙",
+"color": "#5B8DEF",
+"duration": 2,
+"applicablePeople": "18岁以上",
+"desc": "两题快速抑郁筛查工具。",
+"instruction": "在过去两周内，以下问题困扰您的频率？",
+"tags": ["抑郁筛查"],
+"status": 1,
+"sortOrder": 10,
+"questions": [
+{
+"id": 1,
+"content": "做事时提不起劲或没有兴趣",
+"options": [
+{"id": "A", "label": "完全没有", "score": 0},
+{"id": "B", "label": "有几天", "score": 1},
+{"id": "C", "label": "几乎每天", "score": 2}
+]
+},
+{
+"id": 2,
+"content": "感到心情低落、沮丧或绝望",
+"options": [
+{"id": "A", "label": "完全没有", "score": 0},
+{"id": "B", "label": "有几天", "score": 1},
+{"id": "C", "label": "几乎每天", "score": 2}
+]
+}
+]
+}
 ]
 
 【示例 B：含 hasInput 选项的标准题】
 
 {
-  "id": 5,
-  "content": "您最主要的压力来源是什么？",
-  "options": [
-    {"id": "A", "label": "工作压力", "score": 1},
-    {"id": "B", "label": "家庭矛盾", "score": 1},
-    {"id": "C", "label": "经济困难", "score": 1},
-    {"id": "D", "label": "其他", "score": 0, "hasInput": true, "inputPlaceholder": "请填写具体压力来源"}
-  ]
+"id": 5,
+"content": "您最主要的压力来源是什么？",
+"options": [
+{"id": "A", "label": "工作压力", "score": 1},
+{"id": "B", "label": "家庭矛盾", "score": 1},
+{"id": "C", "label": "经济困难", "score": 1},
+{"id": "D", "label": "其他", "score": 0, "hasInput": true, "inputPlaceholder": "请填写具体压力来源"}
+]
 }
 
 【示例 C：矩阵题】
 
 {
-  "id": 1,
-  "content": "在社交场合中，您对以下情况的焦虑程度",
-  "type": "matrix",
-  "dimension": "社交焦虑",
-  "rows": [
-    {"id": "row_1", "label": "在陌生人面前说话"},
-    {"id": "row_2", "label": "在公共场合吃东西"},
-    {"id": "row_3", "label": "参加聚会"}
-  ],
-  "options": [
-    {"id": "A", "label": "完全没有", "score": 1},
-    {"id": "B", "label": "偶尔", "score": 2},
-    {"id": "C", "label": "经常", "score": 3},
-    {"id": "D", "label": "总是", "score": 4}
-  ]
+"id": 1,
+"content": "在社交场合中，您对以下情况的焦虑程度",
+"type": "matrix",
+"dimension": "社交焦虑",
+"rows": [
+{"id": "row_1", "label": "在陌生人面前说话"},
+{"id": "row_2", "label": "在公共场合吃东西"},
+{"id": "row_3", "label": "参加聚会"}
+],
+"options": [
+{"id": "A", "label": "完全没有", "score": 1},
+{"id": "B", "label": "偶尔", "score": 2},
+{"id": "C", "label": "经常", "score": 3},
+{"id": "D", "label": "总是", "score": 4}
+]
 }
 
 【示例 D：父子题（含 hasInput 子选项）】
 
 {
-  "id": 8,
-  "content": "过去一年中，您是否经历过以下压力事件？",
-  "type": "parent-child",
-  "options": [
-    {"id": "A", "label": "无", "score": 0},
-    {"id": "B", "label": "有", "score": 1}
-  ],
-  "subOptions": [
-    {"id": "sub_1", "label": "工作压力"},
-    {"id": "sub_2", "label": "家庭矛盾"},
-    {"id": "sub_3", "label": "健康问题"},
-    {"id": "sub_4", "label": "经济困难"},
-    {"id": "sub_5", "label": "其他", "hasInput": true, "inputPlaceholder": "请填写"}
-  ]
+"id": 8,
+"content": "过去一年中，您是否经历过以下压力事件？",
+"type": "parent-child",
+"options": [
+{"id": "A", "label": "无", "score": 0},
+{"id": "B", "label": "有", "score": 1}
+],
+"subOptions": [
+{"id": "sub_1", "label": "工作压力"},
+{"id": "sub_2", "label": "家庭矛盾"},
+{"id": "sub_3", "label": "健康问题"},
+{"id": "sub_4", "label": "经济困难"},
+{"id": "sub_5", "label": "其他", "hasInput": true, "inputPlaceholder": "请填写"}
+]
 }
 
 【示例 E：文字题】
 
 {
-  "id": 15,
-  "content": "请描述最近在教养孩子的过程中，让你感到最困扰的一件事",
-  "type": "text",
-  "placeholder": "请详细描述具体情况...",
-  "maxLength": 500,
-  "required": false
+"id": 15,
+"content": "请描述最近在教养孩子的过程中，让你感到最困扰的一件事",
+"type": "text",
+"placeholder": "请详细描述具体情况...",
+"maxLength": 500,
+"required": false
 }
 
 【示例 F：同一文件两张量表】
 
 [
-  {
-    "name": "PHQ-9抑郁症筛查量表",
-    "code": "PHQ9",
-    "category": "depression",
-    "questions": [
-      {"id": 1, "content": "做事时提不起劲或没有兴趣", "options": [...]},
-      {"id": 2, "content": "感到心情低落、沮丧或绝望", "options": [...]},
-      ...
-    ]
-  },
-  {
-    "name": "GAD-7焦虑障碍量表",
-    "code": "GAD7",
-    "category": "anxiety",
-    "questions": [
-      {"id": 1, "content": "感觉紧张、焦虑或急切", "options": [...]},
-      ...
-    ]
-  }
+{
+"name": "PHQ-9抑郁症筛查量表",
+"code": "PHQ9",
+"category": "depression",
+"questions": [
+{"id": 1, "content": "做事时提不起劲或没有兴趣", "options": [...]},
+{"id": 2, "content": "感到心情低落、沮丧或绝望", "options": [...]},
+...
+]
+},
+{
+"name": "GAD-7焦虑障碍量表",
+"code": "GAD7",
+"category": "anxiety",
+"questions": [
+{"id": 1, "content": "感觉紧张、焦虑或急切", "options": [...]},
+...
+]
+}
 ]
 
 ═══════════════════════════════════════
@@ -393,9 +407,10 @@ label     string    是    行项目文本（逐字照搬手册原文）
 
 第一步：先输出一段摘要（几句话即可，说明识别到几张量表、各多少题、有无特殊题型、有无异常）
 
-第二步：⭐ 在 ```json ``` 代码块中直接输出完整的 JSON 数据
-- 不要生成文件，必须用 ```json ... ``` 代码块输出
-- 直接输出一个 ```json ``` 代码块，包含完整的 JSON 数组
+第二步：⭐ 在 `json ` 代码块中直接输出完整的 JSON 数据
+
+- 不要生成文件，必须用 `json ... ` 代码块输出
+- 直接输出一个 `json ` 代码块，包含完整的 JSON 数组
 - 代码块内容必须是合法的 JSON 格式，可被 JSON.parse 直接解析
 
 不要等我说"开始"，不要问我任何问题，不要在聊天框里用文字描述 JSON 内容，不要生成文件下载链接。

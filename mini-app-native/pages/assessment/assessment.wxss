@@ -1,0 +1,234 @@
+.page-assessment {
+  min-height: 100vh;
+  position: relative;
+  background: transparent;
+  overflow: hidden;
+}
+
+.assessment-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 0 20rpx 20rpx;
+}
+
+/* 进度条 — 对齐H5: npc-progress-bar 3px黑透明底, z-index:60 */
+.progress-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 60;
+}
+
+.progress-bar-wrap {
+  height: 100%;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #5b8fb9, #7eb5d6);
+  transition: width 0.3s ease;
+  border-radius: 0 2rpx 2rpx 0;
+}
+
+/* 进度信息胶囊 — 对齐H5: npc-progress-info 居中黑底圆角胶囊, z-index:60 */
+.progress-info-pill {
+  position: absolute;
+  top: 20rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 6rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.pill-text {
+  color: #fff;
+  letter-spacing: 1rpx;
+}
+
+.pill-exit {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26rpx;
+  margin-left: auto;
+}
+
+/* 模式切换 — 对齐H5: top:30px(=60rpx), right:10px(=20rpx), border-radius:20px(=40rpx), z-index:70 */
+.mode-toggle {
+  position: absolute;
+  top: 60rpx;
+  right: 20rpx;
+  display: flex;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 40rpx;
+  overflow: hidden;
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  z-index: 70;
+}
+
+.mode-btn {
+  padding: 10rpx 24rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.3s;
+}
+
+.mode-btn.active {
+  background: rgba(91, 143, 185, 0.85);
+  color: #fff;
+}
+
+/* 题目区 */
+.question-area {
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 28rpx;
+  padding: 28rpx 32rpx 32rpx;
+  box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.08), inset 0 2rpx 0 rgba(255, 255, 255, 0.8);
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+
+.question-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 32rpx;
+  right: 32rpx;
+  height: 6rpx;
+  background: linear-gradient(90deg, #5b8fb9, #7eb5d6, #5b8fb9);
+  border-radius: 0 0 6rpx 6rpx;
+}
+
+.question-area.with-npc {
+  margin-top: 0;
+}
+
+.transition-text {
+  font-size: 28rpx;
+  color: #7a9bae;
+  margin-bottom: 16rpx;
+  font-style: italic;
+}
+
+/* 普通模式导航 */
+.normal-confirm {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid rgba(91, 143, 185, 0.12);
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 20rpx 0;
+  border-radius: 20rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.nav-btn.prev-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.nav-btn.prev-btn.disabled {
+  opacity: 0.4;
+}
+
+.nav-btn.next-btn {
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(91, 143, 185, 0.3);
+}
+
+/* 最后一题绿色 — 对齐H5 */
+.nav-btn.next-btn.is-last {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  box-shadow: 0 4rpx 16rpx rgba(67, 160, 71, 0.3);
+}
+
+.nav-btn.next-btn.disabled {
+  opacity: 0.4;
+  background: #b0c4d1;
+  box-shadow: none;
+}
+
+/* 沉浸模式确认按钮 */
+.immersive-confirm {
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid rgba(91, 143, 185, 0.12);
+}
+
+.immersive-confirm .confirm-btn {
+  padding: 20rpx 32rpx;
+  background: linear-gradient(135deg, #5b8fb9, #7eb5d6);
+  color: #fff;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 6rpx 24rpx rgba(91, 143, 185, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.immersive-confirm .confirm-btn.disabled {
+  opacity: 0.4;
+  background: #b0c4d1;
+  box-shadow: none;
+}
+
+/* 最后一题绿色按钮 — 对齐H5: is-last 绿色渐变 */
+.immersive-confirm .confirm-btn.is-last {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  box-shadow: 0 6rpx 24rpx rgba(67, 160, 71, 0.3);
+}
+
+/* 提交加载 */
+.submit-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+}
+
+.loading-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 48rpx 64rpx;
+}
+
+.loading-text {
+  font-size: 30rpx;
+  color: #333;
+}

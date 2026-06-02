@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插件集成测试页面</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+
+      .tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        color: #495057;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab:hover {
+        background: #e9ecef;
+        color: #667eea;
+      }
+
+      .tab.active {
+        background: white;
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .test-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+
+      .test-section h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .test-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+      }
+
+      .btn-warning {
+        background: #ffc107;
+        color: #212529;
+      }
+
+      .btn-warning:hover {
+        background: #e0a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+      }
+
+      .btn-info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .btn-info:hover {
+        background: #138496;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+      }
+
+      .result-area {
+        margin-top: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .result-area h4 {
+        color: #495057;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .result-content {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+      }
+
+      .status-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .status-warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .status-info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .plugin-status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+      }
+
+      .plugin-info {
+        flex: 1;
+      }
+
+      .plugin-info h4 {
+        color: #495057;
+        margin-bottom: 5px;
+      }
+
+      .plugin-info p {
+        color: #6c757d;
+        font-size: 14px;
+      }
+
+      .log-container {
+        margin-top: 20px;
+        padding: 15px;
+        background: #212529;
+        color: #f8f9fa;
+        border-radius: 6px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .log-entry {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-bottom: 1px solid #495057;
+      }
+
+      .log-time {
+        color: #6c757d;
+      }
+
+      .log-message {
+        color: #f8f9fa;
+      }
+
+      .log-success {
+        color: #28a745;
+      }
+
+      .log-error {
+        color: #dc3545;
+      }
+
+      .log-warning {
+        color: #ffc107;
+      }
+
+      .log-info {
+        color: #17a2b8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔧 插件集成测试页面</h1>
+        <p>测试 scoring-plugin.js 和 npc-plugin.js 的所有功能</p>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('overview')">📊 概览</div>
+        <div class="tab" onclick="switchTab('scoring')">📈 计分插件测试</div>
+        <div class="tab" onclick="switchTab('npc')">🎭 NPC插件测试</div>
+        <div class="tab" onclick="switchTab('logs')">📝 测试日志</div>
+      </div>
+
+      <div class="content">
+        <!-- 概览标签页 -->
+        <div id="overview" class="tab-content active">
+          <div class="plugin-status">
+            <div class="plugin-info">
+              <h4>📈 scoring-plugin.js <span id="scoring-status" class="status status-warning">未加载</span></h4>
+              <p>计分规则管理插件 - 管理量表的维度、指标、解释规则和筛查规则</p>
+            </div>
+            <button class="btn btn-primary" onclick="loadScoringPlugin()">加载插件</button>
+          </div>
+
+          <div class="plugin-status">
+            <div class="plugin-info">
+              <h4>🎭 npc-plugin.js <span id="npc-status" class="status status-warning">未加载</span></h4>
+              <p>NPC配置管理插件 - 管理咨询师立绘、背景图和过渡语</p>
+            </div>
+            <button class="btn btn-primary" onclick="loadNpcPlugin()">加载插件</button>
+          </div>
+
+          <div class="test-section">
+            <h3>🚀 快速测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-success" onclick="runAllTests()">运行所有测试</button>
+              <button class="btn btn-info" onclick="checkPluginStatus()">检查插件状态</button>
+              <button class="btn btn-warning" onclick="clearAllData()">清除测试数据</button>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>📊 测试统计</h3>
+            <div id="test-stats">
+              <p>总测试数: <strong id="total-tests">0</strong></p>
+              <p>通过: <strong id="passed-tests" style="color: #28a745">0</strong></p>
+              <p>失败: <strong id="failed-tests" style="color: #dc3545">0</strong></p>
+              <p>成功率: <strong id="success-rate">0%</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 计分插件测试标签页 -->
+        <div id="scoring" class="tab-content">
+          <div class="test-section">
+            <h3>📋 基础功能测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-primary" onclick="testScoringList()">测试列表加载</button>
+              <button class="btn btn-primary" onclick="testScoringGet()">测试获取详情</button>
+              <button class="btn btn-primary" onclick="testScoringSelect()">测试选择量表</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="scoring-basic-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>📊 维度配置测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-success" onclick="testAddDimension()">测试添加维度</button>
+              <button class="btn btn-warning" onclick="testEditDimension()">测试编辑维度</button>
+              <button class="btn btn-danger" onclick="testDeleteDimension()">测试删除维度</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="scoring-dimension-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>📈 指标配置测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-success" onclick="testAddMetric()">测试添加指标</button>
+              <button class="btn btn-warning" onclick="testEditMetric()">测试编辑指标</button>
+              <button class="btn btn-danger" onclick="testDeleteMetric()">测试删除指标</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="scoring-metric-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>💾 保存测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-primary" onclick="testSaveScoringConfig()">测试保存配置</button>
+              <button class="btn btn-info" onclick="testResetScoringConfig()">测试重置配置</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="scoring-save-result" class="result-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NPC插件测试标签页 -->
+        <div id="npc" class="tab-content">
+          <div class="test-section">
+            <h3>📋 基础功能测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-primary" onclick="testNpcList()">测试列表加载</button>
+              <button class="btn btn-primary" onclick="testNpcGet()">测试获取详情</button>
+              <button class="btn btn-primary" onclick="testNpcSwitchTab()">测试切换标签</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="npc-basic-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>🎭 咨询师管理测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-success" onclick="testAddCounselor()">测试添加咨询师</button>
+              <button class="btn btn-warning" onclick="testEditCounselor()">测试编辑咨询师</button>
+              <button class="btn btn-danger" onclick="testDeleteCounselor()">测试删除咨询师</button>
+              <button class="btn btn-info" onclick="testSetDefaultCounselor()">测试设置默认</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="npc-counselor-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>🖼️ 背景图管理测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-success" onclick="testAddBackground()">测试添加背景</button>
+              <button class="btn btn-warning" onclick="testEditBackground()">测试编辑背景</button>
+              <button class="btn btn-danger" onclick="testDeleteBackground()">测试删除背景</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="npc-background-result" class="result-content"></div>
+            </div>
+          </div>
+
+          <div class="test-section">
+            <h3>💾 保存测试</h3>
+            <div class="test-buttons">
+              <button class="btn btn-primary" onclick="testSaveNpcConfig()">测试保存配置</button>
+              <button class="btn btn-info" onclick="testSyncToCloud()">测试云端同步</button>
+            </div>
+            <div class="result-area">
+              <h4>测试结果</h4>
+              <div id="npc-save-result" class="result-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 测试日志标签页 -->
+        <div id="logs" class="tab-content">
+          <div class="test-section">
+            <h3>📝 测试日志</h3>
+            <button class="btn btn-warning" onclick="clearLogs()">清除日志</button>
+            <div class="log-container" id="log-container">
+              <div class="log-entry">
+                <span class="log-time">[2026-06-01 22:51:00]</span>
+                <span class="log-message">测试页面已加载，等待用户操作...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 引入插件 -->
+    <script src="plugins/core/plugin-base.js"></script>
+    <script src="plugins/core/scoring-plugin.js"></script>
+    <script src="plugins/core/npc-plugin.js"></script>
+
+    <script>
+      // 全局变量
+      let scoringPlugin = null;
+      let npcPlugin = null;
+      let testStats = {
+        total: 0,
+        passed: 0,
+        failed: 0
+      };
+
+      // 标签页切换
+      function switchTab(tabName) {
+        // 隐藏所有标签页内容
+        document.querySelectorAll('.tab-content').forEach((el) => {
+          el.classList.remove('active');
+        });
+        document.querySelectorAll('.tab').forEach((el) => {
+          el.classList.remove('active');
+        });
+
+        // 显示选中的标签页
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      // 添加日志
+      function addLog(message, type = 'info') {
+        const logContainer = document.getElementById('log-container');
+        const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message log-${type}">${message}</span>
+            `;
+        logContainer.appendChild(logEntry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+      }
+
+      // 更新测试统计
+      function updateTestStats() {
+        document.getElementById('total-tests').textContent = testStats.total;
+        document.getElementById('passed-tests').textContent = testStats.passed;
+        document.getElementById('failed-tests').textContent = testStats.failed;
+        const rate = testStats.total > 0 ? Math.round((testStats.passed / testStats.total) * 100) : 0;
+        document.getElementById('success-rate').textContent = rate + '%';
+      }
+
+      // 记录测试结果
+      function recordTestResult(testName, passed, message) {
+        testStats.total++;
+        if (passed) {
+          testStats.passed++;
+          addLog(`✅ ${testName}: 通过 - ${message}`, 'success');
+        } else {
+          testStats.failed++;
+          addLog(`❌ ${testName}: 失败 - ${message}`, 'error');
+        }
+        updateTestStats();
+      }
+
+      // 加载计分插件
+      function loadScoringPlugin() {
+        try {
+          addLog('开始加载 scoring-plugin...', 'info');
+
+          if (typeof ScoringPlugin === 'undefined') {
+            throw new Error('ScoringPlugin 类未定义');
+          }
+
+          scoringPlugin = new ScoringPlugin();
+          const result = scoringPlugin.init();
+
+          if (result.success) {
+            document.getElementById('scoring-status').textContent = '已加载';
+            document.getElementById('scoring-status').className = 'status status-success';
+            addLog('✅ scoring-plugin 加载成功', 'success');
+            recordTestResult('插件加载', true, 'scoring-plugin 加载成功');
+          } else {
+            throw new Error(result.error || '初始化失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-status').textContent = '加载失败';
+          document.getElementById('scoring-status').className = 'status status-error';
+          addLog(`❌ scoring-plugin 加载失败: ${error.message}`, 'error');
+          recordTestResult('插件加载', false, error.message);
+        }
+      }
+
+      // 加载NPC插件
+      function loadNpcPlugin() {
+        try {
+          addLog('开始加载 npc-plugin...', 'info');
+
+          if (typeof NpcPlugin === 'undefined') {
+            throw new Error('NpcPlugin 类未定义');
+          }
+
+          npcPlugin = new NpcPlugin();
+          const result = npcPlugin.init();
+
+          if (result.success) {
+            document.getElementById('npc-status').textContent = '已加载';
+            document.getElementById('npc-status').className = 'status status-success';
+            addLog('✅ npc-plugin 加载成功', 'success');
+            recordTestResult('插件加载', true, 'npc-plugin 加载成功');
+          } else {
+            throw new Error(result.error || '初始化失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-status').textContent = '加载失败';
+          document.getElementById('npc-status').className = 'status status-error';
+          addLog(`❌ npc-plugin 加载失败: ${error.message}`, 'error');
+          recordTestResult('插件加载', false, error.message);
+        }
+      }
+
+      // 检查插件状态
+      function checkPluginStatus() {
+        addLog('检查插件状态...', 'info');
+
+        const scoringLoaded = scoringPlugin !== null;
+        const npcLoaded = npcPlugin !== null;
+
+        addLog(`scoring-plugin: ${scoringLoaded ? '✅ 已加载' : '❌ 未加载'}`, scoringLoaded ? 'success' : 'error');
+        addLog(`npc-plugin: ${npcLoaded ? '✅ 已加载' : '❌ 未加载'}`, npcLoaded ? 'success' : 'error');
+
+        if (!scoringLoaded) {
+          addLog('提示: 请在"概览"标签页中点击"加载插件"按钮', 'warning');
+        }
+        if (!npcLoaded) {
+          addLog('提示: 请在"概览"标签页中点击"加载插件"按钮', 'warning');
+        }
+      }
+
+      // 清除测试数据
+      function clearAllData() {
+        if (confirm('确定要清除所有测试数据吗？这将重置所有测试结果和日志。')) {
+          testStats = { total: 0, passed: 0, failed: 0 };
+          updateTestStats();
+
+          // 清除所有结果显示
+          document.querySelectorAll('.result-content').forEach((el) => {
+            el.textContent = '';
+          });
+
+          // 清除日志
+          clearLogs();
+
+          addLog('已清除所有测试数据', 'info');
+        }
+      }
+
+      // 清除日志
+      function clearLogs() {
+        const logContainer = document.getElementById('log-container');
+        logContainer.innerHTML = `
+                <div class="log-entry">
+                    <span class="log-time">[${new Date().toLocaleTimeString('zh-CN', { hour12: false })}]</span>
+                    <span class="log-message">日志已清除，等待用户操作...</span>
+                </div>
+            `;
+      }
+
+      // 运行所有测试
+      async function runAllTests() {
+        addLog('开始运行所有测试...', 'info');
+
+        // 检查插件是否已加载
+        if (!scoringPlugin) {
+          addLog('scoring-plugin 未加载，先加载插件', 'warning');
+          loadScoringPlugin();
+        }
+
+        if (!npcPlugin) {
+          addLog('npc-plugin 未加载，先加载插件', 'warning');
+          loadNpcPlugin();
+        }
+
+        // 等待插件加载完成
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // 运行计分插件测试
+        addLog('=== 开始测试 scoring-plugin ===', 'info');
+        await testScoringList();
+        await testScoringGet();
+        await testAddDimension();
+
+        // 运行NPC插件测试
+        addLog('=== 开始测试 npc-plugin ===', 'info');
+        await testNpcList();
+        await testNpcGet();
+        await testAddCounselor();
+
+        addLog('所有测试完成！', 'success');
+      }
+
+      // ==================== 计分插件测试函数 ====================
+
+      async function testScoringList() {
+        addLog('测试: 获取量表列表...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          const result = scoringPlugin.execute('list');
+
+          if (result.success && result.data) {
+            document.getElementById('scoring-basic-result').textContent =
+              `✅ 测试通过\n\n量表列表:\n${JSON.stringify(result.data, null, 2)}`;
+            recordTestResult('获取量表列表', true, `找到 ${result.data.length} 个量表`);
+          } else {
+            throw new Error(result.error || '获取失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-basic-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('获取量表列表', false, error.message);
+        }
+      }
+
+      async function testScoringGet() {
+        addLog('测试: 获取量表详情...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          // 先获取第一个量表
+          const listResult = scoringPlugin.execute('list');
+          if (!listResult.success || listResult.data.length === 0) {
+            throw new Error('没有可用的量表');
+          }
+
+          const scaleId = listResult.data[0].id;
+          const result = scoringPlugin.execute('get', { scaleId });
+
+          if (result.success && result.data) {
+            document.getElementById('scoring-basic-result').textContent +=
+              `\n\n✅ 获取详情成功\n\n量表详情:\n${JSON.stringify(result.data, null, 2)}`;
+            recordTestResult('获取量表详情', true, `成功获取量表 ${scaleId} 的详情`);
+          } else {
+            throw new Error(result.error || '获取失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-basic-result').textContent +=
+            `\n\n❌ 获取详情失败\n\n错误: ${error.message}`;
+          recordTestResult('获取量表详情', false, error.message);
+        }
+      }
+
+      async function testScoringSelect() {
+        addLog('测试: 选择量表...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          // 先获取第一个量表
+          const listResult = scoringPlugin.execute('list');
+          if (!listResult.success || listResult.data.length === 0) {
+            throw new Error('没有可用的量表');
+          }
+
+          const scaleId = listResult.data[0].id;
+          const result = scoringPlugin.execute('select', { scaleId });
+
+          if (result.success) {
+            document.getElementById('scoring-basic-result').textContent +=
+              `\n\n✅ 选择量表成功\n\n已选择量表: ${scaleId}`;
+            recordTestResult('选择量表', true, `成功选择量表 ${scaleId}`);
+          } else {
+            throw new Error(result.error || '选择失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-basic-result').textContent +=
+            `\n\n❌ 选择量表失败\n\n错误: ${error.message}`;
+          recordTestResult('选择量表', false, error.message);
+        }
+      }
+
+      async function testAddDimension() {
+        addLog('测试: 添加维度...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          const testDimension = {
+            name: '测试维度',
+            description: '这是一个测试维度',
+            items: '1,2,3'
+          };
+
+          const result = scoringPlugin.execute('add-dimension', testDimension);
+
+          if (result.success) {
+            document.getElementById('scoring-dimension-result').textContent =
+              `✅ 测试通过\n\n添加维度成功\n\n维度数据:\n${JSON.stringify(testDimension, null, 2)}`;
+            recordTestResult('添加维度', true, '维度添加成功');
+          } else {
+            throw new Error(result.error || '添加失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-dimension-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('添加维度', false, error.message);
+        }
+      }
+
+      async function testEditDimension() {
+        addLog('测试: 编辑维度...', 'info');
+        document.getElementById('scoring-dimension-result').textContent =
+          '⚠️ 测试待实现\n\n需要先从列表中获取维度ID，然后调用 edit-dimension action';
+        recordTestResult('编辑维度', false, '测试待实现');
+      }
+
+      async function testDeleteDimension() {
+        addLog('测试: 删除维度...', 'info');
+        document.getElementById('scoring-dimension-result').textContent +=
+          '\n\n⚠️ 测试待实现\n\n需要先从列表中获取维度ID，然后调用 delete-dimension action';
+        recordTestResult('删除维度', false, '测试待实现');
+      }
+
+      async function testAddMetric() {
+        addLog('测试: 添加指标...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          const testMetric = {
+            name: '测试指标',
+            formula: 'sum',
+            description: '这是一个测试指标'
+          };
+
+          const result = scoringPlugin.execute('add-metric', testMetric);
+
+          if (result.success) {
+            document.getElementById('scoring-metric-result').textContent =
+              `✅ 测试通过\n\n添加指标成功\n\n指标数据:\n${JSON.stringify(testMetric, null, 2)}`;
+            recordTestResult('添加指标', true, '指标添加成功');
+          } else {
+            throw new Error(result.error || '添加失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-metric-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('添加指标', false, error.message);
+        }
+      }
+
+      async function testEditMetric() {
+        addLog('测试: 编辑指标...', 'info');
+        document.getElementById('scoring-metric-result').textContent =
+          '⚠️ 测试待实现\n\n需要先从列表中获取指标ID，然后调用 edit-metric action';
+        recordTestResult('编辑指标', false, '测试待实现');
+      }
+
+      async function testDeleteMetric() {
+        addLog('测试: 删除指标...', 'info');
+        document.getElementById('scoring-metric-result').textContent +=
+          '\n\n⚠️ 测试待实现\n\n需要先从列表中获取指标ID，然后调用 delete-metric action';
+        recordTestResult('删除指标', false, '测试待实现');
+      }
+
+      async function testSaveScoringConfig() {
+        addLog('测试: 保存配置...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          const result = scoringPlugin.execute('save-config');
+
+          if (result.success) {
+            document.getElementById('scoring-save-result').textContent =
+              `✅ 测试通过\n\n保存配置成功\n\n保存时间: ${new Date().toLocaleString()}`;
+            recordTestResult('保存配置', true, '配置保存成功');
+          } else {
+            throw new Error(result.error || '保存失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-save-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('保存配置', false, error.message);
+        }
+      }
+
+      async function testResetScoringConfig() {
+        addLog('测试: 重置配置...', 'info');
+
+        try {
+          if (!scoringPlugin) {
+            throw new Error('scoring-plugin 未加载');
+          }
+
+          const result = scoringPlugin.execute('reset-config');
+
+          if (result.success) {
+            document.getElementById('scoring-save-result').textContent +=
+              `\n\n✅ 重置配置成功\n\n重置时间: ${new Date().toLocaleString()}`;
+            recordTestResult('重置配置', true, '配置重置成功');
+          } else {
+            throw new Error(result.error || '重置失败');
+          }
+        } catch (error) {
+          document.getElementById('scoring-save-result').textContent += `\n\n❌ 重置配置失败\n\n错误: ${error.message}`;
+          recordTestResult('重置配置', false, error.message);
+        }
+      }
+
+      // ==================== NPC插件测试函数 ====================
+
+      async function testNpcList() {
+        addLog('测试: 获取NPC配置列表...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const result = npcPlugin.execute('list');
+
+          if (result.success && result.data) {
+            document.getElementById('npc-basic-result').textContent =
+              `✅ 测试通过\n\nNPC配置列表:\n${JSON.stringify(result.data, null, 2)}`;
+            recordTestResult('获取NPC配置列表', true, `找到 ${result.data.counselors?.length || 0} 个咨询师`);
+          } else {
+            throw new Error(result.error || '获取失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-basic-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('获取NPC配置列表', false, error.message);
+        }
+      }
+
+      async function testNpcGet() {
+        addLog('测试: 获取NPC配置详情...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const result = npcPlugin.execute('get');
+
+          if (result.success && result.data) {
+            document.getElementById('npc-basic-result').textContent +=
+              `\n\n✅ 获取详情成功\n\n配置详情:\n${JSON.stringify(result.data, null, 2)}`;
+            recordTestResult('获取NPC配置详情', true, '成功获取NPC配置详情');
+          } else {
+            throw new Error(result.error || '获取失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-basic-result').textContent += `\n\n❌ 获取详情失败\n\n错误: ${error.message}`;
+          recordTestResult('获取NPC配置详情', false, error.message);
+        }
+      }
+
+      async function testNpcSwitchTab() {
+        addLog('测试: 切换标签页...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const result = npcPlugin.execute('switch-tab', { tab: 'counselors' });
+
+          if (result.success) {
+            document.getElementById('npc-basic-result').textContent += `\n\n✅ 切换标签成功\n\n当前标签: counselors`;
+            recordTestResult('切换标签页', true, '成功切换到 counselors 标签');
+          } else {
+            throw new Error(result.error || '切换失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-basic-result').textContent += `\n\n❌ 切换标签失败\n\n错误: ${error.message}`;
+          recordTestResult('切换标签页', false, error.message);
+        }
+      }
+
+      async function testAddCounselor() {
+        addLog('测试: 添加咨询师...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const testCounselor = {
+            name: '测试咨询师',
+            identity: 'psychologist',
+            style: 'professional',
+            description: '这是一个测试咨询师'
+          };
+
+          const result = npcPlugin.execute('add-counselor', testCounselor);
+
+          if (result.success) {
+            document.getElementById('npc-counselor-result').textContent =
+              `✅ 测试通过\n\n添加咨询师成功\n\n咨询师数据:\n${JSON.stringify(testCounselor, null, 2)}`;
+            recordTestResult('添加咨询师', true, '咨询师添加成功');
+          } else {
+            throw new Error(result.error || '添加失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-counselor-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('添加咨询师', false, error.message);
+        }
+      }
+
+      async function testEditCounselor() {
+        addLog('测试: 编辑咨询师...', 'info');
+        document.getElementById('npc-counselor-result').textContent =
+          '⚠️ 测试待实现\n\n需要先从列表中获取咨询师ID，然后调用 edit-counselor action';
+        recordTestResult('编辑咨询师', false, '测试待实现');
+      }
+
+      async function testDeleteCounselor() {
+        addLog('测试: 删除咨询师...', 'info');
+        document.getElementById('npc-counselor-result').textContent +=
+          '\n\n⚠️ 测试待实现\n\n需要先从列表中获取咨询师ID，然后调用 delete-counselor action';
+        recordTestResult('删除咨询师', false, '测试待实现');
+      }
+
+      async function testSetDefaultCounselor() {
+        addLog('测试: 设置默认咨询师...', 'info');
+        document.getElementById('npc-counselor-result').textContent +=
+          '\n\n⚠️ 测试待实现\n\n需要先从列表中获取咨询师ID，然后调用 set-default-counselor action';
+        recordTestResult('设置默认咨询师', false, '测试待实现');
+      }
+
+      async function testAddBackground() {
+        addLog('测试: 添加背景图...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const testBackground = {
+            name: '测试背景',
+            description: '这是一个测试背景'
+          };
+
+          const result = npcPlugin.execute('add-background', testBackground);
+
+          if (result.success) {
+            document.getElementById('npc-background-result').textContent =
+              `✅ 测试通过\n\n添加背景图成功\n\n背景图数据:\n${JSON.stringify(testBackground, null, 2)}`;
+            recordTestResult('添加背景图', true, '背景图添加成功');
+          } else {
+            throw new Error(result.error || '添加失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-background-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('添加背景图', false, error.message);
+        }
+      }
+
+      async function testEditBackground() {
+        addLog('测试: 编辑背景图...', 'info');
+        document.getElementById('npc-background-result').textContent =
+          '⚠️ 测试待实现\n\n需要先从列表中获取背景图ID，然后调用 edit-background action';
+        recordTestResult('编辑背景图', false, '测试待实现');
+      }
+
+      async function testDeleteBackground() {
+        addLog('测试: 删除背景图...', 'info');
+        document.getElementById('npc-background-result').textContent +=
+          '\n\n⚠️ 测试待实现\n\n需要先从列表中获取背景图ID，然后调用 delete-background action';
+        recordTestResult('删除背景图', false, '测试待实现');
+      }
+
+      async function testSaveNpcConfig() {
+        addLog('测试: 保存NPC配置...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const result = npcPlugin.execute('save-config');
+
+          if (result.success) {
+            document.getElementById('npc-save-result').textContent =
+              `✅ 测试通过\n\n保存配置成功\n\n保存时间: ${new Date().toLocaleString()}`;
+            recordTestResult('保存NPC配置', true, '配置保存成功');
+          } else {
+            throw new Error(result.error || '保存失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-save-result').textContent = `❌ 测试失败\n\n错误: ${error.message}`;
+          recordTestResult('保存NPC配置', false, error.message);
+        }
+      }
+
+      async function testSyncToCloud() {
+        addLog('测试: 云端同步...', 'info');
+
+        try {
+          if (!npcPlugin) {
+            throw new Error('npc-plugin 未加载');
+          }
+
+          const result = npcPlugin.execute('sync-to-cloud');
+
+          if (result.success) {
+            document.getElementById('npc-save-result').textContent +=
+              `\n\n✅ 云端同步成功\n\n同步时间: ${new Date().toLocaleString()}`;
+            recordTestResult('云端同步', true, '云端同步成功');
+          } else {
+            throw new Error(result.error || '同步失败');
+          }
+        } catch (error) {
+          document.getElementById('npc-save-result').textContent += `\n\n❌ 云端同步失败\n\n错误: ${error.message}`;
+          recordTestResult('云端同步', false, error.message);
+        }
+      }
+
+      // 页面加载完成后初始化
+      window.addEventListener('DOMContentLoaded', () => {
+        addLog('测试页面已加载完成', 'info');
+        addLog('请先点击"加载插件"按钮加载插件，然后开始测试', 'info');
+      });
+    </script>
+  </body>
+</html>

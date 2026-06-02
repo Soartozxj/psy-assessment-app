@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/scale-list/scale-list",
+    "pages/scale-detail/scale-detail",
+    "pages/pre-questions/pre-questions",
+    "pages/assessment/assessment",
+    "pages/result/result",
+    "pages/ai-diag/ai-diag",
+    "pages/history/history",
+    "pages/mine/mine",
+    "pages/profile-edit/profile-edit",
+    "pages/notification/notification",
+    "pages/report-favorites/report-favorites",
+    "pages/about/about",
+    "pages/privacy/privacy"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#4a90d9",
+    "navigationBarTitleText": "星蓝心镜",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8f9fa",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#4a90d9",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/images/tab-home.png",
+        "selectedIconPath": "assets/images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "历史",
+        "iconPath": "assets/images/tab-history.png",
+        "selectedIconPath": "assets/images/tab-history-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "assets/images/tab-mine.png",
+        "selectedIconPath": "assets/images/tab-mine-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

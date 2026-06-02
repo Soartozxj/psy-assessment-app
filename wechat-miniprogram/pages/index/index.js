@@ -1,5 +1,5 @@
 // pages/index/index.js
-var lines = [
+const lines = [
   '你好呀，欢迎来到星蓝心镜～',
   '在这里，你可以完成专业量表测评，',
   '获取多维分析报告，',
@@ -11,8 +11,8 @@ var lines = [
 Page({
   data: {
     typingLines: [],
-    imgDisplayWidth: 80,  // 默认宽度百分比
-    version: ''  // 版本号，从 app.globalData 获取
+    imgDisplayWidth: 80, // 默认宽度百分比
+    version: '' // 版本号，从 app.globalData 获取
   },
 
   lineIdx: 0,
@@ -35,19 +35,21 @@ Page({
   },
 
   startTyping() {
-    var speed = 45;
-    var lineDelay = 500;
-    var self = this;
+    const speed = 45;
+    const lineDelay = 500;
+    const self = this;
 
     function startLine() {
-      if (self.lineIdx >= lines.length) return;
+      if (self.lineIdx >= lines.length) {
+        return;
+      }
 
-      var currentLines = self.data.typingLines.slice();
+      const currentLines = self.data.typingLines.slice();
       currentLines.push({ text: '', visible: false });
-      self.setData({ typingLines: currentLines }, function() {
+      self.setData({ typingLines: currentLines }, function () {
         // 触发重排后加 visible
-        setTimeout(function() {
-          var updatedLines = self.data.typingLines;
+        setTimeout(function () {
+          const updatedLines = self.data.typingLines;
           updatedLines[updatedLines.length - 1].visible = true;
           self.setData({ typingLines: updatedLines });
         }, 50);
@@ -58,14 +60,14 @@ Page({
     }
 
     function typeChar() {
-      var line = lines[self.lineIdx];
+      const line = lines[self.lineIdx];
       if (self.charIdx >= line.length) {
         self.lineIdx++;
         self.timer = setTimeout(startLine, lineDelay);
         return;
       }
 
-      var updatedLines = self.data.typingLines;
+      const updatedLines = self.data.typingLines;
       updatedLines[updatedLines.length - 1].text += line[self.charIdx];
       self.setData({ typingLines: updatedLines });
       self.charIdx++;
@@ -79,21 +81,21 @@ Page({
     return {
       title: '星蓝心镜 - 探索你的内心世界',
       path: '/pages/index/index'
-    }
+    };
   },
 
   // 进入前端测评页面
   goToFront() {
     wx.navigateTo({
       url: '/pages/webview/webview?type=front'
-    })
+    });
   },
 
   // 进入管理后台（长按触发）
   onLongPress() {
     wx.navigateTo({
       url: '/pages/webview/webview?type=admin'
-    })
+    });
   },
 
   onUnload() {
@@ -102,4 +104,4 @@ Page({
       this.timer = null;
     }
   }
-})
+});

@@ -1,0 +1,45 @@
+<view class="page-profile-edit">
+  <!-- 头像 -->
+  <view class="edit-section avatar-section">
+    <text class="section-label">头像</text>
+    <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image class="avatar-preview" src="{{tempAvatarUrl || avatarUrl}}" wx:if="{{tempAvatarUrl || avatarUrl}}" mode="aspectFill" />
+      <view class="avatar-placeholder" wx:else>
+        <text>点击设置</text>
+      </view>
+    </button>
+  </view>
+
+  <!-- 昵称 -->
+  <view class="edit-section">
+    <text class="section-label">昵称</text>
+    <input
+      class="edit-input"
+      type="nickname"
+      placeholder="请输入昵称"
+      value="{{nickName}}"
+      bindinput="onNicknameInput"
+    />
+  </view>
+
+  <!-- 性别 -->
+  <view class="edit-section">
+    <text class="section-label">性别</text>
+    <picker class="edit-picker" range="{{genderList}}" value="{{genderIndex}}" bindchange="onGenderChange">
+      <view class="picker-text">{{genderList[genderIndex]}} ▾</view>
+    </picker>
+  </view>
+
+  <!-- 生日 -->
+  <view class="edit-section">
+    <text class="section-label">生日</text>
+    <picker class="edit-picker" mode="date" value="{{birthday}}" bindchange="onBirthdayChange" start="1950-01-01" end="2020-12-31">
+      <view class="picker-text">{{birthday || '请选择'}} ▾</view>
+    </picker>
+  </view>
+
+  <!-- 保存 -->
+  <view class="save-btn" bindtap="onSave">
+    <text>保存</text>
+  </view>
+</view>

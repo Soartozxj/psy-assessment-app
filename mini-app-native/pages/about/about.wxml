@@ -1,0 +1,46 @@
+<view class="page-about">
+  <!-- 应用信息头部 -->
+  <view class="about-header">
+    <view class="app-logo">🧿</view>
+    <text class="app-name">{{appName}}</text>
+    <text class="app-version" bindlongpress="onVersionLongPress">v{{version}}</text>
+  </view>
+
+  <!-- 应用描述 -->
+  <view class="about-desc">
+    <text class="desc-text">{{description}}</text>
+  </view>
+
+  <!-- 功能亮点 -->
+  <view class="feature-section">
+    <text class="section-title">核心功能</text>
+    <view class="feature-grid">
+      <view class="feature-card" wx:for="{{features}}" wx:key="title">
+        <text class="feature-icon">{{item.icon}}</text>
+        <text class="feature-title">{{item.title}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 链接列表 -->
+  <view class="link-section">
+    <view
+      class="link-item"
+      wx:for="{{links}}"
+      wx:key="key"
+      bindtap="onLinkTap"
+      data-key="{{item.key}}"
+      data-url="{{item.url}}"
+    >
+      <text class="link-label">{{item.label}}</text>
+      <text class="link-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 底部版权 -->
+  <view class="about-footer">
+    <text class="footer-text">© 2025 星蓝心镜团队</text>
+    <text class="footer-sub">心理健康 · 从心出发</text>
+  </view>
+</view>

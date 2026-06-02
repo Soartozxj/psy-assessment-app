@@ -5,52 +5,52 @@
 ═══════════════════════════════════════════
 
 {
-  "dimensions": [
-    {
-      "key": "英文标识（如 somatization、neuroticism）",
-      "label": "维度中文名（如"躯体化"、"神经质"）",
-      "items": "题目编号，格式：1-5,7,12-15（连续用短横线，不连续用逗号）",
-      "formula": "SUM 或 AVG",
-      "transform": "线性变换（可选），如 \"1.25*x\"。无变换则省略此字段",
-      "maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
-      "interpretation": [
-        { "min": 1, "max": 1.5, "level": "normal", "label": "正常", "color": "#43A047", "text": "说明文字" },
-        { "min": 1.51, "max": 2.5, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "说明文字" },
-        { "min": 2.51, "max": 4, "level": "severe", "label": "重度", "color": "#E53935", "text": "说明文字" }
-      ]
-    }
-  ],
-  "metrics": [
-    {
-      "key": "英文标识（如 total_score、positive_count）",
-      "label": "指标中文名（如"总分"、"阳性项目数"）",
-      "formula": "SUM / AVG / COUNT_IF / DERIVED / COUNT_SUBS",
-      "items": "ALL 或具体题号（DERIVED 时省略）",
-      "condition": "仅 COUNT_IF 使用，如 {">=": 2}",
-      "transform": "线性变换（可选），如 \"1.25*x\"。无变换则省略此字段",
-      "maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
-      "expression": "仅 DERIVED 使用，引用其他指标的 key，如 \"(total_score - negative_count) / positive_count\""
-    }
-  ],
-  "interpretation": [
-    {
-      "metric": "此处必须是 dimensions 或 metrics 中已定义的英文 key，严禁使用中文",
-      "min": 1.5,
-      "max": 2.5,
-      "level": "normal | mild | moderate | severe | high_moderate",
-      "label": "等级中文标签",
-      "color": "#rrggbb",
-      "text": "解释说明文字"
-    }
-  ],
-  "screening": {
-    "conditions": [
-      { "metric": "dimensions 或 metrics 中的英文 key", "operator": ">= 或 > 或 < 或 <=", "value": "数值", "label": "条件说明文字" }
-    ],
-    "logic": "AND 或 OR（仅一个条件时填 N/A）",
-    "positiveLabel": "筛查阳性标签（如"筛查阳性"）",
-    "negativeLabel": "筛查阴性标签（如"筛查阴性"）"
-  }
+"dimensions": [
+{
+"key": "英文标识（如 somatization、neuroticism）",
+"label": "维度中文名（如"躯体化"、"神经质"）",
+"items": "题目编号，格式：1-5,7,12-15（连续用短横线，不连续用逗号）",
+"formula": "SUM 或 AVG",
+"transform": "线性变换（可选），如 \"1.25*x\"。无变换则省略此字段",
+"maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
+"interpretation": [
+{ "min": 1, "max": 1.5, "level": "normal", "label": "正常", "color": "#43A047", "text": "说明文字" },
+{ "min": 1.51, "max": 2.5, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "说明文字" },
+{ "min": 2.51, "max": 4, "level": "severe", "label": "重度", "color": "#E53935", "text": "说明文字" }
+]
+}
+],
+"metrics": [
+{
+"key": "英文标识（如 total_score、positive_count）",
+"label": "指标中文名（如"总分"、"阳性项目数"）",
+"formula": "SUM / AVG / COUNT_IF / DERIVED / COUNT_SUBS",
+"items": "ALL 或具体题号（DERIVED 时省略）",
+"condition": "仅 COUNT_IF 使用，如 {">=": 2}",
+"transform": "线性变换（可选），如 \"1.25*x\"。无变换则省略此字段",
+"maxScore": "满分值（可选）。如原文明确给出则填写，否则省略",
+"expression": "仅 DERIVED 使用，引用其他指标的 key，如 \"(total_score - negative_count) / positive_count\""
+}
+],
+"interpretation": [
+{
+"metric": "此处必须是 dimensions 或 metrics 中已定义的英文 key，严禁使用中文",
+"min": 1.5,
+"max": 2.5,
+"level": "normal | mild | moderate | severe | high_moderate",
+"label": "等级中文标签",
+"color": "#rrggbb",
+"text": "解释说明文字"
+}
+],
+"screening": {
+"conditions": [
+{ "metric": "dimensions 或 metrics 中的英文 key", "operator": ">= 或 > 或 < 或 <=", "value": "数值", "label": "条件说明文字" }
+],
+"logic": "AND 或 OR（仅一个条件时填 N/A）",
+"positiveLabel": "筛查阳性标签（如"筛查阳性"）",
+"negativeLabel": "筛查阴性标签（如"筛查阴性"）"
+}
 }
 
 ═══════════════════════════════════════════
@@ -58,8 +58,9 @@
 ═══════════════════════════════════════════
 
 【key 命名规则】
+
 - 使用英文小写 + 下划线，如 somatization、obsessive_compulsive、total_score、positive_count
-- 严禁使用 dim_ 前缀、中文、空格或特殊字符
+- 严禁使用 dim\_ 前缀、中文、空格或特殊字符
 - ⚠️ 必须与计分说明中定义的 key 完全一致，严禁自行改写命名风格（如计分说明定义 total_score，输出 totalScore 是错误的）
 - ⚠️ 严禁使用驼峰命名法（camelCase），AI 自行生成的 key 也必须遵守小写+下划线规则
   - ❌ 错误："key": "totalScore"、"key": "subjectiveSupport"
@@ -67,12 +68,14 @@
 - interpretation[].metric 引用时，必须与 dimensions[].key 或 metrics[].key 完全匹配（包括命名风格），严禁在引用时改写命名风格
 
 【metric 引用规则（最常见错误，务必遵守）】
+
 - interpretation 和 screening 中的 metric 字段必须引用 dimensions/metrics 中定义的英文 key
 - ✅ 正确："metric": "somatization"、"metric": "total_score"
-- ❌ 错误："metric": "躯体化"、"metric": "dim_神经质"、"metric": "总分"
+- ❌ 错误："metric": "躯体化"、"metric": "dim\_神经质"、"metric": "总分"
 - 引用前先在 dimensions 和 metrics 中查找匹配的 key，找不到则不要生成该条 interpretation
 
 【min/max 区间规则（重要：每档必须完整）】
+
 - 第一档必须有 min，最后一档必须有 max，所有区间必须首尾衔接、无断档、无重叠
 - { "min": 0, "max": 1.5 } — 0 ≤ 分数 ≤ 1.5
 - { "min": 1.51, "max": 2.5 } — 1.51 ≤ 分数 ≤ 2.5（与前档衔接时 +0.01 避免重叠）
@@ -80,6 +83,7 @@
 - ⚠️ min 和 max 都必须填写具体数值，不要省略、不要留空
 
 【自动推算分值范围（原文无明确范围时必须执行）】
+
 - 根据题目数量和选项分值范围，自动推算每个指标/维度的理论最低分和最高分：
   - SUM 公式：min = 每题最低分 × 题数，max = 每题最高分 × 题数
   - AVG 公式：min = 每题最低分，max = 每题最高分
@@ -92,16 +96,18 @@
 - 推算的 min/max 必须能覆盖所有 interpretation 分档，如果分档边界超出推算范围，以分档边界为准
 
 【transform 线性变换规则】
-- transform 仅用于线性变换（y = a*x + b），x 为原始计算值
+
+- transform 仅用于线性变换（y = a\*x + b），x 为原始计算值
 - 常见场景与写法对照：
-  - 原文"标准分 = 粗分 × 1.25" → "transform": "1.25*x"
-  - 原文"因子分 = 因子总分 × 100 / 题数" → "transform": "100*x/N"（N 填具体数字）
+  - 原文"标准分 = 粗分 × 1.25" → "transform": "1.25\*x"
+  - 原文"因子分 = 因子总分 × 100 / 题数" → "transform": "100\*x/N"（N 填具体数字）
   - 原文"指数 = (总分 - 阴性项目数) / 阳性项目数" → 不用 transform，用 DERIVED 指标
-  - 原文"T分 = 50 + 10×z"（z 为标准化分数） → "transform": "50+10*x"
+  - 原文"T分 = 50 + 10×z"（z 为标准化分数） → "transform": "50+10\*x"
 - 以下情况不要设置 transform：非线性变换（取对数、开方）、无任何变换、已在公式中体现
 - 如果原文没有提到任何分数转换或标准化，省略此字段
 
 【顶层 interpretation 覆盖规则】
+
 - 必须覆盖所有维度 + 所有全局指标的分档
 - ⚠️ 如果某个维度在 dimensions[].interpretation 中已有分档说明，顶层【必须省略】该维度的 interpretation，不得重复输出（违反此规则将被视为格式错误）
 - 如果原文未提供某维度/指标的划界分，则不输出该维度/指标的 interpretation（不要编造）
@@ -130,6 +136,7 @@
 ═══════════════════════════════════════════
 
 【公式定义】
+
 - SUM：求和（总分 = 所有题得分之和）
 - AVG：平均（维度均分 = 维度内得分之和 / 题目数）
 - COUNT_IF：条件计数（统计满足条件的题目数），必须配合 condition，如 {">=": 2}、{"==": 1}
@@ -139,6 +146,7 @@
 - COUNT_SUBS：子选项计数（统计父子题中选中子选项的数量），仅用于父子题维度
 
 【⚠️ 公式输出格式严格规则（防止 AI 输出中文说明）】
+
 - formula 字段输出时必须严格使用纯枚举值，禁止附带中文说明或括号注释
   - ✅ 正确："formula": "SUM"
   - ❌ 错误："formula": "SUM（求和）"、"SUM 求和"
@@ -167,6 +175,7 @@
 ═══════════════════════════════════════════
 
 【筛查量表】（SCL-90、SAS、SDS、PHQ-9、GAD-7 等）
+
 - 分数越高越严重，有"正常 vs 异常"之分
 - level 和 label 映射（5档量表需增加 high_moderate）：
   - normal → 正常（#43A047 绿）
@@ -177,6 +186,7 @@
 - 有筛查条件时设 screening，无则 null
 
 【区分度量表】（大五人格、EPQ、MBTI、16PF 等）
+
 - 分数代表特质强弱，无正常/异常之分
 - level 和 label 映射（严禁使用"轻度/中度/重度"，5档量表需增加 high_moderate）：
   - normal → 低分（#43A047 绿）
@@ -187,6 +197,7 @@
 - screening 通常为 null
 
 【判断方法】
+
 1. 出现"阳性筛查""病理""症状""需转介" → 筛查量表
 2. 出现"特质""倾向""人格""性格" → 区分度量表
 3. 无法判断时默认按筛查量表处理
@@ -199,69 +210,69 @@
 假设：某量表 10 题，每题 0-4 分，1 个维度（items: "1-7"，AVG），1 个全局指标（total_score，SUM）
 
 {
-  "dimensions": [
-    {
-      "key": "example_dimension",
-      "label": "示例维度",
-      "items": "1-7",
-      "formula": "AVG",
-      "maxScore": 4
-    }
-  ],
-  "metrics": [
-    {
-      "key": "total_score",
-      "label": "总分",
-      "formula": "SUM",
-      "items": "ALL",
-      "maxScore": 40
-    }
-  ],
-  "interpretation": [
-    { "metric": "total_score", "min": 0, "max": 15, "level": "normal", "label": "正常", "color": "#43A047", "text": "当前未发现明显的心理困扰症状，日常社会功能良好，暂无需专业干预" },
-    { "metric": "total_score", "min": 16, "max": 25, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "存在一定程度的心理困扰，可能表现为偶发的焦虑、情绪低落或睡眠问题，建议关注自我调节与压力管理" },
-    { "metric": "total_score", "min": 26, "max": 40, "level": "moderate", "label": "中度及以上", "color": "#E53935", "text": "心理困扰较为显著，已对社会功能或日常生活造成明显影响，建议尽早进行专业心理评估与咨询" }
-  ],
-  "screening": {
-    "conditions": [
-      { "metric": "total_score", "operator": ">=", "value": 16, "label": "需进一步评估" }
-    ],
-    "logic": "OR",
-    "positiveLabel": "筛查阳性",
-    "negativeLabel": "筛查阴性"
-  }
+"dimensions": [
+{
+"key": "example_dimension",
+"label": "示例维度",
+"items": "1-7",
+"formula": "AVG",
+"maxScore": 4
+}
+],
+"metrics": [
+{
+"key": "total_score",
+"label": "总分",
+"formula": "SUM",
+"items": "ALL",
+"maxScore": 40
+}
+],
+"interpretation": [
+{ "metric": "total_score", "min": 0, "max": 15, "level": "normal", "label": "正常", "color": "#43A047", "text": "当前未发现明显的心理困扰症状，日常社会功能良好，暂无需专业干预" },
+{ "metric": "total_score", "min": 16, "max": 25, "level": "mild", "label": "轻度", "color": "#FB8C00", "text": "存在一定程度的心理困扰，可能表现为偶发的焦虑、情绪低落或睡眠问题，建议关注自我调节与压力管理" },
+{ "metric": "total_score", "min": 26, "max": 40, "level": "moderate", "label": "中度及以上", "color": "#E53935", "text": "心理困扰较为显著，已对社会功能或日常生活造成明显影响，建议尽早进行专业心理评估与咨询" }
+],
+"screening": {
+"conditions": [
+{ "metric": "total_score", "operator": ">=", "value": 16, "label": "需进一步评估" }
+],
+"logic": "OR",
+"positiveLabel": "筛查阳性",
+"negativeLabel": "筛查阴性"
+}
 }
 
 【示例 B：区分度量表骨架】
 假设：某量表 20 题，每题 1-5 分，3 个维度（AVG），无筛查条件
 
 {
-  "dimensions": [
-    {
-      "key": "trait_a",
-      "label": "特质A",
-      "items": "1,3,5,7,9,11",
-      "formula": "AVG",
-      "maxScore": 5
-    },
-    {
-      "key": "trait_b",
-      "label": "特质B",
-      "items": "2,4,6,8,10,12",
-      "formula": "AVG",
-      "maxScore": 5
-    }
-  ],
-  "metrics": [],
-  "interpretation": [
-    { "metric": "trait_a", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质A方面表现较低，日常中较少展现该特质相关的行为模式" },
-    { "metric": "trait_a", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质A处于中等水平，在多数情境下能适度展现该特质" },
-    { "metric": "trait_a", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质A表现突出，在各类情境中均能明显体现该特质的行为倾向" },
-    { "metric": "trait_b", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质B方面表现较低，日常中较少展现该特质相关的行为模式" },
-    { "metric": "trait_b", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质B处于中等水平，在多数情境中能适度展现该特质" },
-    { "metric": "trait_b", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质B表现突出，在各类情境中均能明显体现该特质的行为倾向" }
-  ],
-  "screening": null
+"dimensions": [
+{
+"key": "trait_a",
+"label": "特质A",
+"items": "1,3,5,7,9,11",
+"formula": "AVG",
+"maxScore": 5
+},
+{
+"key": "trait_b",
+"label": "特质B",
+"items": "2,4,6,8,10,12",
+"formula": "AVG",
+"maxScore": 5
+}
+],
+"metrics": [],
+"interpretation": [
+{ "metric": "trait_a", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质A方面表现较低，日常中较少展现该特质相关的行为模式" },
+{ "metric": "trait_a", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质A处于中等水平，在多数情境下能适度展现该特质" },
+{ "metric": "trait_a", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质A表现突出，在各类情境中均能明显体现该特质的行为倾向" },
+{ "metric": "trait_b", "min": 1, "max": 2.4, "level": "normal", "label": "低分", "color": "#43A047", "text": "在特质B方面表现较低，日常中较少展现该特质相关的行为模式" },
+{ "metric": "trait_b", "min": 2.41, "max": 3.6, "level": "moderate", "label": "中等", "color": "#1E88E5", "text": "特质B处于中等水平，在多数情境中能适度展现该特质" },
+{ "metric": "trait_b", "min": 3.61, "max": 5, "level": "severe", "label": "高分", "color": "#7E57C2", "text": "特质B表现突出，在各类情境中均能明显体现该特质的行为倾向" }
+],
+"screening": null
 }
 
 ═══════════════════════════════════════════
@@ -271,6 +282,7 @@
 如果原始手册中包含以下特殊题型，在 dimensions.items 中正常按题号引用即可，计分引擎会自动检测答案格式进行特殊处理。
 
 【矩阵题（matrix）】题目需要被评估者对多个维度（行）分别评分。
+
 - 数据结构：{ type: "matrix", rows: [{id, label},...], options: [{id, label, score},...] }
 - 答案格式：{ 题号: { 行ID: 列索引, ... } }
 - 计分方式：所有行选中分数求和
@@ -278,6 +290,7 @@
 - items 中按题号正常引用，无需特殊处理
 
 【父子题（parent-child）】题目有主选项和子选项的层级结构。
+
 - 数据结构：{ type: "parent-child", options: [{id, label, hasChildren?, isTerminal?}], subOptions: [{id, label, hasInput?}] }
 - 计分方式：主选项选"无任何来源"=0分，否则=选中的子选项数量
 - 最大分 = subOptions.length

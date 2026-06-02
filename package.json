@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "lint": "eslint '*.js' 'server/**/*.js' 'mini-app-h5/**/*.js' 'mini-app-h5-redesign/**/*.js' 'tests/**/*.js' --ignore-pattern '*.bak*' --ignore-pattern 'deploy/' --ignore-pattern 'node_modules/'",
     "lint:fix": "eslint --fix '*.js' 'server/**/*.js' 'mini-app-h5/**/*.js' 'mini-app-h5-redesign/**/*.js' 'tests/**/*.js' --ignore-pattern '*.bak*' --ignore-pattern 'deploy/' --ignore-pattern 'node_modules/'",

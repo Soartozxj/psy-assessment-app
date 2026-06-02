@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "测评结果",
+  "usingComponents": {
+    "score-ring": "/components/score-ring/score-ring",
+    "dim-bar": "/components/dim-bar/dim-bar",
+    "npc-scene": "/components/npc-scene/npc-scene"
+  }
+}

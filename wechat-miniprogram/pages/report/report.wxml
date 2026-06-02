@@ -1,0 +1,37 @@
+<view class="report-page">
+  <view class="report-header">
+    <text class="report-emoji">📊</text>
+    <text class="report-title">测评完成</text>
+    <text class="report-time">{{completedTime}}</text>
+  </view>
+
+  <view class="score-section" wx:if="{{dimensions.length > 0}}">
+    <view class="section-title">维度得分</view>
+    <view class="dimension-item" wx:for="{{dimensions}}" wx:key="key">
+      <view class="dim-row">
+        <text class="dim-name">{{item.name || item.key}}</text>
+        <text class="dim-score">{{item.score}}</text>
+      </view>
+      <view class="dim-bar-bg">
+        <view class="dim-bar-fill" style="width:{{item.percent || 50}}%"></view>
+      </view>
+      <text class="dim-level">{{item.level || ''}}</text>
+    </view>
+  </view>
+
+  <view class="score-section" wx:elif="{{Object.keys(scores).length > 0}}">
+    <view class="section-title">为您生成的测评</view>
+    <view class="dimension-item" wx:for="{{scores}}" wx:key="*this" wx:for-index="k" wx:for-item="v">
+      <view class="dim-row">
+        <text class="dim-name">{{k}}</text>
+        <text class="dim-score">{{v}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button class="btn-share" open-type="share">分享结果给朋友</button>
+    <button class="btn-retest" bindtap="onRetest">再测一次</button>
+    <button class="btn-home" bindtap="onGoHome">返回首页</button>
+  </view>
+</view>

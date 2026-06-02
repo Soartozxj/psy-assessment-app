@@ -1,0 +1,115 @@
+<view class="page-privacy">
+  <!-- 政策内容区 -->
+  <view class="policy-content">
+    <!-- 标题 -->
+    <view class="policy-header">
+      <text class="policy-title">星蓝心镜隐私政策</text>
+      <text class="policy-update-date">更新日期：2025年1月1日</text>
+    </view>
+
+    <!-- 引言 -->
+    <view class="policy-section">
+      <text class="section-intro">
+        欢迎使用星蓝心镜！我们非常重视您的隐私保护。本隐私政策旨在向您说明我们如何收集、使用、存储和保护您的个人信息。请您仔细阅读以下内容。
+      </text>
+    </view>
+
+    <!-- 一、信息收集 -->
+    <view class="policy-section">
+      <text class="section-heading">一、信息收集</text>
+      <text class="section-text">
+        我们仅收集为您提供服务所必需的信息，包括：
+      </text>
+      <view class="section-list">
+        <text class="list-item">1. 测评答案及结果：用于生成测评报告和AI解读</text>
+        <text class="list-item">2. 设备信息：用于适配不同设备和优化体验</text>
+        <text class="list-item">3. 使用记录：用于提供历史记录和断点续答功能</text>
+      </view>
+    </view>
+
+    <!-- 二、信息存储 -->
+    <view class="policy-section">
+      <text class="section-heading">二、信息存储</text>
+      <view class="section-list">
+        <text class="list-item">• 您的数据主要存储在本地设备上</text>
+        <text class="list-item">• 部分数据可能同步至云端服务器，用于跨设备访问</text>
+        <text class="list-item">• 我们采用行业标准加密技术保护您的数据安全</text>
+      </view>
+    </view>
+
+    <!-- 三、信息使用 -->
+    <view class="policy-section">
+      <text class="section-heading">三、信息使用</text>
+      <text class="section-text">我们仅将您的信息用于：</text>
+      <view class="section-list">
+        <text class="list-item">• 提供心理健康测评服务</text>
+        <text class="list-item">• 生成AI解读报告</text>
+        <text class="list-item">• 改善产品体验和服务质量</text>
+      </view>
+    </view>
+
+    <!-- 四、信息保护 -->
+    <view class="policy-section">
+      <text class="section-heading">四、信息保护</text>
+      <view class="section-list">
+        <text class="list-item">• 我们不会将您的个人信息出售给第三方</text>
+        <text class="list-item">• 我们不会在未经您同意的情况下分享您的测评结果</text>
+        <text class="list-item">• 我们采用严格的技术和管理手段保护数据安全</text>
+      </view>
+    </view>
+
+    <!-- 五、您的权利 -->
+    <view class="policy-section">
+      <text class="section-heading">五、您的权利</text>
+      <view class="section-list">
+        <text class="list-item">• 您可以随时查看、修改您的个人信息</text>
+        <text class="list-item">• 您可以随时删除您的测评记录</text>
+        <text class="list-item">• 您可以随时清除所有本地数据</text>
+      </view>
+    </view>
+
+    <!-- 六、未成年人保护 -->
+    <view class="policy-section">
+      <text class="section-heading">六、未成年人保护</text>
+      <text class="section-text">
+        我们高度重视未成年人的隐私保护。如果您是未成年人，请在监护人的陪同和指导下使用本应用。
+      </text>
+    </view>
+
+    <!-- 七、政策更新 -->
+    <view class="policy-section">
+      <text class="section-heading">七、政策更新</text>
+      <text class="section-text">
+        我们可能会不时更新本隐私政策。更新后的政策将在应用内通知您，继续使用本应用即表示您同意更新后的隐私政策。
+      </text>
+    </view>
+
+    <!-- 八、联系我们 -->
+    <view class="policy-section">
+      <text class="section-heading">八、联系我们</text>
+      <text class="section-text">
+        如您对本隐私政策有任何疑问或建议，请通过应用内的意见反馈功能与我们联系。
+      </text>
+    </view>
+
+    <!-- 复制按钮 -->
+    <view class="copy-btn" bindtap="onCopyPolicy">
+      <text>复制政策文本</text>
+    </view>
+  </view>
+
+  <!-- 底部操作栏（仅首次启动时显示） -->
+  <view class="bottom-bar" wx:if="{{isFromOnboard && !agreed}}">
+    <view class="btn-reject" bindtap="onReject">
+      <text>拒绝</text>
+    </view>
+    <view class="btn-agree" bindtap="onAgree">
+      <text>同意隐私政策</text>
+    </view>
+  </view>
+
+  <!-- 已同意状态 -->
+  <view class="agreed-bar" wx:if="{{agreed && !isFromOnboard}}">
+    <text class="agreed-text">✓ 您已同意隐私政策</text>
+  </view>
+</view>

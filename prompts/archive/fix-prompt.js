@@ -4,25 +4,31 @@ const raw = fs.readFileSync(filePath, 'utf8');
 
 // 提取 JSON 数组
 const match = raw.match(/^window\.DEFAULT_PROMPTS = ([\s\S]+);$/m);
-if (!match) { console.error('格式错误'); process.exit(1); }
+if (!match) {
+  console.error('格式错误');
+  process.exit(1);
+}
 
 const prompts = JSON.parse(match[1]);
-const jsonPrompt = prompts.find(p => p.id === 'json');
-const active = jsonPrompt.versions.find(v => v.status === 'active');
+const jsonPrompt = prompts.find((p) => p.id === 'json');
+const active = jsonPrompt.versions.find((v) => v.status === 'active');
 
 let c = active.content;
 
 // 精确替换所有"生成文件"相关表述
 const map = {
   '生成一个可直接下载的 .json 文件': '将 JSON 内容用 ```json 代码块输出',
-  '提供一个下载链接': '输出代码块',
-  '必须是真实的 .json 文件，可以直接下载打开': '必须是 ```json ... ``` 代码块，内容是可以被 JSON.parse() 解析的合法 JSON',
-  '不是在聊天框里输出文字': '不是在聊天框里输出纯文字描述',
+  提供一个下载链接: '输出代码块',
+  '必须是真实的 .json 文件，可以直接下载打开':
+    '必须是 ```json ... ``` 代码块，内容是可以被 JSON.parse() 解析的合法 JSON',
+  不是在聊天框里输出文字: '不是在聊天框里输出纯文字描述',
   '如果你无法生成文件，就将 JSON 内容用代码块包裹输出': '将 JSON 内容用 ```json ... ``` 代码块包裹输出',
-  '不要等我说"开始"，不要问我任何问题，不要在聊天框里用文字描述 JSON 内容，必须直接生成可下载的 .json 文件': '不要等我说"开始"，不要问我任何问题，必须直接用 ```json ... ``` 代码块输出 JSON 内容',
-  '使用你的文件生成能力（File/Artifact/Code Interpreter 等工具）创建这个文件': '将完整 JSON 内容放入 ```json ... ``` 代码块中',
-  '我现在可以开始生成了': '',
-  '我现在可以开始': '',
+  '不要等我说"开始"，不要问我任何问题，不要在聊天框里用文字描述 JSON 内容，必须直接生成可下载的 .json 文件':
+    '不要等我说"开始"，不要问我任何问题，必须直接用 ```json ... ``` 代码块输出 JSON 内容',
+  '使用你的文件生成能力（File/Artifact/Code Interpreter 等工具）创建这个文件':
+    '将完整 JSON 内容放入 ```json ... ``` 代码块中',
+  我现在可以开始生成了: '',
+  我现在可以开始: ''
 };
 
 let count = 0;

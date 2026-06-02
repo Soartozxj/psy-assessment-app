@@ -1,0 +1,82 @@
+<view class="page-detail">
+  <!-- NPC 场景背景 -->
+  <npc-scene
+    scene="full"
+    background="{{backgroundImage}}"
+    counselorImage="{{counselorImage}}"
+    counselorName="{{npcSettings.counselorName}}"
+    motto="{{npcSettings.motto}}"
+  />
+
+  <!-- 主容器：flex 三段式布局 -->
+  <view class="layout-container">
+
+    <!-- ===== 标题区（紧凑） ===== -->
+    <view class="title-zone">
+      <!-- 分类 + 量表名 -->
+      <view class="title-row">
+        <text class="title-category" wx:if="{{scale.emoji || scale.icon}}">{{scale.emoji || scale.icon}}</text>
+        <text class="title-category-name" wx:if="{{scale.categoryName}}">{{scale.categoryName}}</text>
+      </view>
+      <text class="title-name">{{scale.displayName || scale.name || scale.title}}</text>
+
+      <!-- 标签 + 统计（一行内） -->
+      <view class="title-meta">
+        <view class="meta-tags" wx:if="{{tags.length > 0}}">
+          <text class="tag-item" wx:for="{{tags}}" wx:key="index">{{item}}</text>
+        </view>
+        <view class="meta-stats">
+          <text class="meta-stat" wx:if="{{questionCount}}">{{questionCount}}题</text>
+          <text class="meta-dot" wx:if="{{questionCount && estimatedTime}}">·</text>
+          <text class="meta-stat" wx:if="{{estimatedTime}}">{{estimatedTime}}</text>
+          <text class="meta-dot" wx:if="{{estimatedTime && participantCount}}">·</text>
+          <text class="meta-stat" wx:if="{{participantCount}}">{{participantCount}}人已测</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 内容区（可滚动） ===== -->
+    <scroll-view class="content-zone" scroll-y enhanced show-scrollbar="{{false}}">
+
+      <!-- 量表说明 -->
+      <view class="content-section" wx:if="{{scale.desc || scale.description || scale.subtitle}}">
+        <view class="section-header">
+          <text class="section-label">量表说明</text>
+        </view>
+        <text class="section-body">{{scale.desc || scale.description || scale.subtitle}}</text>
+      </view>
+
+      <!-- 答题须知 -->
+      <view class="content-section" wx:if="{{notices.length > 0}}">
+        <view class="section-header">
+          <text class="section-label">答题须知</text>
+        </view>
+        <view class="notice-list">
+          <view class="notice-item" wx:for="{{notices}}" wx:key="index">
+            <text class="notice-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部留白 -->
+      <view style="height: 16rpx;"></view>
+    </scroll-view>
+
+    <!-- ===== 操作区（单行：模式切换+按钮一体） ===== -->
+    <view class="action-zone">
+      <view class="action-bar">
+        <!-- 左：模式切换器（点击循环切换） -->
+        <view class="mode-switch" bindtap="onToggleMode">
+          <text class="mode-switch-icon">{{selectedMode === 'immersive' ? '🎭' : '✏️'}}</text>
+          <text class="mode-switch-label">{{selectedMode === 'immersive' ? '沉浸模式' : '普通模式'}}</text>
+          <text class="mode-switch-arrow">▸</text>
+        </view>
+        <!-- 右：开始按钮 -->
+        <view class="start-btn" bindtap="onStartAssessment">
+          <text class="start-btn-text">开始测评</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</view>

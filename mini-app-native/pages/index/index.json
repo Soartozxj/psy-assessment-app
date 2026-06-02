@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "星蓝心镜",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "scale-card": "/components/scale-card/scale-card"
+  }
+}
