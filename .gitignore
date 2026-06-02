@@ -19,6 +19,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Husky 自动生成目录
+.husky/_
+
 # WorkBuddy 工作目录（保留 memory）
 .workbuddy/
 
@@ -31,3 +34,4 @@ test-screenshots/
 # 临时文件
 *.tmp
 *.log
+.playwright-cli/
