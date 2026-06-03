@@ -1,110 +1,284 @@
 /**
- * 性能监控器 - 插件系统专用
- * 监控插件加载、执行性能和用户交互
+ * performance-monitor.js - Skill 性能监控工具
+ *
+ * @description 监控 Skill 系统性能，包括插件加载时间、执行时间、内存占用等
+ * @version 1.0.0
+ * @date 2026-06-03
+ *
+ * 功能：
+ * 1. 监控插件加载性能
+ * 2. 监控插件执行性能
+ * 3. 监控事件委托性能
+ * 4. 生成性能报告
+ * 5. 提供性能优化建议
  */
 
-class PerformanceMonitor {
-  constructor(options = {}) {
-    this.endpoint = options.endpoint || '/api/performance-logs';
-    this.sampleRate = options.sampleRate || 1.0; // 采样率
-    this.maxQueueSize = options.maxQueueSize || 20;
+(class PerformanceMonitor {
+  constructor() {
+    this.metrics = {
+      pluginLoadTimes: new Map(), // 插件加载时间
+      pluginExecuteTimes: new Map(), // 插件执行时间
+      eventDelegateTimes: new Map(), // 事件委托处理时间
+      memoryUsage: [], // 内存占用快照
+      cacheHitRate: { hits: 0, misses: 0 } // 缓存命中率
+    };
 
-    this.metricsQueue = [];
-    this.isFlushing = false;
-    this.pluginLoadTimes = {};
+    this.enabled = true;
+    this.sampleInterval = 5000; // 5秒采样一次
+    this.maxSamples = 100; // 最多保存100个样本
 
-    this.startFlushTimer();
+    console.log('📊 性能监控工具已创建');
   }
 
   /**
-   * 初始化性能监控
+   * 开始监控
    */
-  init() {
-    // 监听页面加载性能
-    this.measurePageLoad();
+  start() {
+    if (!this.enabled) {
+      return;
+    }
 
-    // 监听插件加载性能
-    this.interceptPluginLoading();
+    console.log('📊 开始性能监控...');
+
+    // 监控内存占用
+    this._startMemoryMonitoring();
+
+    // 拦截插件加载方法
+    this._instrumentPluginLoader();
+
+    // 拦截插件执行方法
+    this._instrumentPluginExecute();
+
+    // 拦截事件委托
+    this._instrumentEventDelegate();
 
     console.log('✅ 性能监控已启动');
   }
 
   /**
-   * 测量页面加载性能
+   * 停止监控
    */
-  measurePageLoad() {
-    if (typeof PerformanceObserver !== 'undefined') {
-      // 监听 Largest Contentful Paint (LCP)
-      new PerformanceObserver((entryList) => {
-        for (const entry of entryList.getEntries()) {
-          this.captureMetric({
-            type: 'lcp',
-            value: entry.startTime,
-            timestamp: new Date().toISOString()
-          });
-        }
-      }).observe({ type: 'largest-contentful-paint' });
-
-      // 监听 First Input Delay (FID)
-      new PerformanceObserver((entryList) => {
-        for (const entry of entryList.getEntries()) {
-          this.captureMetric({
-            type: 'fid',
-            value: entry.processingStart - entry.startTime,
-            timestamp: new Date().toISOString()
-          });
-        }
-      }).observe({ type: 'first-input' });
-    }
-
-    // 监听页面加载完成
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const perfData = performance.timing;
-        this.captureMetric({
-          type: 'page-load',
-          value: perfData.loadEventEnd - perfData.navigationStart,
-          timestamp: new Date().toISOString()
-        });
-      }, 0);
-    });
+  stop() {
+    this.enabled = false;
+    console.log('📊 性能监控已停止');
   }
 
   /**
-   * 拦截插件加载，测量加载时间
+   * 生成性能报告
    */
-  interceptPluginLoading() {
-    const pluginManager = window.PluginManager || window.pluginManager;
+  generateReport() {
+    const report = {
+      timestamp: new Date().toISOString(),
+      summary: this._generateSummary(),
+      details: {
+        pluginLoadTimes: this._analyzePluginLoadTimes(),
+        pluginExecuteTimes: this._analyzePluginExecuteTimes(),
+        eventDelegateTimes: this._analyzeEventDelegateTimes(),
+        memoryUsage: this._analyzeMemoryUsage(),
+        cacheHitRate: this._calculateCacheHitRate()
+      },
+      recommendations: this._generateRecommendations()
+    };
 
-    if (pluginManager && typeof pluginManager.loadPlugin === 'function') {
-      const originalLoadPlugin = pluginManager.loadPlugin.bind(pluginManager);
+    console.log('📊 性能报告:', report);
+    return report;
+  }
 
-      pluginManager.loadPlugin = async (pluginName) => {
+  /**
+   * 监控内存占用
+   */
+  _startMemoryMonitoring() {
+    if (!performance.memory) {
+      console.warn('⚠️ 浏览器不支持 performance.memory');
+      return;
+    }
+
+    setInterval(() => {
+      if (!this.enabled) {
+        return;
+      }
+
+      const memory = {
+        timestamp: Date.now(),
+        usedJSHeapSize: performance.memory.usedJSHeapSize,
+        totalJSHeapSize: performance.memory.totalJSHeapSize,
+        jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
+      };
+
+      this.metrics.memoryUsage.push(memory);
+
+      // 限制样本数量
+      if (this.metrics.memoryUsage.length > this.maxSamples) {
+        this.metrics.memoryUsage.shift();
+      }
+    }, this.sampleInterval);
+  }
+
+  /**
+   * 拦截插件加载方法
+   */
+  _instrumentPluginLoader() {
+    if (!window.PluginLoader) {
+      return;
+    }
+
+    const originalLoad = window.PluginLoader.load;
+    const self = this;
+
+    window.PluginLoader.load = async function (pluginPath, ...args) {
+      const startTime = performance.now();
+      try {
+        const result = await originalLoad.call(this, pluginPath, ...args);
+        const endTime = performance.now();
+        const loadTime = endTime - startTime;
+
+        self.metrics.pluginLoadTimes.set(pluginPath, {
+          time: loadTime,
+          timestamp: Date.now(),
+          success: true
+        });
+
+        console.log(`📊 插件加载: ${pluginPath} (${loadTime.toFixed(2)}ms)`);
+        return result;
+      } catch (error) {
+        const endTime = performance.now();
+        const loadTime = endTime - startTime;
+
+        self.metrics.pluginLoadTimes.set(pluginPath, {
+          time: loadTime,
+          timestamp: Date.now(),
+          success: false,
+          error: error.message
+        });
+
+        throw error;
+      }
+    };
+  }
+
+  /**
+   * 拦截插件执行方法
+   */
+  _instrumentPluginExecute() {
+    const originalInit = SkillPluginBase.prototype.init;
+    const originalExecute = SkillPluginBase.prototype.execute;
+    const self = this;
+
+    SkillPluginBase.prototype.init = async function (...args) {
+      const startTime = performance.now();
+      try {
+        const result = await originalInit.call(this, ...args);
+        const endTime = performance.now();
+        const executeTime = endTime - startTime;
+
+        if (!self.metrics.pluginExecuteTimes.has(this.name)) {
+          self.metrics.pluginExecuteTimes.set(this.name, []);
+        }
+
+        self.metrics.pluginExecuteTimes.get(this.name).push({
+          operation: 'init',
+          time: executeTime,
+          timestamp: Date.now()
+        });
+
+        console.log(`📊 插件初始化: ${this.name} (${executeTime.toFixed(2)}ms)`);
+        return result;
+      } catch (error) {
+        const endTime = performance.now();
+        const executeTime = endTime - startTime;
+
+        if (!self.metrics.pluginExecuteTimes.has(this.name)) {
+          self.metrics.pluginExecuteTimes.set(this.name, []);
+        }
+
+        self.metrics.pluginExecuteTimes.get(this.name).push({
+          operation: 'init',
+          time: executeTime,
+          timestamp: Date.now(),
+          error: error.message
+        });
+
+        throw error;
+      }
+    };
+
+    SkillPluginBase.prototype.execute = async function (...args) {
+      const startTime = performance.now();
+      try {
+        const result = await originalExecute.call(this, ...args);
+        const endTime = performance.now();
+        const executeTime = endTime - startTime;
+
+        if (!self.metrics.pluginExecuteTimes.has(this.name)) {
+          self.metrics.pluginExecuteTimes.set(this.name, []);
+        }
+
+        self.metrics.pluginExecuteTimes.get(this.name).push({
+          operation: 'execute',
+          time: executeTime,
+          timestamp: Date.now()
+        });
+
+        console.log(`📊 插件执行: ${this.name} (${executeTime.toFixed(2)}ms)`);
+        return result;
+      } catch (error) {
+        const endTime = performance.now();
+        const executeTime = endTime - startTime;
+
+        if (!self.metrics.pluginExecuteTimes.has(this.name)) {
+          self.metrics.pluginExecuteTimes.set(this.name, []);
+        }
+
+        self.metrics.pluginExecuteTimes.get(this.name).push({
+          operation: 'execute',
+          time: executeTime,
+          timestamp: Date.now(),
+          error: error.message
+        });
+
+        throw error;
+      }
+    };
+  }
+
+  /**
+   * 拦截事件委托
+   */
+  _instrumentEventDelegate() {
+    if (!window.EventDelegate) {
+      return;
+    }
+
+    const originalHandleClick = window.EventDelegate._handleClick;
+    const self = this;
+
+    if (originalHandleClick) {
+      window.EventDelegate._handleClick = function (event) {
         const startTime = performance.now();
-
         try {
-          const plugin = await originalLoadPlugin(pluginName);
-          const loadTime = performance.now() - startTime;
+          const result = originalHandleClick.call(this, event);
+          const endTime = performance.now();
+          const handleTime = endTime - startTime;
 
-          this.captureMetric({
-            type: 'plugin-load',
-            pluginName,
-            value: loadTime,
-            timestamp: new Date().toISOString()
-          });
+          const action = event.target.getAttribute('data-action');
+          if (action) {
+            if (!self.metrics.eventDelegateTimes.has(action)) {
+              self.metrics.eventDelegateTimes.set(action, []);
+            }
 
-          return plugin;
+            self.metrics.eventDelegateTimes.get(action).push({
+              time: handleTime,
+              timestamp: Date.now()
+            });
+          }
+
+          console.log(`📊 事件处理: ${action} (${handleTime.toFixed(2)}ms)`);
+          return result;
         } catch (error) {
-          const loadTime = performance.now() - startTime;
+          const endTime = performance.now();
+          const handleTime = endTime - startTime;
 
-          this.captureMetric({
-            type: 'plugin-load-error',
-            pluginName,
-            value: loadTime,
-            error: error.message,
-            timestamp: new Date().toISOString()
-          });
-
+          console.error(`❌ 事件处理失败: ${action} (${handleTime.toFixed(2)}ms)`, error);
           throw error;
         }
       };
@@ -112,140 +286,228 @@ class PerformanceMonitor {
   }
 
   /**
-   * 捕获性能指标
-   * @param {object} metric - 性能指标
+   * 生成性能摘要
    */
-  captureMetric(metric) {
-    // 采样
-    if (Math.random() > this.sampleRate) {
-      return;
-    }
-
-    this.metricsQueue.push(metric);
-
-    if (this.metricsQueue.length >= this.maxQueueSize) {
-      this.flush();
-    }
-  }
-
-  /**
-   * 测量插件执行时间
-   * @param {string} pluginName - 插件名称
-   * @param {string} action - 执行的动作
-   * @param {function} fn - 要执行的函数
-   */
-  async measureExecution(pluginName, action, fn) {
-    const startTime = performance.now();
-
-    try {
-      const result = await fn();
-      const executionTime = performance.now() - startTime;
-
-      this.captureMetric({
-        type: 'plugin-execution',
-        pluginName,
-        action,
-        value: executionTime,
-        timestamp: new Date().toISOString()
-      });
-
-      return result;
-    } catch (error) {
-      const executionTime = performance.now() - startTime;
-
-      this.captureMetric({
-        type: 'plugin-execution-error',
-        pluginName,
-        action,
-        value: executionTime,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-
-      throw error;
-    }
-  }
-
-  /**
-   * 上报性能指标队列
-   */
-  async flush() {
-    if (this.isFlushing || this.metricsQueue.length === 0) {
-      return;
-    }
-
-    this.isFlushing = true;
-    const metrics = [...this.metricsQueue];
-    this.metricsQueue = [];
-
-    try {
-      if (typeof fetch !== 'undefined') {
-        await fetch(this.endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ metrics })
-        }).catch(() => {
-          this.metricsQueue.unshift(...metrics);
-        });
-      } else {
-        // 开发环境，输出到控制台
-        console.group('⚡ 性能监控 - 捕获到', metrics.length, '个指标');
-        metrics.forEach((metric, i) => {
-          console.log(`[${i + 1}] ${metric.type}: ${metric.value}ms`);
-        });
-        console.groupEnd();
-      }
-    } catch (error) {
-      this.metricsQueue.unshift(...metrics);
-    } finally {
-      this.isFlushing = false;
-    }
-  }
-
-  /**
-   * 启动定时刷新
-   */
-  startFlushTimer() {
-    setInterval(() => {
-      this.flush();
-    }, 10000); // 每 10 秒刷新一次
-  }
-
-  /**
-   * 获取性能报告
-   */
-  getReport() {
-    const metrics = this.metricsQueue;
-
-    const report = {
-      totalMetrics: metrics.length,
-      byType: {},
-      averageByType: {}
+  _generateSummary() {
+    const summary = {
+      totalPluginsLoaded: this.metrics.pluginLoadTimes.size,
+      totalPluginsExecuted: this.metrics.pluginExecuteTimes.size,
+      totalEventsHandled: this.metrics.eventDelegateTimes.size,
+      averageLoadTime: this._calculateAverageLoadTime(),
+      averageExecuteTime: this._calculateAverageExecuteTime(),
+      averageEventHandleTime: this._calculateAverageEventHandleTime()
     };
 
-    metrics.forEach((metric) => {
-      if (!report.byType[metric.type]) {
-        report.byType[metric.type] = [];
-      }
-      report.byType[metric.type].push(metric.value);
-    });
-
-    Object.keys(report.byType).forEach((type) => {
-      const values = report.byType[type];
-      report.averageByType[type] = values.reduce((a, b) => a + b, 0) / values.length;
-    });
-
-    return report;
+    return summary;
   }
-}
+
+  /**
+   * 分析插件加载时间
+   */
+  _analyzePluginLoadTimes() {
+    const analysis = {};
+
+    this.metrics.pluginLoadTimes.forEach((data, pluginPath) => {
+      analysis[pluginPath] = {
+        loadTime: data.time,
+        timestamp: data.timestamp,
+        success: data.success,
+        error: data.error || null
+      };
+    });
+
+    return analysis;
+  }
+
+  /**
+   * 分析插件执行时间
+   */
+  _analyzePluginExecuteTimes() {
+    const analysis = {};
+
+    this.metrics.pluginExecuteTimes.forEach((dataArray, pluginName) => {
+      const times = dataArray.map((d) => d.time);
+      analysis[pluginName] = {
+        count: dataArray.length,
+        averageTime: times.reduce((a, b) => a + b, 0) / times.length,
+        minTime: Math.min(...times),
+        maxTime: Math.max(...times),
+        recentExecutions: dataArray.slice(-5) // 最近5次执行
+      };
+    });
+
+    return analysis;
+  }
+
+  /**
+   * 分析事件委托时间
+   */
+  _analyzeEventDelegateTimes() {
+    const analysis = {};
+
+    this.metrics.eventDelegateTimes.forEach((dataArray, action) => {
+      const times = dataArray.map((d) => d.time);
+      analysis[action] = {
+        count: dataArray.length,
+        averageTime: times.reduce((a, b) => a + b, 0) / times.length,
+        minTime: Math.min(...times),
+        maxTime: Math.max(...times)
+      };
+    });
+
+    return analysis;
+  }
+
+  /**
+   * 分析内存占用
+   */
+  _analyzeMemoryUsage() {
+    if (this.metrics.memoryUsage.length === 0) {
+      return { error: '没有内存数据' };
+    }
+
+    const latest = this.metrics.memoryUsage[this.metrics.memoryUsage.length - 1];
+    const oldest = this.metrics.memoryUsage[0];
+
+    return {
+      current: {
+        usedMB: (latest.usedJSHeapSize / 1024 / 1024).toFixed(2),
+        totalMB: (latest.totalJSHeapSize / 1024 / 1024).toFixed(2),
+        limitMB: (latest.jsHeapSizeLimit / 1024 / 1024).toFixed(2)
+      },
+      trend: {
+        usedDiffMB: ((latest.usedJSHeapSize - oldest.usedJSHeapSize) / 1024 / 1024).toFixed(2),
+        percentDiff: (((latest.usedJSHeapSize - oldest.usedJSHeapSize) / oldest.usedJSHeapSize) * 100).toFixed(2)
+      },
+      samples: this.metrics.memoryUsage.length
+    };
+  }
+
+  /**
+   * 计算缓存命中率
+   */
+  _calculateCacheHitRate() {
+    const total = this.metrics.cacheHitRate.hits + this.metrics.cacheHitRate.misses;
+    if (total === 0) {
+      return { rate: 0, hits: 0, misses: 0 };
+    }
+
+    return {
+      rate: ((this.metrics.cacheHitRate.hits / total) * 100).toFixed(2) + '%',
+      hits: this.metrics.cacheHitRate.hits,
+      misses: this.metrics.cacheHitRate.misses
+    };
+  }
+
+  /**
+   * 生成优化建议
+   */
+  _generateRecommendations() {
+    const recommendations = [];
+
+    // 检查插件加载时间
+    const avgLoadTime = this._calculateAverageLoadTime();
+    if (avgLoadTime > 1000) {
+      recommendations.push({
+        type: 'performance',
+        priority: 'high',
+        message: `插件平均加载时间 ${avgLoadTime.toFixed(2)}ms 过长，建议启用懒加载或预加载`
+      });
+    }
+
+    // 检查插件执行时间
+    const avgExecuteTime = this._calculateAverageExecuteTime();
+    if (avgExecuteTime > 500) {
+      recommendations.push({
+        type: 'performance',
+        priority: 'medium',
+        message: `插件平均执行时间 ${avgExecuteTime.toFixed(2)}ms 过长，建议优化插件逻辑`
+      });
+    }
+
+    // 检查事件处理时间
+    const avgEventTime = this._calculateAverageEventHandleTime();
+    if (avgEventTime > 100) {
+      recommendations.push({
+        type: 'performance',
+        priority: 'medium',
+        message: `事件平均处理时间 ${avgEventTime.toFixed(2)}ms 过长，建议优化事件处理器`
+      });
+    }
+
+    // 检查内存占用
+    if (this.metrics.memoryUsage.length > 0) {
+      const latest = this.metrics.memoryUsage[this.metrics.memoryUsage.length - 1];
+      const memoryUsagePercent = (latest.usedJSHeapSize / latest.jsHeapSizeLimit) * 100;
+
+      if (memoryUsagePercent > 80) {
+        recommendations.push({
+          type: 'memory',
+          priority: 'high',
+          message: `内存占用 ${memoryUsagePercent.toFixed(2)}% 过高，建议检查内存泄漏`
+        });
+      }
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * 计算平均加载时间
+   */
+  _calculateAverageLoadTime() {
+    const times = Array.from(this.metrics.pluginLoadTimes.values()).map((d) => d.time);
+    if (times.length === 0) {
+      return 0;
+    }
+    return times.reduce((a, b) => a + b, 0) / times.length;
+  }
+
+  /**
+   * 计算平均执行时间
+   */
+  _calculateAverageExecuteTime() {
+    let totalTime = 0;
+    let totalCount = 0;
+
+    this.metrics.pluginExecuteTimes.forEach((dataArray) => {
+      dataArray.forEach((d) => {
+        totalTime += d.time;
+        totalCount++;
+      });
+    });
+
+    if (totalCount === 0) {
+      return 0;
+    }
+    return totalTime / totalCount;
+  }
+
+  /**
+   * 计算平均事件处理时间
+   */
+  _calculateAverageEventHandleTime() {
+    let totalTime = 0;
+    let totalCount = 0;
+
+    this.metrics.eventDelegateTimes.forEach((dataArray) => {
+      dataArray.forEach((d) => {
+        totalTime += d.time;
+        totalCount++;
+      });
+    });
+
+    if (totalCount === 0) {
+      return 0;
+    }
+    return totalTime / totalCount;
+  }
+});
 
 // 导出到全局
 window.PerformanceMonitor = PerformanceMonitor;
 
-// 自动初始化（如果在浏览器环境）
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    window.performanceMonitor = new PerformanceMonitor();
-    window.performanceMonitor.init();
-  });
-}
+// 自动创建实例
+window.performanceMonitor = new PerformanceMonitor();
+
+console.log('📊 PerformanceMonitor 已加载');

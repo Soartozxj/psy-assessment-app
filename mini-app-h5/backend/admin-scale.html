@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>量表管理 - 星蓝心镜</title>
+    <style>
+      :root {
+        --bg: #faf9f7;
+        --card: #fff;
+        --text: #2c2c2a;
+        --text-sec: #5f5e5a;
+        --text-muted: #888780;
+        --border: #d3d1c7;
+        --primary: #534ab7;
+        --primary-light: #eeedfe;
+        --success: #0f6e56;
+        --success-light: #e1f5ee;
+        --warning: #f59e0b;
+        --warning-light: #fef3c7;
+        --danger: #993556;
+        --danger-light: #fbeaf0;
+        --radius: 12px;
+        --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* 工具栏 */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--card);
+        border-bottom: 0.5px solid var(--border);
+      }
+      .toolbar .back {
+        font-size: 12px;
+        color: var(--primary);
+        cursor: pointer;
+      }
+      .toolbar .title {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+      .btn {
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 0.5px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .btn:hover {
+        background: var(--bg);
+      }
+      .btn-pri {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .btn-pri:hover {
+        opacity: 0.9;
+      }
+      .btn-danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: var(--danger-light);
+      }
+
+      /* 搜索栏 */
+      .search-bar {
+        padding: 15px 20px;
+        background: var(--card);
+        border-bottom: 0.5px solid var(--border);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+      }
+      .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .filter-select {
+        padding: 8px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+      }
+
+      /* 量表列表 */
+      .scale-list {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+      }
+      .scale-card {
+        background: var(--card);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .scale-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+      .scale-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .scale-icon {
+        font-size: 24px;
+      }
+      .scale-name {
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
+      }
+      .scale-status {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .scale-status.active {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .scale-status.inactive {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
+      .scale-description {
+        font-size: 12px;
+        color: var(--text-sec);
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+      .scale-meta {
+        display: flex;
+        gap: 10px;
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+      .scale-actions {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 0.5px solid var(--border);
+      }
+
+      /* 空状态 */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+      .empty-state .icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+      .empty-state .title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .empty-state .desc {
+        font-size: 12px;
+      }
+
+      /* 加载状态 */
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+      .spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 弹窗 */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+      .modal-title {
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .modal-close {
+        cursor: pointer;
+        font-size: 18px;
+        color: var(--text-muted);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-sec);
+        margin-bottom: 5px;
+      }
+      .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .form-textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+        resize: vertical;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <span class="back" onclick="location.href = 'admin-legacy.html'">← 返回</span>
+      <span class="title">📋 量表管理</span>
+      <span class="spacer"></span>
+      <button class="btn btn-pri" data-action="scale-create">+ 新增量表</button>
+      <button class="btn" onclick="loadScales()">🔄 刷新</button>
+      <button class="btn" data-action="export-scales">📤 导出</button>
+      <button class="btn" data-action="import-scale">📥 导入</button>
+    </div>
+
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="搜索量表名称或代码..." oninput="filterScales(this.value)" />
+      <select class="filter-select" onchange="filterByCategory(this.value)">
+        <option value="">所有分类</option>
+        <option value="depression">抑郁</option>
+        <option value="anxiety">焦虑</option>
+        <option value="stress">压力</option>
+        <option value="personality">人格</option>
+        <option value="other">其他</option>
+      </select>
+      <select class="filter-select" onchange="filterByStatus(this.value)">
+        <option value="">所有状态</option>
+        <option value="1">已上架</option>
+        <option value="0">已下架</option>
+      </select>
+    </div>
+
+    <!-- 量表列表 -->
+    <div class="scale-list" id="scale-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div style="margin-top: 15px">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="edit-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title" id="modal-title">编辑量表</span>
+          <span class="modal-close" onclick="closeModal()">×</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">量表名称</label>
+            <input type="text" class="form-input" id="scale-name" placeholder="输入量表名称" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">量表代码</label>
+            <input type="text" class="form-input" id="scale-code" placeholder="输入量表代码" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">量表描述</label>
+            <textarea class="form-textarea" id="scale-desc" placeholder="输入量表描述"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">分类</label>
+            <select class="form-input" id="scale-category">
+              <option value="depression">抑郁</option>
+              <option value="anxiety">焦虑</option>
+              <option value="stress">压力</option>
+              <option value="personality">人格</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">状态</label>
+            <select class="form-input" id="scale-status">
+              <option value="1">已上架</option>
+              <option value="0">已下架</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px">
+          <button class="btn" onclick="closeModal()">取消</button>
+          <button class="btn btn-pri" onclick="saveScale()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let allScales = [];
+      let currentScaleId = null;
+
+      // 加载量表列表
+      async function loadScales() {
+        const listEl = document.getElementById('scale-list');
+        listEl.innerHTML =
+          '<div class="loading"><div class="spinner"></div><div style="margin-top:15px">加载中...</div></div>';
+
+        try {
+          // 使用 scale-plugin.js 提供的全局函数
+          if (typeof loadScales === 'function') {
+            allScales = window.loadScales();
+          } else {
+            // 降级：直接从 localStorage 加载
+            const data = localStorage.getItem('psy_scales');
+            allScales = data ? JSON.parse(data) : [];
+          }
+
+          renderScales(allScales);
+        } catch (err) {
+          listEl.innerHTML =
+            '<div class="empty-state"><div class="icon">⚠️</div><div class="title">加载失败</div><div class="desc">' +
+            err.message +
+            '</div></div>';
+        }
+      }
+
+      // 渲染量表列表
+      function renderScales(scales) {
+        const listEl = document.getElementById('scale-list');
+
+        if (scales.length === 0) {
+          listEl.innerHTML =
+            '<div class="empty-state"><div class="icon">📭</div><div class="title">暂无量表</div><div class="desc">点击右上角 "+ 新增量表" 创建第一个</div></div>';
+          return;
+        }
+
+        listEl.innerHTML = scales
+          .map(
+            (scale) => `
+        <div class="scale-card" onclick="editScale('${scale.id}')">
+          <div class="scale-header">
+            <span class="scale-icon">${scale.emoji || '📋'}</span>
+            <span class="scale-name">${scale.name}</span>
+            <span class="scale-status ${scale.status === 1 ? 'active' : 'inactive'}">
+              ${scale.status === 1 ? '已上架' : '已下架'}
+            </span>
+          </div>
+          <div class="scale-description">${scale.desc || '暂无描述'}</div>
+          <div class="scale-meta">
+            <span>📋 ${scale.category || 'other'}</span>
+            <span>📏 ${scale.questionCount || 0} 题</span>
+            <span>⭐ ${scale.rating || 5.0}</span>
+          </div>
+          <div class="scale-actions">
+            <button class="btn" data-action="scale-edit" data-id="${scale.id}" onclick="event.stopPropagation()">✏️ 编辑</button>
+            <button class="btn" data-action="scale-toggle" data-id="${scale.id}" onclick="event.stopPropagation()">
+              ${scale.status === 1 ? '📴 下架' : '📶 上架'}
+            </button>
+            <button class="btn btn-danger" data-action="scale-delete" data-id="${scale.id}" onclick="event.stopPropagation()">🗑 删除</button>
+          </div>
+        </div>
+      `
+          )
+          .join('');
+      }
+
+      // 筛选量表
+      function filterScales(keyword) {
+        const filtered = allScales.filter(
+          (scale) =>
+            (scale.name && scale.name.includes(keyword)) ||
+            (scale.code && scale.code.includes(keyword)) ||
+            (scale.desc && scale.desc.includes(keyword))
+        );
+        renderScales(filtered);
+      }
+
+      // 按分类筛选
+      function filterByCategory(category) {
+        const filtered = category ? allScales.filter((scale) => scale.category === category) : allScales;
+        renderScales(filtered);
+      }
+
+      // 按状态筛选
+      function filterByStatus(status) {
+        const filtered = status !== '' ? allScales.filter((scale) => String(scale.status) === status) : allScales;
+        renderScales(filtered);
+      }
+
+      // 新增量表
+      function createScale() {
+        currentScaleId = null;
+        document.getElementById('modal-title').textContent = '新增量表';
+        document.getElementById('scale-name').value = '';
+        document.getElementById('scale-code').value = '';
+        document.getElementById('scale-desc').value = '';
+        document.getElementById('scale-category').value = 'other';
+        document.getElementById('scale-status').value = '1';
+        document.getElementById('edit-modal').style.display = 'flex';
+      }
+
+      // 编辑量表
+      function editScale(id) {
+        const scale = allScales.find((s) => s.id === id);
+        if (!scale) return;
+
+        currentScaleId = id;
+        document.getElementById('modal-title').textContent = '编辑量表';
+        document.getElementById('scale-name').value = scale.name || '';
+        document.getElementById('scale-code').value = scale.code || '';
+        document.getElementById('scale-desc').value = scale.desc || '';
+        document.getElementById('scale-category').value = scale.category || 'other';
+        document.getElementById('scale-status').value = String(scale.status || 1);
+        document.getElementById('edit-modal').style.display = 'flex';
+      }
+
+      // 关闭弹窗
+      function closeModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+      }
+
+      // 保存量表
+      function saveScale() {
+        const name = document.getElementById('scale-name').value;
+        const code = document.getElementById('scale-code').value;
+        const desc = document.getElementById('scale-desc').value;
+        const category = document.getElementById('scale-category').value;
+        const status = parseInt(document.getElementById('scale-status').value);
+
+        if (!name || !code) {
+          showToast('请填写名称和代码', 'warning');
+          return;
+        }
+
+        const scale = {
+          id: currentScaleId || Date.now(),
+          name,
+          code,
+          desc,
+          category,
+          status,
+          emoji: '📋',
+          questionCount: 0,
+          rating: 5.0,
+          completedCount: 0
+        };
+
+        try {
+          if (typeof saveScales === 'function') {
+            const scales = currentScaleId
+              ? allScales.map((s) => (s.id === currentScaleId ? scale : s))
+              : [...allScales, scale];
+            window.saveScales(scales);
+            allScales = scales;
+          } else {
+            // 降级：直接保存到 localStorage
+            const scales = currentScaleId
+              ? allScales.map((s) => (s.id === currentScaleId ? scale : s))
+              : [...allScales, scale];
+            localStorage.setItem('psy_scales', JSON.stringify(scales));
+            allScales = scales;
+          }
+
+          closeModal();
+          renderScales(allScales);
+          showToast('✅ 量表已保存', 'success');
+        } catch (err) {
+          showToast('保存失败: ' + err.message, 'warning');
+        }
+      }
+
+      // 切换量表状态
+      function toggleScaleStatus(id) {
+        const scale = allScales.find((s) => s.id === id);
+        if (!scale) return;
+
+        scale.status = scale.status === 1 ? 0 : 1;
+
+        try {
+          if (typeof saveScales === 'function') {
+            window.saveScales(allScales);
+          } else {
+            localStorage.setItem('psy_scales', JSON.stringify(allScales));
+          }
+
+          renderScales(allScales);
+          showToast(`✅ 量表已${scale.status === 1 ? '上架' : '下架'}`, 'success');
+        } catch (err) {
+          showToast('操作失败: ' + err.message, 'warning');
+        }
+      }
+
+      // 删除量表
+      function deleteScale(id) {
+        if (!confirm('确定要删除这个量表吗？')) return;
+
+        try {
+          if (typeof deleteScale === 'function') {
+            window.deleteScale(id);
+            allScales = allScales.filter((s) => s.id !== id);
+          } else {
+            allScales = allScales.filter((s) => s.id !== id);
+            localStorage.setItem('psy_scales', JSON.stringify(allScales));
+          }
+
+          renderScales(allScales);
+          showToast('✅ 量表已删除', 'success');
+        } catch (err) {
+          showToast('删除失败: ' + err.message, 'warning');
+        }
+      }
+
+      // 显示 Toast
+      function showToast(msg, type = 'info') {
+        const el = document.createElement('div');
+        el.className = 'toast ' + type;
+        el.textContent = msg;
+        el.style.cssText =
+          'position:fixed;top:20px;right:20px;padding:12px 20px;background:' +
+          (type === 'success' ? '#0f6e56' : '#f59e0b') +
+          ';color:#fff;border-radius:8px;z-index:9999;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+        document.body.appendChild(el);
+        setTimeout(() => {
+          if (el.parentNode) el.remove();
+        }, 2500);
+      }
+
+      // 页面加载时执行
+      window.addEventListener('DOMContentLoaded', () => {
+        // 加载 scale-plugin.js
+        const script = document.createElement('script');
+        script.src = 'plugins/core/scale-plugin.js?v=' + Date.now();
+        script.onload = () => {
+          console.log('✅ scale-plugin.js 加载完成');
+          loadScales();
+        };
+        script.onerror = () => {
+          console.warn('⚠️ scale-plugin.js 加载失败，使用降级模式');
+          loadScales();
+        };
+        document.head.appendChild(script);
+      });
+    </script>
+  </body>
+</html>

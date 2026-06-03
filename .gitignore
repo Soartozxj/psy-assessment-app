@@ -36,9 +36,6 @@ test-screenshots/
 *.log
 .playwright-cli/
 
-# CodeBuddy 工作目录
-.codebuddy/
-
 # 备份目录
 rules_backup/
 

@@ -23,6 +23,7 @@ import json
 import os
 import glob
 import re
+from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPTS_DIR = os.path.join(SCRIPT_DIR, 'prompts')
@@ -104,31 +105,57 @@ def _parse_yaml_list(lines):
 
 def parse_markdown_body(text):
     """Parse markdown body to extract versioned content sections.
-    Format: ## ✅ v{VERSION} — {note}\\n\\n{content}\\n\\n---
+    Format: ## ✅ v{VERSION} — {note}\n\n{content}\n\n---
     """
     versions = []
-    # Split by version headers
-    sections = re.split(r'\n##\s+(✅|📦)\s+v([\d.]+)(?:\s*[—–-]\s*(.*?))?\n', text)
-    # sections: [before_first_header, status1, version1, note1, content1, status2, version2, note2, content2, ...]
     
-    i = 1  # skip text before first header
-    while i + 1 < len(sections):
-        status = sections[i].strip()
-        version = sections[i + 1].strip()
-        note = sections[i + 2].strip() if i + 2 < len(sections) and not sections[i + 2].startswith('\n') else ''
-        content = sections[i + 3].strip() if i + 3 < len(sections) else ''
-        
-        # Remove trailing --- if present
-        if content.endswith('\n---'):
-            content = content[:-4]
-        
-        versions.append({
-            'version': version,
-            'status': 'active' if '✅' in status else 'old',
-            'note': note,
-            'content': content
-        })
-        i += 4
+    # 修复：支持多种格式
+    # 格式1: ## ✅ v4.4 — note
+    # 格式2: ## v4.4 — note (无状态图标)
+    # 格式3: 整个 body 就是一个版本（无版本标题）
+    
+    # 先尝试匹配版本标题
+    pattern = r'\n##\s*(?:[✅📦]\s*)?v([\d.]+)\s*[—–-]\s*(.*?)\n'
+    matches = list(re.finditer(pattern, text))
+    
+    if matches:
+        # 有多个版本标题
+        for idx, match in enumerate(matches):
+            version = match.group(1).strip()
+            note = match.group(2).strip() if match.group(2) else ''
+            
+            # 提取内容：从当前匹配结束到下一个匹配开始（或文件结束）
+            start_pos = match.end()
+            if idx + 1 < len(matches):
+                end_pos = matches[idx + 1].start()
+            else:
+                end_pos = len(text)
+            
+            content = text[start_pos:end_pos].strip()
+            
+            # 移除末尾的 --- 分隔符
+            if content.endswith('\n---'):
+                content = content[:-4].strip()
+            
+            # 判断状态：检查标题中是否有 ✅ 或 📦
+            status = 'active' if '✅' in match.group(0) else 'old'
+            
+            versions.append({
+                'version': version,
+                'status': status,
+                'note': note,
+                'content': content
+            })
+    else:
+        # 没有找到版本标题，整个 body 作为一个版本
+        content = text.strip()
+        if content:
+            versions.append({
+                'version': '1.0',
+                'status': 'active',
+                'note': '',
+                'content': content
+            })
     
     return versions
 
@@ -144,14 +171,11 @@ def load_prompt_md(fpath):
         raise ValueError(f"No frontmatter found in {fpath}")
     
     metadata = parse_frontmatter(fm_match.group(1))
-    body = text[fm_match.end():]  # 保留前导 \n，否则直接以 ## 开头的版本标题匹配不到 regex
+    body = text[fm_match.end():].strip()  # 去除前导和尾随空白
     
     # Parse versioned content from body
-    versions = parse_markdown_body(body)
+    body_versions = parse_markdown_body(body)
     
-    # Merge: use metadata for versions list (order, date, etc.), body for content
-    # metadata.versions has the version metadata (version, status, note, date)
-    # body.versions has the content text
     result = {
         'id': metadata.get('id', ''),
         'name': metadata.get('name', ''),
@@ -169,8 +193,18 @@ def load_prompt_md(fpath):
     else:
         result['flowSteps'] = flow_steps_raw
     
-    # Build versions list from metadata versions + body content
+    # Build versions list
     meta_versions = metadata.get('versions', [])
+    
+    # 修复：如果 meta_versions 为空，从 metadata['version'] 创建默认版本
+    if not meta_versions and 'version' in metadata:
+        meta_versions = [{
+            'version': metadata['version'].strip("'").strip('"'),  # 去除引号
+            'status': 'active',
+            'note': metadata.get('versionNote', ''),
+            'date': datetime.now().strftime('%Y-%m-%d')
+        }]
+    
     result_versions = []
     
     for mv in meta_versions:
@@ -182,16 +216,22 @@ def load_prompt_md(fpath):
         if 'date' in mv:
             v_data['date'] = mv['date']
         
-        # Find matching content from body
-        for bv in versions:
+        # Find matching content from body_versions
+        content_found = False
+        for bv in body_versions:
             if bv['version'] == v_data['version']:
                 v_data['content'] = bv['content']
+                content_found = True
                 break
+        
+        # 修复：如果 body_versions 为空（整个 body 就是一个版本的内容），直接使用 body
+        if not content_found and body:
+            v_data['content'] = body
         
         result_versions.append(v_data)
     
     result['versions'] = result_versions
-    result['currentVersion'] = metadata.get('currentVersion', '')
+    result['currentVersion'] = metadata.get('currentVersion', result_versions[0]['version'] if result_versions else '')
     
     return result
 

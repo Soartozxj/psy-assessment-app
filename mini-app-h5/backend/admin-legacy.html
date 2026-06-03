@@ -69,6 +69,8 @@
     <script src="dual-adapter.js?v=202606010950"></script>
     <script src="event-hub.js?v=1"></script>
     <script src="plugin-loader.js?v=202606010950"></script>
+    <!-- ✅ 新增：Skill 注册表（用于系统提示词 Skill 架构迁移） -->
+    <script src="skill-registry.js?v=1"></script>
 
     <!-- Chart.js CDN - 用于数据看板图表渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -23941,6 +23943,44 @@
         let spCurrentType = 'scoring';
         let spSelectedIcon = '🎯';
 
+        // 新增：从 SkillRegistry 加载提示词
+        function loadSkillPrompts() {
+          if (!window.skillRegistry) return null;
+          try {
+            var prompts = [];
+            var allMeta = window.skillRegistry.getAllMetadata();
+            allMeta.forEach(function (meta) {
+              // 只加载系统提示词类型的 Skill
+              if (meta.metadata && meta.metadata.type === 'system-prompt') {
+                var skill = window.skillRegistry.get(meta.name);
+                if (skill && skill.body) {
+                  prompts.push({
+                    id: meta.name,
+                    name: meta.description || meta.name,
+                    icon: (meta.metadata && meta.metadata.icon) || '📝',
+                    note: (meta.metadata && meta.metadata.note) || '',
+                    flowSteps: (meta.metadata && meta.metadata.flowSteps) || [],
+                    versions: [
+                      {
+                        version: meta.version || '1.0',
+                        status: 'active',
+                        content: skill.body,
+                        date: new Date().toISOString().split('T')[0],
+                        note: (meta.metadata && meta.metadata.note) || ''
+                      }
+                    ],
+                    currentVersion: meta.version || '1.0'
+                  });
+                }
+              }
+            });
+            return prompts.length > 0 ? prompts : null;
+          } catch (e) {
+            console.warn('[SP] 从 SkillRegistry 加载失败:', e.message);
+            return null;
+          }
+        }
+
         function loadData() {
           // 辅助函数：确保每个提示词有 currentVersion 字段，并过滤无效版本
           function normalizeData(data) {
@@ -24040,12 +24080,19 @@
               saveData();
             } else {
               // 首次使用，完全没有 localStorage 数据
-              if (!DEFAULT_PROMPTS || DEFAULT_PROMPTS.length === 0) {
+              // 新增：优先从 SkillRegistry 加载
+              var skillPrompts = loadSkillPrompts();
+              if (skillPrompts) {
+                spData = skillPrompts;
+                normalizeData(spData);
+                console.log('[SP] 从 SkillRegistry 加载了 ' + spData.length + ' 个提示词');
+              } else if (!DEFAULT_PROMPTS || DEFAULT_PROMPTS.length === 0) {
                 console.error('[SystemPrompts] DEFAULT_PROMPTS 为空');
                 throw new Error('DEFAULT_PROMPTS is empty');
+              } else {
+                spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS));
+                normalizeData(spData);
               }
-              spData = JSON.parse(JSON.stringify(DEFAULT_PROMPTS));
-              normalizeData(spData);
               localStorage.setItem(SP_VERSION_KEY, String(SP_DATA_VERSION));
               saveData();
             }
@@ -24149,6 +24196,36 @@
         function renderReadingArea() {
           try {
             var pt = getPt(spCurrentType);
+            // 新增：内容为空时从 Skill 系统动态获取
+            if (
+              !pt ||
+              !pt.versions ||
+              pt.versions.length === 0 ||
+              (pt.versions.length > 0 && !pt.versions[pt.versions.length - 1].content)
+            ) {
+              if (window.skillRegistry) {
+                try {
+                  var skill = window.skillRegistry.get(pt.id);
+                  if (skill && skill.body) {
+                    pt.versions = [
+                      {
+                        version: skill.metadata.version || '1.0',
+                        status: 'active',
+                        content: skill.body,
+                        date: new Date().toISOString().split('T')[0],
+                        note: (skill.metadata.metadata && skill.metadata.metadata.note) || ''
+                      }
+                    ];
+                    pt.currentVersion = skill.metadata.version || '1.0';
+                    saveData(); // 保存到 localStorage
+                    console.log('[SP] 从 Skill 系统动态获取内容: ' + pt.id);
+                  }
+                } catch (e) {
+                  console.warn('[SP] 从 Skill 系统获取内容失败:', e.message);
+                }
+              }
+            }
+
             if (!pt || !pt.versions || pt.versions.length === 0) {
               document.getElementById('sp-reading-container').innerHTML =
                 '<div style="padding:20px;color:var(--text-muted);text-align:center;">暂无提示词数据</div>';
@@ -24274,6 +24351,71 @@
         };
         window.spLoadData = loadData; // 仅加载数据不渲染（供 AI 一键配置等外部模块使用）
 
+        // 新增：兼容原有 getPromptById 接口
+        window.getPromptById = function (id) {
+          // 优先从 SkillRegistry 获取
+          if (window.skillRegistry) {
+            try {
+              var skill = window.skillRegistry.get(id);
+              if (skill) {
+                return {
+                  id: skill.metadata.name,
+                  name: (skill.metadata.description || '').replace('提示词', ''),
+                  icon: (skill.metadata.metadata && skill.metadata.metadata.icon) || '📝',
+                  note: (skill.metadata.metadata && skill.metadata.metadata.note) || '',
+                  flowSteps: (skill.metadata.metadata && skill.metadata.metadata.flowSteps) || [],
+                  versions: [
+                    {
+                      version: skill.metadata.version,
+                      status: 'active',
+                      content: skill.body,
+                      date: new Date().toISOString().split('T')[0],
+                      note: (skill.metadata.metadata && skill.metadata.metadata.note) || ''
+                    }
+                  ],
+                  currentVersion: skill.metadata.version
+                };
+              }
+            } catch (e) {
+              /* Skill 未找到，fallback */
+            }
+          }
+          // Fallback 到原有 DEFAULT_PROMPTS
+          return (
+            (window.DEFAULT_PROMPTS || []).find(function (p) {
+              return p.id === id;
+            }) || null
+          );
+        };
+
+        // 新增：兼容原有 getPromptContent 接口
+        window.getPromptContent = function (id) {
+          var prompt = window.getPromptById(id);
+          if (!prompt) return '';
+          var version =
+            prompt.versions.find(function (v) {
+              return v.version === prompt.currentVersion;
+            }) || prompt.versions[prompt.versions.length - 1];
+          return version ? version.content : '';
+        };
+
+        // 新增：从 Skill 系统重新加载所有提示词
+        window.reloadPromptsFromSkill = function () {
+          if (!window.skillRegistry) throw new Error('SkillRegistry 未初始化');
+          window.skillRegistry.discover(); // 重新扫描 Skill 目录
+          spData = loadSkillPrompts() || spData;
+          renderTabs();
+          if (window.showToast) window.showToast('已从 Skill 系统重新加载提示词', 'success');
+          else console.log('✅ 已从 Skill 系统重新加载提示词');
+        };
+
+        // 新增：直接获取 Skill 正文内容
+        window.getPromptFromSkill = function (id) {
+          if (!window.skillRegistry) throw new Error('SkillRegistry 未初始化');
+          var skill = window.skillRegistry.get(id);
+          return skill ? skill.body : '';
+        };
+
         window.spSwitchType = function (id) {
           spCurrentType = id;
           renderTabs();
@@ -24328,18 +24470,58 @@
           var curObj = pt.versions.find(function (v) {
             return v.version === cur;
           });
+          // 新增版本
           pt.versions.push({
             version: nv,
             status: 'draft',
             note: '基于 v' + cur + ' 创建',
             date: new Date().toISOString().split('T')[0],
-            content: curObj.content
+            content: curObj ? curObj.content : ''
           });
           pt.currentVersion = nv;
           saveData();
           renderTabs();
           var list = document.getElementById('sp-ver-list');
           list.scrollTop = list.scrollHeight;
+
+          // 新逻辑：可选同步到 Skill 系统
+          if (window.skillRegistry && confirm('是否将新版本同步到 Skill 系统？')) {
+            var newVersion = pt.versions[pt.versions.length - 1];
+            // 调用后端 API 保存 Skill
+            fetch('/api/skills', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + (localStorage.getItem('psy_admin_token') || '')
+              },
+              body: JSON.stringify({
+                id: pt.id + '-v' + nv,
+                name: pt.name + ' v' + nv,
+                description: pt.description || pt.name + ' 提示词',
+                version: nv,
+                content: newVersion.content,
+                metadata: {
+                  type: 'system-prompt',
+                  icon: pt.icon || '📝',
+                  note: '基于 v' + cur + ' 创建',
+                  original_id: pt.id
+                }
+              })
+            })
+              .then(function (res) {
+                if (res.ok) {
+                  showToast('已同步到 Skill 系统', 'success');
+                } else {
+                  return res.json().then(function (data) {
+                    throw new Error(data.message || '同步失败');
+                  });
+                }
+              })
+              .catch(function (err) {
+                showToast('同步失败: ' + err.message, 'error');
+              });
+          }
+
           showToast('✨ 已创建 v' + nv + '（基于 v' + cur + ' 克隆）', 'success');
         };
 
@@ -25511,6 +25693,16 @@
         console.log('🚀 开始初始化插件系统...');
 
         try {
+          // 0. 初始化 SkillRegistry（新增）
+          window.LoadingManager.update(0, '正在初始化 Skill 系统...');
+          if (window.SkillRegistry) {
+            window.skillRegistry = new SkillRegistry();
+            await window.skillRegistry.discover();
+            console.log('✅ SkillRegistry 初始化完成');
+          } else {
+            console.warn('⚠️ SkillRegistry 类未找到，跳过初始化');
+          }
+
           // 1. 只预加载 auth 插件（认证必需）
           window.LoadingManager.update(1, '正在加载认证模块...');
 

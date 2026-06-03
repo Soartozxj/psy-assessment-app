@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   // 测试环境：jsdom（模拟浏览器环境）
   testEnvironment: 'jsdom',
 

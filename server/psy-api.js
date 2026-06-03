@@ -19,6 +19,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 const path = require('path');
+const { body, validationResult, param, query } = require('express-validator');
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
@@ -28,17 +29,28 @@ const PORT = process.env.PORT || 3100;
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'psy-default-secret';
 const TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 天
 
-// CORS 白名单：从环境变量读取，默认允许本地和已有域名
-// CORS 中间件
+// CORS 配置 - 允许跨域请求（开发环境）
+// 生产环境应从环境变量读取允许的域名
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map((s) => s.trim());
+
 app.use(function (req, res, next) {
   const origin = req.headers.origin;
-  if (origin) {
+
+  // 开发环境：允许所有来源 或 允许 file:// 协议
+  if (process.env.NODE_ENV !== 'production') {
+    // 开发环境：允许所有来源
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else if (ALLOWED_ORIGINS.includes('*') || (origin && ALLOWED_ORIGINS.includes(origin))) {
+    // 生产环境：仅允许白名单
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
-    res.setHeader('Vary', 'Origin');
   }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+  res.setHeader('Vary', 'Origin');
+
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
@@ -246,18 +258,37 @@ app.get('/api/auth/verify', (req, res) => {
   });
 });
 
-// 密码登录（降级方案）
-app.post('/api/auth/login', async (req, res) => {
-  const { password } = req.body;
-  // 简易密码验证（后续替换为更安全的方式）
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-  if (password === ADMIN_PASSWORD) {
-    const token = generateToken('password-admin', 'super');
-    res.json({ code: 0, data: { token, role: 'super' } });
-  } else {
-    res.status(401).json({ code: -1, message: '密码错误' });
+// 密码登录（降级方案）- 添加输入验证 (FIX-002 P1安全修复)
+app.post(
+  '/api/auth/login',
+  [
+    body('password')
+      .trim()
+      .notEmpty()
+      .withMessage('密码不能为空')
+      .isLength({ min: 1, max: 100 })
+      .withMessage('密码长度必须在1-100字符之间')
+      .escape()
+      .withMessage('密码包含非法字符')
+  ],
+  async (req, res) => {
+    // 检查验证错误
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ code: -1, message: '输入验证失败', errors: errors.array() });
+    }
+
+    const { password } = req.body;
+    // 简易密码验证（后续替换为更安全的方式）
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+    if (password === ADMIN_PASSWORD) {
+      const token = generateToken('password-admin', 'super');
+      res.json({ code: 0, data: { token, role: 'super' } });
+    } else {
+      res.status(401).json({ code: -1, message: '密码错误' });
+    }
   }
-});
+);
 
 // ====================================================
 // 小程序登录 API
@@ -269,27 +300,43 @@ app.post('/api/auth/login', async (req, res) => {
  * 开发阶段：使用简易 openid 生成（不依赖微信 API）
  * 生产阶段：替换为 jscode2session 调用
  */
-app.post('/api/mp-login', async (req, res) => {
-  const { code } = req.body;
-  if (!code) {
-    return res.status(400).json({ code: -1, message: '缺少 code 参数' });
+app.post(
+  '/api/mp-login',
+  [
+    body('code')
+      .trim()
+      .notEmpty()
+      .withMessage('code不能为空')
+      .isLength({ min: 1, max: 200 })
+      .withMessage('code长度必须在1-200字符之间')
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('code格式不正确')
+  ],
+  async (req, res) => {
+    // 检查验证错误
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ code: -1, message: '输入验证失败', errors: errors.array() });
+    }
+
+    const { code } = req.body;
+
+    try {
+      // TODO: 生产环境替换为微信 jscode2session API
+      // const wxRes = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${APPID}&secret=${SECRET}&js_code=${code}&grant_type=authorization_code`);
+      // const openid = wxRes.data.openid;
+
+      // 开发阶段：基于 code 生成确定性 openid（同 code 同 openid）
+      const crypto = require('crypto');
+      const openid = 'dev_' + crypto.createHash('md5').update(code).digest('hex').substring(0, 16);
+
+      res.json({ code: 0, data: { openid, token: null } });
+    } catch (err) {
+      console.error('[mp-login] 错误:', err.message);
+      res.status(500).json({ code: -1, message: '登录失败' });
+    }
   }
-
-  try {
-    // TODO: 生产环境替换为微信 jscode2session API
-    // const wxRes = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${APPID}&secret=${SECRET}&js_code=${code}&grant_type=authorization_code`);
-    // const openid = wxRes.data.openid;
-
-    // 开发阶段：基于 code 生成确定性 openid（同 code 同 openid）
-    const crypto = require('crypto');
-    const openid = 'dev_' + crypto.createHash('md5').update(code).digest('hex').substring(0, 16);
-
-    res.json({ code: 0, data: { openid, token: null } });
-  } catch (err) {
-    console.error('[mp-login] 错误:', err.message);
-    res.status(500).json({ code: -1, message: '登录失败' });
-  }
-});
+);
 
 // ====================================================
 // 测评记录 API
@@ -364,101 +411,134 @@ app.post('/api/submit', async (req, res) => {
  * GET /api/history?page=1&pageSize=20&openid=xxx
  * 查询测评历史
  */
-app.get('/api/history', async (req, res) => {
-  try {
-    const db = await getPool();
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 20));
-    const openid = req.query.openid || '';
-    const offset = (page - 1) * pageSize;
-
-    let where = 'WHERE 1=1';
-    const params = [];
-    if (openid) {
-      where += ' AND openid = ?';
-      params.push(openid);
+app.get(
+  '/api/history',
+  [
+    query('page').optional().isInt({ min: 1, max: 1000 }).withMessage('page必须是1-1000之间的整数'),
+    query('pageSize').optional().isInt({ min: 1, max: 100 }).withMessage('pageSize必须是1-100之间的整数'),
+    query('openid').optional().trim().escape().isLength({ max: 100 }).withMessage('openid长度不能超过100字符')
+  ],
+  async (req, res) => {
+    // 检查验证错误
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ code: -1, message: '输入验证失败', errors: errors.array() });
     }
 
-    const [list] = await db.query(
-      `SELECT id, record_id, openid, scale_id, scale_name, total_score, max_score, level, level_name, color, emoji, dimensions, ai_diagnosis, source, duration, category_name, created_at
-       FROM assessments ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [...params, pageSize, offset]
-    );
+    try {
+      const db = await getPool();
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 20));
+      const openid = req.query.openid || '';
+      const offset = (page - 1) * pageSize;
 
-    const [countResult] = await db.query(`SELECT COUNT(*) as total FROM assessments ${where}`, params);
-
-    // 解析 JSON 字段，对齐前端 record 对象结构
-    const records = list.map((r) => ({
-      id: r.record_id,
-      scaleId: r.scale_id,
-      scaleName: r.scale_name,
-      emoji: r.emoji || '',
-      score: r.total_score,
-      maxScore: r.max_score,
-      level: r.level,
-      levelName: r.level_name,
-      color: r.color,
-      categoryName: r.category_name,
-      dims: r.dimensions ? (typeof r.dimensions === 'string' ? JSON.parse(r.dimensions) : r.dimensions) : null,
-      aiDiagnosis: r.ai_diagnosis,
-      source: r.source,
-      date: r.created_at ? new Date(r.created_at).toLocaleDateString('zh-CN') : '',
-      completedAt: r.created_at
-    }));
-
-    res.json({
-      code: 0,
-      data: {
-        list: records,
-        total: countResult[0].total,
-        page,
-        pageSize
+      let where = 'WHERE 1=1';
+      const params = [];
+      if (openid) {
+        where += ' AND openid = ?';
+        params.push(openid);
       }
-    });
-  } catch (err) {
-    console.error('[History] 错误:', err);
-    res.status(500).json({ code: -1, message: '查询失败: ' + err.message });
-  }
-});
 
-/**
- * GET /api/history/:id
- * 查询单条测评详情
- */
-app.get('/api/history/:id', async (req, res) => {
-  try {
-    const db = await getPool();
-    const [rows] = await db.query('SELECT * FROM assessments WHERE record_id = ? LIMIT 1', [req.params.id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ code: -1, message: '记录不存在' });
-    }
-    const r = rows[0];
-    res.json({
-      code: 0,
-      data: {
+      const [list] = await db.query(
+        `SELECT id, record_id, openid, scale_id, scale_name, total_score, max_score, level, level_name, color, emoji, dimensions, ai_diagnosis, source, duration, category_name, created_at
+       FROM assessments ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [...params, pageSize, offset]
+      );
+
+      const [countResult] = await db.query(`SELECT COUNT(*) as total FROM assessments ${where}`, params);
+
+      // 解析 JSON 字段，对齐前端 record 对象结构
+      const records = list.map((r) => ({
         id: r.record_id,
         scaleId: r.scale_id,
         scaleName: r.scale_name,
+        emoji: r.emoji || '',
         score: r.total_score,
         maxScore: r.max_score,
         level: r.level,
         levelName: r.level_name,
         color: r.color,
-        emoji: r.emoji || '',
         categoryName: r.category_name,
-        answers: r.answers ? (typeof r.answers === 'string' ? JSON.parse(r.answers) : r.answers) : null,
         dims: r.dimensions ? (typeof r.dimensions === 'string' ? JSON.parse(r.dimensions) : r.dimensions) : null,
         aiDiagnosis: r.ai_diagnosis,
         source: r.source,
-        duration: r.duration,
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString('zh-CN') : '',
         completedAt: r.created_at
-      }
-    });
-  } catch (err) {
-    console.error('[HistoryDetail] 错误:', err);
-    res.status(500).json({ code: -1, message: '查询失败: ' + err.message });
+      }));
+
+      res.json({
+        code: 0,
+        data: {
+          list: records,
+          total: countResult[0].total,
+          page,
+          pageSize
+        }
+      });
+    } catch (err) {
+      console.error('[History] 错误:', err);
+      res.status(500).json({ code: -1, message: '查询失败: ' + err.message });
+    }
   }
-});
+);
+
+/**
+ * GET /api/history/:id
+ * 查询单条测评详情
+ */
+app.get(
+  '/api/history/:id',
+  [
+    param('id')
+      .trim()
+      .notEmpty()
+      .withMessage('id不能为空')
+      .isLength({ max: 100 })
+      .withMessage('id长度不能超过100字符')
+      .escape()
+      .withMessage('id包含非法字符')
+  ],
+  async (req, res) => {
+    // 检查验证错误
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ code: -1, message: '输入验证失败', errors: errors.array() });
+    }
+
+    try {
+      const db = await getPool();
+      const [rows] = await db.query('SELECT * FROM assessments WHERE record_id = ? LIMIT 1', [req.params.id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ code: -1, message: '记录不存在' });
+      }
+      const r = rows[0];
+      res.json({
+        code: 0,
+        data: {
+          id: r.record_id,
+          scaleId: r.scale_id,
+          scaleName: r.scale_name,
+          score: r.total_score,
+          maxScore: r.max_score,
+          level: r.level,
+          levelName: r.level_name,
+          color: r.color,
+          emoji: r.emoji || '',
+          categoryName: r.category_name,
+          answers: r.answers ? (typeof r.answers === 'string' ? JSON.parse(r.answers) : r.answers) : null,
+          dims: r.dimensions ? (typeof r.dimensions === 'string' ? JSON.parse(r.dimensions) : r.dimensions) : null,
+          aiDiagnosis: r.ai_diagnosis,
+          source: r.source,
+          duration: r.duration,
+          completedAt: r.created_at
+        }
+      });
+    } catch (err) {
+      console.error('[HistoryDetail] 错误:', err);
+      res.status(500).json({ code: -1, message: '查询失败: ' + err.message });
+    }
+  }
+);
 
 /**
  * DELETE /api/history/:id — 需要管理员认证
@@ -2450,6 +2530,428 @@ app.get('/api/tts/voices', async (req, res) => {
   ];
   res.json({ code: 0, data: voices });
 });
+
+// ====================================================
+// Skill 管理 API
+// ====================================================
+
+const SKILLS_DIR = process.env.SKILLS_DIR || path.resolve(__dirname, '../skills/system-prompts');
+
+/**
+ * 解析 Skill 文件的 frontmatter
+ * @param {string} content - 文件内容
+ * @returns {object} { metadata, body }
+ */
+function parseSkillFile(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    return { metadata: {}, body: content };
+  }
+
+  const frontmatter = match[1];
+  const body = match[2];
+
+  // 简单解析 YAML frontmatter
+  const metadata = {};
+  frontmatter.split('\n').forEach((line) => {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.substring(0, colonIndex).trim();
+      let value = line.substring(colonIndex + 1).trim();
+
+      // 移除引号
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+
+      // 处理嵌套的 metadata 字段
+      if (key === 'metadata' || key.startsWith('metadata.')) {
+        if (key === 'metadata') {
+          // 解析嵌套对象
+          try {
+            const nested = {};
+            frontmatter.split('\n').forEach((nestedLine) => {
+              const nestedMatch = nestedLine.match(/^\s+(.+?):\s*(.+)$/);
+              if (nestedMatch) {
+                nested[nestedMatch[1].trim()] = nestedMatch[2].trim().replace(/^["']|["']$/g, '');
+              }
+            });
+            metadata.metadata = nested;
+          } catch (e) {
+            // 忽略解析错误
+          }
+        }
+      } else {
+        metadata[key] = value;
+      }
+    }
+  });
+
+  return { metadata, body };
+}
+
+/**
+ * 读取所有 Skill 文件的元数据
+ * @returns {Array} Skill 元数据数组
+ */
+function getAllSkillsMetadata() {
+  try {
+    if (!fs.existsSync(SKILLS_DIR)) {
+      console.warn('[Skills] 目录不存在:', SKILLS_DIR);
+      return [];
+    }
+
+    const files = fs.readdirSync(SKILLS_DIR).filter((f) => f.endsWith('.md'));
+    const skills = [];
+
+    for (const file of files) {
+      try {
+        const filePath = path.join(SKILLS_DIR, file);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const { metadata, body } = parseSkillFile(content);
+
+        skills.push({
+          id: metadata.id || file.replace('.md', ''),
+          name: metadata.name || file,
+          description: metadata.description || '',
+          version: metadata.version || '1.0.0',
+          type: metadata.metadata?.type || 'system-prompt',
+          icon: metadata.metadata?.icon || '📄',
+          note: metadata.metadata?.note || '',
+          original_id: metadata.metadata?.original_id || '',
+          filename: file,
+          contentLength: body.length
+        });
+      } catch (err) {
+        console.warn(`[Skills] 解析文件失败: ${file}`, err.message);
+      }
+    }
+
+    return skills;
+  } catch (err) {
+    console.error('[Skills] 读取 Skill 目录失败:', err.message);
+    return [];
+  }
+}
+
+/**
+ * 读取单个 Skill 的完整内容
+ * @param {string} skillId - Skill ID 或文件名
+ * @returns {object|null} Skill 完整数据
+ */
+function getSkillById(skillId) {
+  try {
+    if (!fs.existsSync(SKILLS_DIR)) {
+      return null;
+    }
+
+    // 先尝试直接匹配文件名
+    let filePath = path.join(SKILLS_DIR, skillId);
+    if (!fs.existsSync(filePath) && !skillId.endsWith('.md')) {
+      filePath = path.join(SKILLS_DIR, skillId + '.md');
+    }
+    if (!fs.existsSync(filePath)) {
+      // 尝试在文件中查找 id 匹配的
+      const files = fs.readdirSync(SKILLS_DIR).filter((f) => f.endsWith('.md'));
+      for (const file of files) {
+        const fp = path.join(SKILLS_DIR, file);
+        const content = fs.readFileSync(fp, 'utf-8');
+        const { metadata } = parseSkillFile(content);
+        if (metadata.id === skillId) {
+          filePath = fp;
+          break;
+        }
+      }
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const { metadata, body } = parseSkillFile(content);
+
+    return {
+      id: metadata.id || skillId,
+      name: metadata.name || skillId,
+      description: metadata.description || '',
+      version: metadata.version || '1.0.0',
+      metadata: metadata.metadata || {},
+      content: body,
+      filename: path.basename(filePath)
+    };
+  } catch (err) {
+    console.error('[Skills] 读取 Skill 失败:', err.message);
+    return null;
+  }
+}
+
+/**
+ * GET /api/skills - 获取所有 Skill 元数据列表
+ * 前端 SkillRegistry.discover() 调用此接口
+ */
+app.get('/api/skills', (req, res) => {
+  try {
+    const skills = getAllSkillsMetadata();
+    res.json({
+      code: 0,
+      data: skills,
+      total: skills.length
+    });
+  } catch (err) {
+    console.error('[Skills] GET /api/skills 失败:', err.message);
+    res.status(500).json({ code: -1, message: '获取 Skill 列表失败' });
+  }
+});
+
+/**
+ * GET /api/skills/:id - 获取单个 Skill 完整内容
+ * 前端 SkillRegistry.get() 调用此接口
+ */
+app.get('/api/skills/:id', (req, res) => {
+  try {
+    const skillId = req.params.id;
+    const skill = getSkillById(skillId);
+
+    if (!skill) {
+      return res.status(404).json({ code: -1, message: 'Skill 不存在' });
+    }
+
+    res.json({
+      code: 0,
+      data: skill
+    });
+  } catch (err) {
+    console.error('[Skills] GET /api/skills/:id 失败:', err.message);
+    res.status(500).json({ code: -1, message: '获取 Skill 失败' });
+  }
+});
+
+/**
+ * POST /api/skills - 同步 Skill 到后端
+ * 前端 spAddVersion 调用此接口，将新版本同步到 Skill 系统
+ */
+app.post('/api/skills', adminSecretMiddleware, (req, res) => {
+  try {
+    const { id, name, description, version, content, metadata } = req.body;
+
+    if (!id || !content) {
+      return res.status(400).json({ code: -1, message: '缺少必填字段: id, content' });
+    }
+
+    // 确保目录存在
+    if (!fs.existsSync(SKILLS_DIR)) {
+      fs.mkdirSync(SKILLS_DIR, { recursive: true });
+    }
+
+    // 构建文件内容（带 frontmatter）
+    const frontmatter = [
+      '---',
+      `id: ${id}`,
+      `name: ${name || id}`,
+      `description: ${description || ''}`,
+      `version: "${version || '1.0.0'}"`,
+      'metadata:',
+      `  type: ${metadata?.type || 'system-prompt'}`,
+      `  icon: "${metadata?.icon || '📄'}"`,
+      `  note: "${metadata?.note || ''}"`,
+      `  original_id: ${metadata?.original_id || ''}`,
+      '---',
+      ''
+    ].join('\n');
+
+    const filePath = path.join(SKILLS_DIR, `${id}.md`);
+    fs.writeFileSync(filePath, frontmatter + content, 'utf-8');
+
+    console.log('[Skills] Skill 已同步:', id, version || '1.0.0');
+    res.json({
+      code: 0,
+      data: {
+        id,
+        filename: `${id}.md`,
+        path: filePath
+      },
+      message: 'Skill 同步成功'
+    });
+  } catch (err) {
+    console.error('[Skills] POST /api/skills 失败:', err.message);
+    res.status(500).json({ code: -1, message: '同步 Skill 失败' });
+  }
+});
+
+/**
+ * PUT /api/skills/:id - 更新 Skill 内容
+ * 前端编辑 Skill 后调用此接口更新
+ */
+app.put('/api/skills/:id', adminSecretMiddleware, (req, res) => {
+  try {
+    const skillId = req.params.id;
+    const { name, description, version, content, metadata } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ code: -1, message: '缺少必填字段: content' });
+    }
+
+    const skill = getSkillById(skillId);
+    if (!skill) {
+      return res.status(404).json({ code: -1, message: 'Skill 不存在' });
+    }
+
+    // 构建更新后的文件内容
+    const frontmatter = [
+      '---',
+      `id: ${skillId}`,
+      `name: ${name || skill.name}`,
+      `description: ${description || skill.description}`,
+      `version: "${version || skill.version}"`,
+      'metadata:',
+      `  type: ${metadata?.type || skill.metadata?.type || 'system-prompt'}`,
+      `  icon: "${metadata?.icon || skill.metadata?.icon || '📄'}"`,
+      `  note: "${metadata?.note || skill.metadata?.note || ''}"`,
+      `  original_id: ${metadata?.original_id || skill.metadata?.original_id || ''}`,
+      '---',
+      ''
+    ].join('\n');
+
+    const filePath = path.join(SKILLS_DIR, skill.filename);
+    fs.writeFileSync(filePath, frontmatter + content, 'utf-8');
+
+    console.log('[Skills] Skill 已更新:', skillId, version || skill.version);
+    res.json({
+      code: 0,
+      data: {
+        id: skillId,
+        version: version || skill.version
+      },
+      message: 'Skill 更新成功'
+    });
+  } catch (err) {
+    console.error('[Skills] PUT /api/skills/:id 失败:', err.message);
+    res.status(500).json({ code: -1, message: '更新 Skill 失败' });
+  }
+});
+
+/**
+ * DELETE /api/skills/:id - 删除 Skill
+ * 管理员删除指定的 Skill
+ */
+app.delete('/api/skills/:id', adminSecretMiddleware, (req, res) => {
+  try {
+    const skillId = req.params.id;
+    const skill = getSkillById(skillId);
+
+    if (!skill) {
+      return res.status(404).json({ code: -1, message: 'Skill 不存在' });
+    }
+
+    const filePath = path.join(SKILLS_DIR, skill.filename);
+    fs.unlinkSync(filePath);
+
+    console.log('[Skills] Skill 已删除:', skillId);
+    res.json({
+      code: 0,
+      message: 'Skill 删除成功'
+    });
+  } catch (err) {
+    console.error('[Skills] DELETE /api/skills/:id 失败:', err.message);
+    res.status(500).json({ code: -1, message: '删除 Skill 失败' });
+  }
+});
+
+/**
+ * POST /api/skills/:id/test - 测试 Skill 执行
+ * 接收测试参数，返回执行结果、响应时间等信息
+ */
+app.post('/api/skills/:id/test', (req, res) => {
+  try {
+    const skillId = req.params.id;
+    const skill = getSkillById(skillId);
+
+    if (!skill) {
+      return res.status(404).json({ code: -1, message: 'Skill 不存在' });
+    }
+
+    const startTime = Date.now();
+
+    // 模拟 Skill 执行（根据实际 Skill 类型进行处理）
+    const testResult = {
+      skillId: skillId,
+      skillName: skill.name,
+      version: skill.version,
+      startTime: new Date(startTime).toISOString(),
+      parameters: req.body || {},
+      output: null,
+      status: 'success',
+      errorMessage: null
+    };
+
+    // 根据 Skill 类型执行不同的测试逻辑
+    const skillType = skill.metadata?.type || 'system-prompt';
+
+    try {
+      if (skillType === 'system-prompt') {
+        // 系统提示词类型：返回提示词内容
+        testResult.output = {
+          type: 'system-prompt',
+          content: skill.content,
+          contentLength: (skill.content || '').length,
+          tokenEstimate: Math.ceil((skill.content || '').length / 4) // 粗略估算 token 数
+        };
+      } else if (skillType === 'plugin') {
+        // 插件类型：模拟插件执行
+        testResult.output = {
+          type: 'plugin',
+          message: '插件执行成功（模拟）',
+          functions: skill.metadata?.functions || []
+        };
+      } else if (skillType === 'template') {
+        // 模板类型：填充模板
+        const template = skill.content || '';
+        const params = req.body || {};
+        let filledTemplate = template;
+
+        // 简单的模板变量替换（如 {{name}}）
+        Object.keys(params).forEach((key) => {
+          filledTemplate = filledTemplate.replace(new RegExp(`{{${key}}}`, 'g'), params[key]);
+        });
+
+        testResult.output = {
+          type: 'template',
+          original: template,
+          filled: filledTemplate,
+          parameters: params
+        };
+      } else {
+        // 未知类型：返回原始内容
+        testResult.output = {
+          type: 'unknown',
+          content: skill.content
+        };
+      }
+    } catch (execError) {
+      testResult.status = 'error';
+      testResult.errorMessage = execError.message;
+    }
+
+    const endTime = Date.now();
+    testResult.endTime = new Date(endTime).toISOString();
+    testResult.duration = endTime - startTime; // 毫秒
+
+    console.log(`[Skills] Skill 测试完成: ${skillId}, 耗时: ${testResult.duration}ms`);
+
+    res.json({
+      code: 0,
+      data: testResult
+    });
+  } catch (err) {
+    console.error('[Skills] POST /api/skills/:id/test 失败:', err.message);
+    res.status(500).json({ code: -1, message: 'Skill 测试失败: ' + err.message });
+  }
+});
+
+// ====================================================
+// 错误处理中间件（必须放在所有路由之后）
+// ====================================================
 
 app.use((err, req, res, next) => {
   console.error('[Error]', err.stack);

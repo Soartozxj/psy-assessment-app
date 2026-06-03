@@ -371,6 +371,7 @@
     </div>
 
     <script src="default-prompts.js?v=22"></script>
+    <script src="admin-event-delegation.js?v=22"></script>
     <script>
       (function () {
         var spData = [],
@@ -405,16 +406,32 @@
           })();
 
         function showToast(m, t) {
-          m = m || '';
-          t = t || 'info';
+          var msg = m || '';
+          var type = t || 'info';
           var el = document.createElement('div');
-          el.className = 'toast ' + t;
-          el.textContent = m;
+          el.className = 'toast ' + type;
+          el.textContent = msg;
+          var bgColor = type === 'success' ? '#0f6e56' : type === 'warning' ? '#f59e0b' : '#534ab7';
+          // 堆叠显示：计算当前已显示的 Toast 数量，向下偏移
+          var existingToasts = document.body.querySelectorAll('.toast');
+          var offset = existingToasts.length * 60; // 每个 Toast 偏移 60px
+          el.style.cssText =
+            'position:fixed;top:' +
+            (20 + offset) +
+            'px;right:20px;padding:12px 20px;background:' +
+            bgColor +
+            ';color:#fff;border-radius:8px;z-index:9999;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:opacity 0.3s ease;';
           document.body.appendChild(el);
           setTimeout(function () {
-            el.remove();
-          }, 2500);
+            if (el.parentNode) {
+              el.style.opacity = '0';
+              setTimeout(function () {
+                if (el.parentNode) el.remove();
+              }, 300);
+            }
+          }, 2200);
         }
+        window.showToast = showToast;
         function escHtml(s) {
           var d = document.createElement('div');
           d.textContent = s || '';
@@ -495,11 +512,27 @@
           document.title = pt.name + ' - 提示词查看';
 
           // Version list
+          var versions = pt.versions || [];
+          if (versions.length === 0) {
+            // 没有版本时，初始化一个空版本
+            versions = [
+              {
+                version: '1.0',
+                status: 'draft',
+                note: '初始化版本',
+                date: new Date().toISOString().split('T')[0],
+                content: ''
+              }
+            ];
+            pt.versions = versions;
+            pt.currentVersion = '1.0';
+            saveData();
+          }
           var cv =
-            pt.versions.find(function (v) {
+            versions.find(function (v) {
               return v.version === pt.currentVersion;
-            }) || pt.versions[pt.versions.length - 1];
-          spCurVerIdx = pt.versions.indexOf(cv);
+            }) || versions[versions.length - 1];
+          spCurVerIdx = versions.indexOf(cv);
           var vh = '<h4>版本</h4>';
           (pt.versions || []).forEach(function (v, i) {
             var act = v.version === pt.currentVersion ? ' active' : '';
@@ -599,6 +632,29 @@
           saveData();
           render();
           showToast('✨ 已创建 v' + nv, 'success');
+
+          // 同步到 Skill 系统
+          fetch('http://127.0.0.1:3100/api/skills', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: pt.id + '-v' + nv,
+              name: pt.name + ' v' + nv,
+              description: pt.description || pt.name + ' 提示词',
+              version: nv,
+              content: (co || {}).content || '',
+              metadata: {
+                type: 'system-prompt',
+                icon: pt.icon || '📝',
+                note: '基于 v' + cur + ' 创建',
+                original_id: pt.id
+              }
+            })
+          })
+            .then(function (res) {
+              if (res.ok) showToast('已同步到 Skill 系统', 'success');
+            })
+            .catch(function () {});
         };
         window.delVersion = function (idx) {
           if (pt.versions.length <= 1) {
@@ -611,6 +667,16 @@
           saveData();
           render();
           showToast('🗑 已删除 v' + d.version, 'info');
+
+          // 同步到 Skill 系统（删除对应的 Skill）
+          var skillId = pt.id + '-v' + d.version;
+          fetch('http://127.0.0.1:3100/api/skills/' + skillId, {
+            method: 'DELETE'
+          })
+            .then(function (res) {
+              if (res.ok) showToast('已同步删除到 Skill 系统', 'success');
+            })
+            .catch(function () {});
         };
         window.openEdit = function (idx) {
           var v = pt.versions[idx];
@@ -641,6 +707,52 @@
           saveData();
           render();
           showToast('✓ 版本已保存', 'success');
+
+          // 同步到 Skill 系统（先尝试更新，如果不存在则创建）
+          var skillId = pt.id + '-v' + v.version;
+          fetch('http://127.0.0.1:3100/api/skills/' + skillId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: pt.name + ' v' + v.version,
+              description: pt.description || pt.name + ' 提示词',
+              version: v.version,
+              content: v.content,
+              metadata: {
+                type: 'system-prompt',
+                icon: pt.icon || '📝',
+                note: v.note || '',
+                original_id: pt.id
+              }
+            })
+          })
+            .then(function (res) {
+              if (res.status === 404) {
+                // Skill 不存在，创建新 Skill
+                return fetch('http://127.0.0.1:3100/api/skills', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    id: skillId,
+                    name: pt.name + ' v' + v.version,
+                    description: pt.description || pt.name + ' 提示词',
+                    version: v.version,
+                    content: v.content,
+                    metadata: {
+                      type: 'system-prompt',
+                      icon: pt.icon || '📝',
+                      note: v.note || '',
+                      original_id: pt.id
+                    }
+                  })
+                });
+              }
+              return res;
+            })
+            .then(function (res) {
+              if (res.ok) showToast('已同步到 Skill 系统', 'success');
+            })
+            .catch(function () {});
         };
 
         // ---- Prompt actions ----
@@ -687,6 +799,11 @@
             escHtml(ptId) +
             '</div>';
         } else render();
+
+        // 初始化事件委托 (P3-9)
+        if (typeof EventDelegate !== 'undefined' && EventDelegate.init) {
+          EventDelegate.init();
+        }
       })();
     </script>
   </body>

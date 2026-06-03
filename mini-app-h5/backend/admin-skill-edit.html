@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>编辑 Skill</title>
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --card: #fff;
+      --text: #2c2c2a;
+      --text-sec: #5f5e5a;
+      --text-muted: #888780;
+      --border: #d3d1c7;
+      --primary: #534ab7;
+      --primary-light: #eeedfe;
+      --success: #0f6e56;
+      --success-light: #e1f5ee;
+      --radius: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: var(--card);
+      border-bottom: 0.5px solid var(--border);
+    }
+    .toolbar .back { font-size: 12px; color: var(--primary); cursor: pointer; }
+    .toolbar .title { font-size: 14px; font-weight: 500; }
+    .toolbar .spacer { flex: 1; }
+    .btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 0.5px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn:hover { background: var(--bg); }
+    .btn-pri {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-pri:hover { opacity: 0.9; }
+
+    /* 表单 */
+    .form-container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 0.5px solid var(--border);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sec);
+      margin-bottom: 5px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      background: var(--bg);
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-textarea {
+      width: 100%;
+      min-height: 300px;
+      padding: 12px;
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      background: var(--bg);
+      font-family: 'Monaco', 'Menlo', monospace;
+      line-height: 1.5;
+      resize: vertical;
+    }
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* 元数据 */
+    .metadata-section {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .metadata-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sec);
+      margin-bottom: 10px;
+    }
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+    .toast.success { background: var(--success); }
+    .toast.warning { background: #f59e0b; }
+    .toast.info { background: var(--primary); }
+  </style>
+</head>
+<body>
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <span class="back" onclick="location.href='admin-skill.html'">← 返回</span>
+    <span class="title" id="page-title">✏️ 编辑 Skill</span>
+    <span class="spacer"></span>
+    <button class="btn" onclick="previewSkill()">👁 预览</button>
+    <button class="btn btn-pri" onclick="saveSkill()">💾 保存</button>
+  </div>
+
+  <!-- 表单 -->
+  <div class="form-container">
+    <!-- 元数据 -->
+    <div class="metadata-section">
+      <div class="metadata-title">📋 元数据</div>
+      <div class="metadata-grid">
+        <div class="form-group">
+          <label class="form-label">ID</label>
+          <input type="text" class="form-input" id="skill-id" disabled />
+        </div>
+        <div class="form-group">
+          <label class="form-label">名称</label>
+          <input type="text" class="form-input" id="skill-name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">版本</label>
+          <input type="text" class="form-input" id="skill-version" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">图标</label>
+          <input type="text" class="form-input" id="skill-icon" placeholder="📝" />
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label class="form-label">描述</label>
+          <input type="text" class="form-input" id="skill-description" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">类型</label>
+          <select class="form-input" id="skill-type">
+            <option value="system-prompt">系统提示词</option>
+            <option value="plugin">插件</option>
+            <option value="template">模板</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">原始 ID</label>
+          <input type="text" class="form-input" id="skill-original-id" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 内容 -->
+    <div class="form-group">
+      <label class="form-label">内容（支持 Markdown）</</label>
+      <textarea class="form-textarea" id="skill-content" placeholder="输入 Skill 内容..."></textarea>
+    </div>
+  </div>
+
+  <script>
+    let currentSkillId = null;
+
+    // 显示 Toast
+    function showToast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 2500);
+    }
+
+    // 加载 Skill 数据
+    async function loadSkill() {
+      const params = new URLSearchParams(location.search);
+      currentSkillId = params.get('id');
+
+      if (!currentSkillId) {
+        document.getElementById('page-title').textContent = '✏️ 新建 Skill';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:3100/api/skills/${currentSkillId}`);
+        if (!res.ok) throw new Error('加载失败 (HTTP ' + res.status + ')');
+        const result = await res.json();
+        // API 返回格式: {code: 0, data: {...}}
+        const skill = result.data || result;
+
+        document.getElementById('page-title').textContent = '✏️ 编辑 ' + skill.name;
+        document.getElementById('skill-id').value = skill.id || '';
+        document.getElementById('skill-name').value = skill.name || '';
+        document.getElementById('skill-version').value = skill.version || '1.0';
+        document.getElementById('skill-icon').value = skill.metadata?.icon || '📝';
+        document.getElementById('skill-description').value = skill.description || '';
+        document.getElementById('skill-type').value = skill.metadata?.type || 'system-prompt';
+        document.getElementById('skill-original-id').value = skill.metadata?.original_id || '';
+        document.getElementById('skill-content').value = skill.content || '';
+      } catch (err) {
+        showToast('加载失败: ' + err.message, 'warning');
+      }
+    }
+
+    // 保存 Skill
+    async function saveSkill() {
+      const id = currentSkillId || document.getElementById('skill-id').value;
+      const name = document.getElementById('skill-name').value;
+      const version = document.getElementById('skill-version').value;
+      const icon = document.getElementById('skill-icon').value;
+      const description = document.getElementById('skill-description').value;
+      const type = document.getElementById('skill-type').value;
+      const originalId = document.getElementById('skill-original-id').value;
+      const content = document.getElementById('skill-content').value;
+
+      if (!name || !version) {
+        showToast('请填写名称和版本', 'warning');
+        return;
+      }
+
+      try {
+        const method = currentSkillId ? 'PUT' : 'POST';
+        const url = currentSkillId
+          ? `http://127.0.0.1:3100/api/skills/${currentSkillId}`
+          : 'http://127.0.0.1:3100/api/skills';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            name,
+            version,
+            description,
+            content,
+            metadata: { type, icon, original_id: originalId }
+          })
+        });
+
+        if (!res.ok) throw new Error('保存失败');
+        showToast('✅ Skill 已保存', 'success');
+        setTimeout(() => location.href = 'admin-skill.html', 1000);
+      } catch (err) {
+        showToast('保存失败: ' + err.message, 'warning');
+      }
+    }
+
+    // 预览 Skill
+    function previewSkill() {
+      const content = document.getElementById('skill-content').value;
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"><title>预览</title>
+        <style>body { font-family: sans-serif; padding: 20px; line-height: 1.6; }</style>
+        </head>
+        <body>${content.replace(/\n/g, '<br>')}</body>
+        </html>
+      `);
+    }
+
+    // 页面加载时执行
+    window.addEventListener('DOMContentLoaded', loadSkill);
+  </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skill 管理</title>
+    <style>
+      :root {
+        --bg: #faf9f7;
+        --card: #fff;
+        --text: #2c2c2a;
+        --text-sec: #5f5e5a;
+        --text-muted: #888780;
+        --border: #d3d1c7;
+        --primary: #534ab7;
+        --primary-light: #eeedfe;
+        --success: #0f6e56;
+        --success-light: #e1f5ee;
+        --warning: #f59e0b;
+        --warning-light: #fef3c7;
+        --danger: #993556;
+        --danger-light: #fbeaf0;
+        --radius: 12px;
+        --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* 工具栏 */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--card);
+        border-bottom: 0.5px solid var(--border);
+      }
+      .toolbar .back {
+        font-size: 12px;
+        color: var(--primary);
+        cursor: pointer;
+      }
+      .toolbar .title {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+      .btn {
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 0.5px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .btn:hover {
+        background: var(--bg);
+      }
+      .btn-pri {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .btn-pri:hover {
+        opacity: 0.9;
+      }
+      .btn-danger {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: var(--danger-light);
+      }
+
+      /* 搜索栏 */
+      .search-bar {
+        padding: 15px 20px;
+        background: var(--card);
+        border-bottom: 0.5px solid var(--border);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+      }
+      .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .filter-select {
+        padding: 8px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 12px;
+        background: var(--bg);
+      }
+
+      /* Skill 列表 */
+      .skill-list {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+      }
+      .skill-card {
+        background: var(--card);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .skill-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+      .skill-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .skill-icon {
+        font-size: 24px;
+      }
+      .skill-name {
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
+      }
+      .skill-version {
+        font-size: 10px;
+        color: var(--text-muted);
+        background: var(--bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .skill-description {
+        font-size: 12px;
+        color: var(--text-sec);
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+      .skill-meta {
+        display: flex;
+        gap: 10px;
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+      .skill-actions {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 0.5px solid var(--border);
+      }
+
+      /* 空状态 */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+      .empty-state .icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+      .empty-state .title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .empty-state .desc {
+        font-size: 12px;
+      }
+
+      /* 加载状态 */
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+      .spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <span class="back" onclick="location.href = 'admin-legacy.html'">← 返回</span>
+      <span class="title">📚 Skill 管理</span>
+      <span class="spacer"></span>
+      <button class="btn btn-pri" data-action="skill-add">+ 新增 Skill</button>
+      <button class="btn" onclick="loadSkills()">🔄 刷新</button>
+    </div>
+
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="搜索 Skill 名称或描述..."
+        oninput="filterSkills(this.value)"
+      />
+      <select class="filter-select" onchange="filterByType(this.value)">
+        <option value="">所有类型</option>
+        <option value="system-prompt">系统提示词</option>
+        <option value="plugin">插件</option>
+        <option value="template">模板</option>
+      </select>
+      <select class="filter-select" onchange="sortSkills(this.value)">
+        <option value="name">按名称排序</option>
+        <option value="version">按版本排序</option>
+        <option value="updated">按更新时间排序</option>
+      </select>
+    </div>
+
+    <!-- Skill 列表 -->
+    <div class="skill-list" id="skill-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div style="margin-top: 15px">加载中...</div>
+      </div>
+    </div>
+
+    <script>
+      let allSkills = [];
+
+      // 加载 Skill 列表
+      async function loadSkills() {
+        const listEl = document.getElementById('skill-list');
+        listEl.innerHTML =
+          '<div class="loading"><div class="spinner"></div><div style="margin-top:15px">加载中...</div></div>';
+
+        try {
+          const res = await fetch('http://127.0.0.1:3100/api/skills');
+          if (!res.ok) throw new Error('服务器响应失败 (' + res.status + ')');
+          const result = await res.json();
+          // API 返回格式: {code: 0, data: [...], total: N}
+          allSkills = Array.isArray(result.data) ? result.data : [];
+          renderSkills(allSkills);
+        } catch (err) {
+          listEl.innerHTML =
+            '<div class="empty-state"><div class="icon">⚠️</div><div class="title">加载失败</div><div class="desc">' +
+            err.message +
+            '，请确认后端服务是否已启动 (port 3100)</div></div>';
+        }
+      }
+
+      // 渲染 Skill 列表
+      function renderSkills(skills) {
+        const listEl = document.getElementById('skill-list');
+        if (skills.length === 0) {
+          listEl.innerHTML =
+            '<div class="empty-state"><div class="icon">📭</div><div class="title">暂无 Skill</div><div class="desc">点击右上角 "+ 新增 Skill" 创建第一个</div></div>';
+          return;
+        }
+
+        listEl.innerHTML = skills
+          .map(
+            (skill) => `
+        <div class="skill-card" onclick="viewSkill('${skill.id}')">
+          <div class="skill-header">
+            <span class="skill-icon">${skill.metadata?.icon || '📝'}</span>
+            <span class="skill-name">${skill.name}</span>
+            <span class="skill-version">v${skill.version || '1.0'}</span>
+          </div>
+          <div class="skill-description">${skill.description || '暂无描述'}</div>
+          <div class="skill-meta">
+            <span>📋 ${skill.metadata?.type || 'system-prompt'}</span>
+            <span>📏 ${(skill.content || '').length} 字</span>
+          </div>
+          <div class="skill-actions">
+            <button class="btn" data-action="skill-edit" data-id="${skill.id}" onclick="event.stopPropagation()">✏️ 编辑</button>
+            <button class="btn" data-action="skill-test" data-id="${skill.id}" onclick="event.stopPropagation()">🧪 测试</button>
+            <button class="btn btn-danger" data-action="skill-delete" data-id="${skill.id}" onclick="event.stopPropagation()">🗑 删除</button>
+          </div>
+        </div>
+      `
+          )
+          .join('');
+      }
+
+      // 筛选 Skill
+      function filterSkills(keyword) {
+        const filtered = allSkills.filter(
+          (skill) => skill.name.includes(keyword) || (skill.description || '').includes(keyword)
+        );
+        renderSkills(filtered);
+      }
+
+      // 按类型筛选
+      function filterByType(type) {
+        const filtered = type ? allSkills.filter((skill) => skill.metadata?.type === type) : allSkills;
+        renderSkills(filtered);
+      }
+
+      // 排序 Skill
+      function sortSkills(method) {
+        const sorted = [...allSkills];
+        if (method === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
+        else if (method === 'version') sorted.sort((a, b) => (a.version || '1.0').localeCompare(b.version || '1.0'));
+        renderSkills(sorted);
+      }
+
+      // 查看 Skill 详情
+      function viewSkill(id) {
+        location.href = 'admin-skill-view.html?id=' + id;
+      }
+
+      // 页面加载时执行
+      window.addEventListener('DOMContentLoaded', loadSkills);
+    </script>
+  </body>
+</html>
