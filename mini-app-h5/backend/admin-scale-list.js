@@ -165,6 +165,14 @@ function renderScaleTable() {
           '" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)"'
         : '';
 
+      // ✅ P2安全修复：对所有用户数据进行HTML转义
+      const safeName = SecurityUtils.escapeHtml(s.name || '');
+      const safeEmoji = SecurityUtils.escapeHtml(s.emoji || '📋');
+      const safeColor = SecurityUtils.escapeHtml(s.color || '#ccc');
+      const safeCatName = SecurityUtils.escapeHtml(cat.name || '');
+      const safeCatColor = SecurityUtils.escapeHtml(cat.color || '#999');
+      const safeStatusText = SecurityUtils.escapeHtml(statusText || '');
+
       return (
         '<tr ' +
         dragAttrs +
@@ -182,19 +190,19 @@ function renderScaleTable() {
             '</span>'
           : '') +
         '<div class="scale-avatar" style="background:' +
-        (s.color || '#ccc') +
+        safeColor +
         '18">' +
-        (s.emoji || '📋') +
+        safeEmoji +
         '</div>' +
         '<div style="min-width:0">' +
         '<div class="scale-cell-name">' +
-        s.name +
+        safeName +
         ' <span class="cat-tag" style="background:' +
-        cat.color +
+        safeCatColor +
         '15;color:' +
-        cat.color +
+        safeCatColor +
         ';font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;">' +
-        cat.name +
+        safeCatName +
         '</span>' +
         '</div>' +
         '</div>' +

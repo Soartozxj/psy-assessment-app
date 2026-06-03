@@ -304,7 +304,7 @@
         this.escapeHtml(categoryName) +
         '</span></div>' +
         '<div class="preview-item"><span class="preview-label">预计时长</span><span class="preview-value">' +
-        (document.getElementById('f-duration').value || '0') +
+        this.escapeHtml(document.getElementById('f-duration').value || '0') +
         ' 分钟</span></div>' +
         '<div class="preview-item"><span class="preview-label">状态</span><span class="preview-value">' +
         this.getStatusText() +

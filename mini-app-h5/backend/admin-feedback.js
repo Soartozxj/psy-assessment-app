@@ -221,7 +221,9 @@ function renderFeedbackAdmin(forceRefresh) {
         '星</div></div>';
     }
     document.getElementById('fb-chart-stars').innerHTML = barHtml;
-    document.getElementById('fb-chart-avg').innerHTML = '平均 <b>' + avgStars.toFixed(1) + '</b> 星';
+    // ✅ P2安全修复：对平均星数进行HTML转义
+    document.getElementById('fb-chart-avg').innerHTML =
+      '平均 <b>' + SecurityUtils.escapeHtml(avgStars.toFixed(1)) + '</b> 星';
 
     // ---- 热门标签 ----
     const tagCount = {};
@@ -240,11 +242,18 @@ function renderFeedbackAdmin(forceRefresh) {
         return b.count - a.count;
       })
       .slice(0, 12);
+    // ✅ P2安全修复：对所有标签数据进行HTML转义
     document.getElementById('fb-chart-tags').innerHTML =
       tagArr.length > 0
         ? tagArr
             .map(function (t) {
-              return '<div class="fb-admin-tag-item">' + t.tag + '<span class="count">' + t.count + '</span></div>';
+              return (
+                '<div class="fb-admin-tag-item">' +
+                SecurityUtils.escapeHtml(t.tag) +
+                '<span class="count">' +
+                SecurityUtils.escapeHtml(t.count) +
+                '</span></div>'
+              );
             })
             .join('')
         : '<div style="color:var(--text-muted);font-size:12px">暂无标签数据</div>';
@@ -258,13 +267,22 @@ function renderFeedbackAdmin(forceRefresh) {
     });
     const scaleSelect = document.getElementById('fb-filter-scale');
     const currentScaleVal = scaleSelect.value;
-    scaleSelect.innerHTML =
-      '<option value="">全部量表</option>' +
-      Object.keys(scaleSet)
-        .map(function (s) {
-          return '<option value="' + s + '"' + (currentScaleVal === s ? ' selected' : '') + '>' + s + '</option>';
-        })
-        .join('');
+
+    // ✅ P2安全修复：对所有量表名称进行HTML转义
+    let optionsHtml = '<option value="">全部量表</option>';
+    Object.keys(scaleSet).forEach(function (s) {
+      const safeScaleName = SecurityUtils.escapeHtml(s);
+      const safeValue = SecurityUtils.escapeHtml(s);
+      optionsHtml +=
+        '<option value="' +
+        safeValue +
+        '"' +
+        (currentScaleVal === s ? ' selected' : '') +
+        '>' +
+        safeScaleName +
+        '</option>';
+    });
+    scaleSelect.innerHTML = optionsHtml;
 
     // ---- 筛选 + 排序 ----
     const keyword = (document.getElementById('fb-search-input').value || '').trim().toLowerCase();

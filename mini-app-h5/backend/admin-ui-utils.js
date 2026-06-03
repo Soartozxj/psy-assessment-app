@@ -214,12 +214,14 @@
       warning: '⚠️',
       info: 'ℹ️'
     };
+    // ✅ P2安全修复：对消息进行HTML转义，防止XSS攻击
+    const safeMessage = SecurityUtils.escapeHtml(message || '');
     toast.innerHTML =
       '<span class="ui-toast-icon">' +
       (icons[type] || icons.info) +
       '</span>' +
       '<span class="ui-toast-message">' +
-      message +
+      safeMessage +
       '</span>';
 
     _toastContainer.appendChild(toast);

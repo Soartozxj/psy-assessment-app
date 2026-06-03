@@ -46,3 +46,50 @@ mini-app-h5-redesign/frontend/cloud-data.js
 mini-app-h5-redesign/frontend/data-monitor.js
 mini-app-h5-redesign/frontend/scoring-engine.js
 mini-app-h5-redesign/frontend/shared-data.js
+
+# 测试相关文件（临时测试文件）
+test-*.html
+test-*.js
+test-*.cjs
+test-*.mjs
+
+# XSS测试临时文件
+xss-*.cjs
+xss-*.js
+xss-*.mjs
+XSS-*.html
+XSS渗透测试*.md
+
+# 测试快照和结果文件
+*-snapshot.yaml
+*-snapshot.yml
+test_results_*.json
+*-test-report.json
+*-test-report.html
+
+# 测试覆盖率报告
+coverage/
+*.info
+
+# 部署包
+*.zip
+
+# OCR和扫描输出
+ocr-out.txt
+document_scan_results*.json
+document_cleanup_report*.txt
+
+# 一次性脚本（如果不在构建流程中）
+# 这些文件通常不应该被提交到版本控制
+build-*.py
+cleanup-*.py
+doc_cleaner*.py
+document_cleaner*.py
+fix_test.py
+gen_*.py
+migrate_*.py
+step3_*.py
+sync-from-live.py
+update-*-prompt.js
+upload-*.py
+verify_*.py

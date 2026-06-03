@@ -2014,7 +2014,10 @@ function updateNpcSelectPreview() {
   if (bpEl) {
     if (bgId) {
       const b = (config.backgrounds || []).find((x) => x.id === bgId);
-      bpEl.innerHTML = b ? '已选：<strong style="color:var(--primary)">' + b.name + '</strong>' : '';
+      // 安全修复：对b.name进行XSS转义
+      bpEl.innerHTML = b
+        ? '已选：<strong style="color:var(--primary)">' + SecurityUtils.escapeHtml(b.name) + '</strong>'
+        : '';
     } else {
       bpEl.innerHTML = '将使用全局默认背景';
     }

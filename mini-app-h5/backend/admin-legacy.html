@@ -72,6 +72,9 @@
     <!-- ✅ 新增：Skill 注册表（用于系统提示词 Skill 架构迁移） -->
     <script src="skill-registry.js?v=1"></script>
 
+    <!-- ✅ 新增：安全工具库（XSS防护、CSRF保护） -->
+    <script src="security-utils.js?v=2026060301"></script>
+
     <!-- Chart.js CDN - 用于数据看板图表渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- ✅ 已改造：认证插件（通过 PluginLoader 自动加载，保留向后兼容） -->
@@ -97,19 +100,25 @@
         var msgEl = document.getElementById('pwd-msg');
 
         if (!oldPwd || !newPwd || !confirmPwd) {
-          msgEl.innerHTML = '<span style="color:var(--danger)">请填写所有字段</span>';
+          // 安全修复：使用textContent替代innerHTML
+          msgEl.textContent = '请填写所有字段';
+          msgEl.style.color = 'var(--danger)';
           return;
         }
         if (newPwd !== confirmPwd) {
-          msgEl.innerHTML = '<span style="color:var(--danger)">两次输入的新密码不一致</span>';
+          // 安全修复：使用textContent替代innerHTML
+          msgEl.textContent = '两次输入的新密码不一致';
+          msgEl.style.color = 'var(--danger)';
           return;
         }
         var result = adminAuth.changePassword(oldPwd, newPwd);
         if (result.ok) {
-          msgEl.innerHTML = '<span style="color:var(--success)">✅ ' + result.msg + '</span>';
+          msgEl.textContent = '✅ ' + result.msg;
+          msgEl.style.color = 'var(--success)';
           setTimeout(closePwdModal, 1200);
         } else {
-          msgEl.innerHTML = '<span style="color:var(--danger)">❌ ' + result.msg + '</span>';
+          msgEl.textContent = '❌ ' + result.msg;
+          msgEl.style.color = 'var(--danger)';
         }
       }
     </script>
@@ -13457,11 +13466,13 @@
           if (typeof renderScaleTypes === 'function') renderScaleTypes();
 
           badge.className = 'sync-badge';
-          badge.innerHTML = '<span>☁️</span> 已拉取 ' + cloudScales.length + ' 个量表';
+          // 安全修复：使用textContent替代innerHTML设置纯文本
+          badge.textContent = '☁️ 已拉取 ' + cloudScales.length + ' 个量表';
         } catch (e) {
           console.warn('[Admin] 从云端拉取失败:', e.message);
           badge.className = 'sync-badge';
-          badge.innerHTML = '<span>⚠️</span> 拉取失败';
+          // 安全修复：使用textContent替代innerHTML
+          badge.textContent = '⚠️ 拉取失败';
           alert('从云端拉取失败：' + e.message + '\n\n请确认网络可访问 www.soarto.com.cn');
         }
       }
@@ -13522,16 +13533,19 @@
           .then(function (lnmpResult) {
             badge.className = 'sync-badge';
             if (lnmpResult && lnmpResult.ok) {
-              badge.innerHTML = '<span>✅</span> 已同步（LNMP+本地）';
+              // 安全修复：使用textContent替代innerHTML
+              badge.textContent = '✅ 已同步（LNMP+本地）';
               showToast('量表数据已同步至 LNMP 和本地！', 'success');
             } else {
-              badge.innerHTML = '<span>⚠️</span> 仅本地同步';
+              // 安全修复：使用textContent替代innerHTML
+              badge.textContent = '⚠️ 仅本地同步';
               showToast('LNMP 同步失败，仅本地同步成功：' + ((lnmpResult && lnmpResult.msg) || '未知错误'), 'warning');
             }
           })
           .catch(function (err) {
             badge.className = 'sync-badge';
-            badge.innerHTML = '<span>⚠️</span> 仅本地同步';
+            // 安全修复：使用textContent替代innerHTML
+            badge.textContent = '⚠️ 仅本地同步';
             showToast('LNMP 同步异常，仅本地同步成功：' + err.message, 'warning');
           });
       }
@@ -15910,13 +15924,16 @@
               // 旧格式兼容
               providerData = { count: data.data.count, keys: data.data.keys };
             } else {
-              panel.innerHTML = '<span style="color:var(--warning)">' + label + ': 无数据</span>';
+              // 安全修复：对label进行XSS转义
+              panel.innerHTML =
+                '<span style="color:var(--warning)">' + SecurityUtils.escapeHtml(label) + ': 无数据</span>';
               return;
             }
             if (!providerData || providerData.count === 0) {
+              // 安全修复：对label进行XSS转义
               panel.innerHTML =
                 '<span style="color:var(--danger)">' +
-                label +
+                SecurityUtils.escapeHtml(label) +
                 ': 无 API Key，请在「运维工具 → AI 密钥管理」配置</span>';
               return;
             }
@@ -21272,8 +21289,11 @@
         if (cpEl) {
           if (counselorId) {
             const c = (config.counselors || []).find((x) => x.id === counselorId);
+            // 安全修复：对c.counselorName和c.name进行XSS转义
             cpEl.innerHTML = c
-              ? '已选：<strong style="color:var(--primary)">' + (c.counselorName || c.name) + '</strong>'
+              ? '已选：<strong style="color:var(--primary)">' +
+                SecurityUtils.escapeHtml(c.counselorName || c.name) +
+                '</strong>'
               : '';
           } else {
             cpEl.innerHTML = '将使用全局默认立绘';
@@ -21282,7 +21302,10 @@
         if (bpEl) {
           if (bgId) {
             const b = (config.backgrounds || []).find((x) => x.id === bgId);
-            bpEl.innerHTML = b ? '已选：<strong style="color:var(--primary)">' + b.name + '</strong>' : '';
+            // 安全修复：对b.name进行XSS转义
+            bpEl.innerHTML = b
+              ? '已选：<strong style="color:var(--primary)">' + SecurityUtils.escapeHtml(b.name) + '</strong>'
+              : '';
           } else {
             bpEl.innerHTML = '将使用全局默认背景';
           }
@@ -22388,7 +22411,9 @@
           return;
         }
         localStorage.setItem('psy_cloud_api_base', val);
-        status.innerHTML = '<span style="color:var(--success)">✅ 已保存到 localStorage（' + escHtml(val) + '）</span>';
+        // 安全修复：对val进行XSS转义（虽然已用escHtml，但改为SecurityUtils.escapeHtml保持一致性）
+        status.innerHTML =
+          '<span style="color:var(--success)">✅ 已保存到 localStorage（' + SecurityUtils.escapeHtml(val) + '）</span>';
       }
 
       /**
@@ -22656,7 +22681,9 @@
             resultEl.innerHTML = '<span style="color:var(--success)">✅ 有效</span>';
           })
           .catch(function (err) {
-            resultEl.innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(err.message) + '</span>';
+            // 安全修复：使用SecurityUtils.escapeHtml确保XSS防护
+            resultEl.innerHTML =
+              '<span style="color:var(--danger)">❌ ' + SecurityUtils.escapeHtml(err.message) + '</span>';
           });
       }
 
@@ -23017,7 +23044,9 @@
                 (reply ? ' · 回复: "' + escHtml(reply.substring(0, 20)) + '"' : '');
             })
             .catch(function (err) {
-              statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败: ' + escHtml(err.message) + '</span>';
+              // 安全修复：使用SecurityUtils.escapeHtml确保XSS防护
+              statusEl.innerHTML =
+                '<span style="color:var(--danger)">❌ 连接失败: ' + SecurityUtils.escapeHtml(err.message) + '</span>';
             });
         } else if (provider === 'deepseek') {
           var dkKey = document.getElementById('ops-ak-dk-key');
@@ -23090,7 +23119,9 @@
                 (reply ? ' · 回复: "' + escHtml(reply.substring(0, 20)) + '"' : '');
             })
             .catch(function (err) {
-              statusEl.innerHTML = '<span style="color:var(--danger)">❌ 连接失败: ' + escHtml(err.message) + '</span>';
+              // 安全修复：使用SecurityUtils.escapeHtml确保XSS防护
+              statusEl.innerHTML =
+                '<span style="color:var(--danger)">❌ 连接失败: ' + SecurityUtils.escapeHtml(err.message) + '</span>';
             });
         } else if (provider === 'ollama') {
           var olUrl = document.getElementById('ops-ak-ol-url');
@@ -23622,7 +23653,11 @@
         });
         // 渲染内容
         var content = document.getElementById('ops-manual-content');
-        if (content) content.innerHTML = '<div class="ops-manual-section active">' + sections[index].html + '</div>';
+        if (content) {
+          // 安全修复：对sections[index].html进行XSS转义
+          content.innerHTML =
+            '<div class="ops-manual-section active">' + SecurityUtils.escapeHtml(sections[index].html) + '</div>';
+        }
       }
 
       function opsManualSearch(keyword) {
@@ -24750,8 +24785,9 @@
           } else {
             var tt = titleEl.textContent,
               dd = descEl.textContent;
-            titleEl.innerHTML = '<input class="sp-flow-edit-input" value="' + tt.replace(/"/g, '&quot;') + '" />';
-            descEl.innerHTML = '<input class="sp-flow-edit-input" value="' + dd.replace(/"/g, '&quot;') + '" />';
+            // 安全修复：对用户输入tt和dd进行XSS转义
+            titleEl.innerHTML = '<input class="sp-flow-edit-input" value="' + SecurityUtils.escapeHtml(tt) + '" />';
+            descEl.innerHTML = '<input class="sp-flow-edit-input" value="' + SecurityUtils.escapeHtml(dd) + '" />';
             item.dataset.editing = 'true';
             btn.textContent = '✓';
             titleEl.querySelector('.sp-flow-edit-input').focus();
@@ -25136,7 +25172,9 @@
               '星</div></div>';
           }
           document.getElementById('fb-chart-stars').innerHTML = barHtml;
-          document.getElementById('fb-chart-avg').innerHTML = '平均 <b>' + avgStars.toFixed(1) + '</b> 星';
+          // 安全修复：对数值进行转义（虽然数值不是用户输入，但保持一致性）
+          document.getElementById('fb-chart-avg').innerHTML =
+            '平均 <b>' + SecurityUtils.escapeHtml(avgStars.toFixed(1)) + '</b> 星';
 
           // ---- 热门标签 ----
           var tagCount = {};

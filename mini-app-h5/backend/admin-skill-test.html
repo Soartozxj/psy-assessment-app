@@ -258,8 +258,10 @@
 
           renderSkillInfo();
         } catch (err) {
+          // ✅ P2安全修复：使用SecurityUtils.escapeHtml防止XSS
+          const escapedMessage = SecurityUtils.escapeHtml(err.message || '未知错误');
           document.getElementById('skill-info').innerHTML =
-            `<div style="color:var(--danger);padding:20px;">❌ 加载失败: ${err.message}</div>`;
+            `<div style="color:var(--danger);padding:20px;">❌ 加载失败: ${escapedMessage}</div>`;
         }
       }
 
@@ -267,14 +269,21 @@
       function renderSkillInfo() {
         if (!currentSkill) return;
 
+        // ✅ P2安全修复：对用户输入的数据进行转义
+        const icon = SecurityUtils.escapeHtml(currentSkill.metadata?.icon || '📝');
+        const name = SecurityUtils.escapeHtml(currentSkill.name || '');
+        const type = SecurityUtils.escapeHtml(currentSkill.metadata?.type || 'system-prompt');
+        const version = SecurityUtils.escapeHtml(currentSkill.version || '1.0');
+        const contentLength = (currentSkill.content || '').length;
+
         document.getElementById('skill-info').innerHTML = `
-        <div class="skill-name">${currentSkill.metadata?.icon || '📝'} ${currentSkill.name}</div>
-        <div class="skill-meta">
-          <span>📋 ${currentSkill.metadata?.type || 'system-prompt'}</span>
-          <span>📏 v${currentSkill.version || '1.0'}</span>
-          <span>📏 ${(currentSkill.content || '').length} 字</span>
-        </div>
-      `;
+          <div class="skill-name">${icon} ${name}</div>
+          <div class="skill-meta">
+            <span>📋 ${type}</span>
+            <span>📏 v${version}</span>
+            <span>📏 ${contentLength} 字</span>
+          </div>
+        `;
       }
 
       // 运行测试

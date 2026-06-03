@@ -592,7 +592,9 @@ class AiPlugin extends PluginBase {
 
       if (data.code === 0 && data.data.ok) {
         if (this._elements.testResult) {
-          this._elements.testResult.innerHTML = `<span class="ai-success">✅ 连接成功 · 延迟 ${data.data.latency}ms</span>`;
+          // ✅ P2安全修复：对延迟时间进行HTML转义
+          const safeLatency = SecurityUtils.escapeHtml(String(data.data.latency || ''));
+          this._elements.testResult.innerHTML = `<span class="ai-success">✅ 连接成功 · 延迟 ${safeLatency}ms</span>`;
         }
         this.showToast('API 连接测试成功', 'success');
         return { success: true, latency: data.data.latency };
@@ -602,9 +604,11 @@ class AiPlugin extends PluginBase {
     } catch (e) {
       Adapter.logger.error('Test failed:', e);
       if (this._elements.testResult) {
-        this._elements.testResult.innerHTML = `<span class="ai-error">❌ ${e.message}</span>`;
+        // ✅ P2安全修复：对错误消息进行HTML转义
+        const safeMessage = SecurityUtils.escapeHtml(e.message || '未知错误');
+        this._elements.testResult.innerHTML = `<span class="ai-error">❌ ${safeMessage}</span>`;
       }
-      this.showToast('测试失败：' + e.message, 'error');
+      this.showToast('测试失败：' + SecurityUtils.escapeHtml(e.message || '未知错误'), 'error');
       return { success: false, error: e.message };
     }
   }

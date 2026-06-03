@@ -228,8 +228,10 @@
 
           renderSkill();
         } catch (err) {
+          // ✅ P2安全修复：使用SecurityUtils.escapeHtml防止XSS
+          const escapedMessage = SecurityUtils.escapeHtml(err.message || '未知错误');
           document.getElementById('skill-content-area').innerHTML =
-            `<div class="error">❌ 加载失败: ${err.message}</div>`;
+            `<div class="error">❌ 加载失败: ${escapedMessage}</div>`;
         }
       }
 
@@ -237,28 +239,38 @@
       function renderSkill() {
         if (!currentSkill) return;
 
-        document.getElementById('page-title').textContent = '📋 ' + currentSkill.name;
+        // ✅ P2安全修复：对所有Skill数据进行HTML转义
+        const safeIcon = SecurityUtils.escapeHtml(currentSkill.metadata?.icon || '📝');
+        const safeName = SecurityUtils.escapeHtml(currentSkill.name || '');
+        const safeVersion = SecurityUtils.escapeHtml(currentSkill.version || '1.0');
+        const safeDescription = SecurityUtils.escapeHtml(currentSkill.description || '暂无描述');
+        const safeType = SecurityUtils.escapeHtml(currentSkill.metadata?.type || 'system-prompt');
+        const safeNote = currentSkill.metadata?.note ? SecurityUtils.escapeHtml(currentSkill.metadata.note) : '';
+        const contentLength = (currentSkill.content || '').length;
+        const safeContent = SecurityUtils.escapeHtml(currentSkill.content || '');
+
+        document.getElementById('page-title').textContent = '📋 ' + safeName;
 
         const html = `
-        <div class="skill-meta">
-          <div class="skill-header">
-            <span class="skill-icon">${currentSkill.metadata?.icon || '📝'}</span>
-            <span class="skill-name">${currentSkill.name}</span>
-            <span class="skill-version">v${currentSkill.version || '1.0'}</span>
+          <div class="skill-meta">
+            <div class="skill-header">
+              <span class="skill-icon">${safeIcon}</span>
+              <span class="skill-name">${safeName}</span>
+              <span class="skill-version">v${safeVersion}</span>
+            </div>
+            <div class="skill-description">${safeDescription}</div>
+            <div class="skill-tags">
+              <span class="skill-tag">📋 ${safeType}</span>
+              <span class="skill-tag">📏 ${contentLength} 字</span>
+              ${safeNote ? `<span class="skill-tag">📝 ${safeNote}</span>` : ''}
+            </div>
           </div>
-          <div class="skill-description">${currentSkill.description || '暂无描述'}</div>
-          <div class="skill-tags">
-            <span class="skill-tag">📋 ${currentSkill.metadata?.type || 'system-prompt'}</span>
-            <span class="skill-tag">📏 ${(currentSkill.content || '').length} 字</span>
-            ${currentSkill.metadata?.note ? `<span class="skill-tag">📝 ${currentSkill.metadata.note}</span>` : ''}
-          </div>
-        </div>
 
-        <div class="skill-content">
-          <div class="content-header">📄 内容</div>
-          <div class="content-body" id="skill-body">${escapeHtml(currentSkill.content || '')}</div>
-        </div>
-      `;
+          <div class="skill-content">
+            <div class="content-header">📄 内容</div>
+            <div class="content-body" id="skill-body">${safeContent}</div>
+          </div>
+        `;
 
         document.getElementById('skill-content-area').innerHTML = html;
       }

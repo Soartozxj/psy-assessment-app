@@ -310,14 +310,20 @@
        */
       function showResult(elementId, content, isError = false) {
         const el = document.getElementById(elementId);
-        el.innerHTML = `
-        <div style="background: ${isError ? '#f8d7da' : '#d4edda'}; 
+        // ✅ P2安全修复：使用textContent代替innerHTML，防止XSS攻击
+        const container = document.createElement('div');
+        container.style.cssText = `background: ${isError ? '#f8d7da' : '#d4edda'}; 
                      padding: 15px; 
                      border-radius: 6px; 
-                     margin-top: 10px;">
-          <pre style="margin: 0; white-space: pre-wrap; font-size: 13px;">${content}</pre>
-        </div>
-      `;
+                     margin-top: 10px;`;
+
+        const pre = document.createElement('pre');
+        pre.style.cssText = 'margin: 0; white-space: pre-wrap; font-size: 13px;';
+        pre.textContent = content || '';
+
+        container.appendChild(pre);
+        el.innerHTML = '';
+        el.appendChild(container);
       }
 
       // ====================================================

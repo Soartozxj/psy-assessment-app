@@ -77,17 +77,24 @@ function renderDashboard() {
   const sorted = [...displayScales].sort((a, b) => (b.completedCount || 0) - (a.completedCount || 0));
   const maxVal = sorted[0] ? sorted[0].completedCount || 1 : 1;
   if (document.getElementById('bar-chart')) {
+    // ✅ P2安全修复：对所有用户数据进行HTML转义
     document.getElementById('bar-chart').innerHTML = sorted
-      .map(
-        (s) => `
+      .map((s) => {
+        const safeName = SecurityUtils.escapeHtml(s.name || '');
+        const safeShortName = SecurityUtils.escapeHtml((s.shortName || s.name || '').split(' ')[0]);
+        const safeColor = SecurityUtils.escapeHtml(s.color || '#ccc');
+        const widthPct = Math.round(((s.completedCount || 0) / maxVal) * 100);
+        const completedCount = s.completedCount || 0;
+
+        return `
       <div class="bar-row">
-        <div class="bar-name" title="${s.name}">${s.shortName || s.name.split(' ')[0]}</div>
+        <div class="bar-name" title="${safeName}">${safeShortName}</div>
         <div class="bar-track">
-          <div class="bar-fill" style="width:${Math.round(((s.completedCount || 0) / maxVal) * 100)}%;background:${s.color}"></div>
+          <div class="bar-fill" style="width:${widthPct}%;background:${safeColor}"></div>
         </div>
-        <div class="bar-val">${((s.completedCount || 0) / 1000).toFixed(1)}k</div>
-      </div>`
-      )
+        <div class="bar-val">${(completedCount / 1000).toFixed(1)}k</div>
+      </div>`;
+      })
       .join('');
   }
 
@@ -101,11 +108,12 @@ function renderDashboard() {
   let startAngle = 0;
   const paths = cats.map(([cat, count]) => {
     const color = CAT_MAP[cat] ? CAT_MAP[cat].color : '#ccc';
+    const safeColor = SecurityUtils.escapeHtml(color);
     const pct = count / total;
     const angle = pct * 360;
     const path = describeArc(60, 60, 46, startAngle, startAngle + angle);
     startAngle += angle;
-    return `<path d="${path}" fill="${color}" />`;
+    return `<path d="${path}" fill="${safeColor}" />`;
   });
 
   if (document.getElementById('pie-chart')) {
@@ -117,11 +125,14 @@ function renderDashboard() {
   }
 
   if (document.getElementById('pie-legend')) {
+    // ✅ P2安全修复：对分类名称进行转义
     document.getElementById('pie-legend').innerHTML = cats
       .map(([cat, count]) => {
         const color = CAT_MAP[cat] ? CAT_MAP[cat].color : '#ccc';
+        const safeColor = SecurityUtils.escapeHtml(color);
         const name = CAT_MAP[cat] ? CAT_MAP[cat].name : cat;
-        return `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div>${name}（${count}）</div>`;
+        const safeName = SecurityUtils.escapeHtml(name);
+        return `<div class="legend-item"><div class="legend-dot" style="background:${safeColor}"></div>${safeName}（${count}）</div>`;
       })
       .join('');
   }
@@ -147,11 +158,18 @@ function renderUserTable() {
     { id: 'U004', nick: '用户D', reg: '2026-04-07', cnt: 2, last: '2026-04-09', status: '正常' },
     { id: 'U005', nick: '用户E', reg: '2026-04-08', cnt: 1, last: '2026-04-08', status: '正常' }
   ];
+
+  // ✅ P2安全修复：对所有用户数据进行HTML转义
   document.getElementById('user-table-body').innerHTML = mockUsers
-    .map(
-      (u) =>
-        `<tr><td>${u.id}</td><td>${u.nick}</td><td>${u.reg}</td><td>${u.cnt}次</td><td>${u.last}</td><td><span class="badge badge-success">${u.status}</span></td></tr>`
-    )
+    .map((u) => {
+      const safeId = SecurityUtils.escapeHtml(u.id);
+      const safeNick = SecurityUtils.escapeHtml(u.nick);
+      const safeReg = SecurityUtils.escapeHtml(u.reg);
+      const safeLast = SecurityUtils.escapeHtml(u.last);
+      const safeStatus = SecurityUtils.escapeHtml(u.status);
+
+      return `<tr><td>${safeId}</td><td>${safeNick}</td><td>${safeReg}</td><td>${u.cnt}次</td><td>${safeLast}</td><td><span class="badge badge-success">${safeStatus}</span></td></tr>`;
+    })
     .join('');
 }
 
@@ -198,12 +216,21 @@ function renderRecordTable() {
       time: '2026-04-09 16:45'
     }
   ];
+
+  // ✅ P2安全修复：对所有记录数据进行HTML转义
   const levelColor = (l) =>
     l.includes('正常') || l.includes('无') ? 'badge-success' : l.includes('轻') ? 'badge-warning' : 'badge-default';
+
   document.getElementById('record-table-body').innerHTML = mockRec
-    .map(
-      (r) =>
-        `<tr><td style="font-family:monospace">${r.no}</td><td>${r.scale}</td><td>${r.user}</td><td><strong>${r.score}</strong></td><td><span class="badge ${levelColor(r.level)}">${r.level}</span></td><td style="color:var(--text-muted)">${r.time}</td></tr>`
-    )
+    .map((r) => {
+      const safeNo = SecurityUtils.escapeHtml(r.no);
+      const safeScale = SecurityUtils.escapeHtml(r.scale);
+      const safeUser = SecurityUtils.escapeHtml(r.user);
+      const safeLevel = SecurityUtils.escapeHtml(r.level);
+      const safeTime = SecurityUtils.escapeHtml(r.time);
+      const badgeClass = levelColor(r.level);
+
+      return `<tr><td style="font-family:monospace">${safeNo}</td><td>${safeScale}</td><td>${safeUser}</td><td><strong>${r.score}</strong></td><td><span class="badge ${badgeClass}">${safeLevel}</span></td><td style="color:var(--text-muted)">${safeTime}</td></tr>`;
+    })
     .join('');
 }

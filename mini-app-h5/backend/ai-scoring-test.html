@@ -1811,7 +1811,9 @@
         });
         report += '<div style="margin-top:12px;font-size:12px;color:var(--text-sec);">公式类型：';
         for (const [type, count] of Object.entries(formulaTypes)) {
-          report += '<span class="tag tag-blue" style="margin-right:4px;">' + type + ' ×' + count + '</span>';
+          // ✅ P2安全修复：对公式类型进行HTML转义
+          report +=
+            '<span class="tag tag-blue" style="margin-right:4px;">' + escHtml(type) + ' ×' + escHtml(count) + '</span>';
         }
         report += '</div>';
 

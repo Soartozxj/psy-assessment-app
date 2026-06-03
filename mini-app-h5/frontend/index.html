@@ -7164,8 +7164,9 @@
           descContainer.textContent = truncatedDesc;
         }
 
+        // ✅ P2安全修复：对所有标签进行HTML转义
         document.getElementById('detail-tags').innerHTML = tags
-          .map((t) => `<span class="scale-tag">${t}</span>`)
+          .map((t) => `<span class="scale-tag">${escHtml(t)}</span>`)
           .join('');
 
         // 显示答题须知
@@ -7173,10 +7174,11 @@
         if (noticeContainer) {
           const noticeItems = s.notice || [];
           if (noticeItems.length > 0) {
+            // ✅ P2安全修复：对所有答题须知项目进行HTML转义
             const noticeHTML = noticeItems
               .map(
                 (item) => `
-        <div class="notice-item"><span class="notice-icon">ℹ️</span><span>${item}</span></div>
+        <div class="notice-item"><span class="notice-icon">ℹ️</span><span>${escHtml(item)}</span></div>
       `
               )
               .join('');
@@ -7539,11 +7541,19 @@
         const desc = s.desc || s.description || '';
         const descContainer = document.getElementById('detail-desc');
 
-        // 显示完整描述和收起按钮
-        descContainer.innerHTML = `
-    ${desc}
-    <button id="show-less-desc" class="btn-small" onclick="showLessDescription()" style="margin-left: 10px;">收起</button>
-  `;
+        // ✅ P2安全修复：使用textContent代替innerHTML，防止XSS攻击
+        descContainer.textContent = '';
+        const textNode = document.createTextNode(desc);
+        descContainer.appendChild(textNode);
+
+        // 添加收起按钮
+        const btn = document.createElement('button');
+        btn.id = 'show-less-desc';
+        btn.className = 'btn-small';
+        btn.style.marginLeft = '10px';
+        btn.textContent = '收起';
+        btn.onclick = showLessDescription;
+        descContainer.appendChild(btn);
       }
 
       function showLessDescription() {
@@ -7555,11 +7565,19 @@
         const truncatedDesc = truncateText(desc, 120);
         const descContainer = document.getElementById('detail-desc');
 
-        // 显示截断描述和查看更多按钮
-        descContainer.innerHTML = `
-    ${truncatedDesc}
-    <button id="show-full-desc" class="btn-small" onclick="showFullDescription()" style="margin-left: 10px;">查看更多</button>
-  `;
+        // ✅ P2安全修复：使用textContent代替innerHTML，防止XSS攻击
+        descContainer.textContent = '';
+        const textNode = document.createTextNode(truncatedDesc);
+        descContainer.appendChild(textNode);
+
+        // 添加查看更多按钮
+        const btn = document.createElement('button');
+        btn.id = 'show-full-desc';
+        btn.className = 'btn-small';
+        btn.style.marginLeft = '10px';
+        btn.textContent = '查看更多';
+        btn.onclick = showFullDescription;
+        descContainer.appendChild(btn);
       }
 
       // ===== 测评（NPC对话风格） =====
@@ -8633,7 +8651,12 @@
         }
         function typeNext() {
           if (i < text.length) {
-            el.innerHTML = text.substring(0, i + 1) + '<span class="npc-cursor"></span>';
+            // ✅ P2安全修复：使用textContent代替innerHTML，防止XSS攻击
+            el.textContent = text.substring(0, i + 1);
+            // 添加光标效果
+            var cursor = document.createElement('span');
+            cursor.className = 'npc-cursor';
+            el.appendChild(cursor);
             i++;
             var ch = text[i - 1];
             var d = 45;
@@ -8726,7 +8749,17 @@
           btn.className = 'npc-option-btn';
           btn.setAttribute('data-index', index);
           var letter = o.id || String.fromCharCode(65 + index);
-          btn.innerHTML = '<span class="npc-option-letter">' + letter + '</span><span>' + o.label + '</span>';
+
+          // ✅ P2安全修复：使用DOM API代替innerHTML，防止XSS攻击
+          var letterSpan = document.createElement('span');
+          letterSpan.className = 'npc-option-letter';
+          letterSpan.textContent = letter;
+
+          var labelSpan = document.createElement('span');
+          labelSpan.textContent = o.label || '';
+
+          btn.appendChild(letterSpan);
+          btn.appendChild(labelSpan);
           btn.style.cursor = 'pointer';
           // 直接绑定 click 和 touchend（双保险，WebView 中 touchend 更可靠）
           btn.addEventListener('click', function (e) {
@@ -8833,7 +8866,17 @@
           var btn = document.createElement('div');
           btn.className = 'npc-option-btn';
           var letter = o.id || String.fromCharCode(65 + index);
-          btn.innerHTML = '<span class="npc-option-letter">' + letter + '</span><span>' + o.label + '</span>';
+
+          // ✅ P2安全修复：使用DOM API代替innerHTML，防止XSS攻击
+          var letterSpan = document.createElement('span');
+          letterSpan.className = 'npc-option-letter';
+          letterSpan.textContent = letter;
+
+          var labelSpan = document.createElement('span');
+          labelSpan.textContent = o.label || '';
+
+          btn.appendChild(letterSpan);
+          btn.appendChild(labelSpan);
           btn.addEventListener('click', function () {
             npcSelectOption(q, o, area, btn);
           });
@@ -9898,7 +9941,17 @@
           btn.className = 'npc-option-btn npc-pc-main';
           btn.setAttribute('data-pc-main', opt.id);
           var letter = opt.id !== undefined ? opt.id : '';
-          btn.innerHTML = '<span class="npc-option-letter">' + letter + '</span><span>' + opt.label + '</span>';
+
+          // ✅ P2安全修复：使用DOM API代替innerHTML，防止XSS攻击
+          var letterSpan = document.createElement('span');
+          letterSpan.className = 'npc-option-letter';
+          letterSpan.textContent = letter;
+
+          var labelSpan = document.createElement('span');
+          labelSpan.textContent = opt.label || '';
+
+          btn.appendChild(letterSpan);
+          btn.appendChild(labelSpan);
           btn.addEventListener('click', function () {
             // 清除所有主选项选中状态
             var all = pcWrap.querySelectorAll('.npc-option-btn.npc-pc-main');
@@ -14027,8 +14080,15 @@
         var items = [];
         for (var i = 0; i < favs.length; i++) {
           var f = favs[i];
-          var bgColor = f.color ? f.color + '18' : '#f0f0f0';
-          var textColor = f.color || '#666';
+
+          // ✅ P2安全修复：安全处理颜色值，防止CSS注入
+          var safeColor = '#f0f0f0';
+          if (f.color && /^#[0-9A-Fa-f]{6}$/.test(f.color)) {
+            safeColor = f.color;
+          }
+          var bgColor = safeColor + '18';
+          var textColor = safeColor;
+
           // 提取 AI 诊断摘要（去标签，取前80字）
           var preview = f.aiDiagText
             ? f.aiDiagText
@@ -14049,9 +14109,9 @@
               ')" title="取消收藏">✕</button>' +
               '<div class="rfav-item-header">' +
               '<div class="rfav-item-emoji" style="background:' +
-              bgColor +
+              escHtml(bgColor) +
               ';color:' +
-              textColor +
+              escHtml(textColor) +
               '">' +
               escHtml(f.emoji) +
               '</div>' +
@@ -14062,9 +14122,9 @@
               '<div class="rfav-item-meta">' +
               escHtml(f.levelName) +
               ' · ' +
-              (f.score || '--') +
+              escHtml(f.score || '--') +
               '分' +
-              (timeStr ? ' · ' + timeStr : '') +
+              (timeStr ? ' · ' + escHtml(timeStr) : '') +
               '</div>' +
               '</div>' +
               '</div>' +

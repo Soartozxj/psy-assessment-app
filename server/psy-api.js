@@ -21,9 +21,25 @@ const crypto = require('crypto');
 const path = require('path');
 const { body, validationResult, param, query } = require('express-validator');
 
+// ✅ P2安全修复：引入安全中间件
+const {
+  csrfProtection,
+  requireRole,
+  enhancedAuthMiddleware,
+  initCsrfTokenStorage,
+  csrfTokenEndpoint,
+  SECURITY_CONFIG
+} = require('./security-middleware');
+
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ P2安全修复：初始化CSRF Token存储
+initCsrfTokenStorage(app);
+
+// ✅ P2安全修复：添加CSRF保护中间件
+app.use(csrfProtection);
 
 const PORT = process.env.PORT || 3100;
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'psy-default-secret';
@@ -257,6 +273,12 @@ app.get('/api/auth/verify', (req, res) => {
     data: { valid: !!payload, role: payload ? payload.role : null }
   });
 });
+
+/**
+ * CSRF Token 获取端点
+ * 前端在发起状态修改操作前，需要先获取CSRF Token
+ */
+app.get('/api/csrf-token', csrfTokenEndpoint);
 
 // 密码登录（降级方案）- 添加输入验证 (FIX-002 P1安全修复)
 app.post(
@@ -541,9 +563,9 @@ app.get(
 );
 
 /**
- * DELETE /api/history/:id — 需要管理员认证
+ * DELETE /api/history/:id — 需要管理员认证和权限
  */
-app.delete('/api/history/:id', authMiddleware, async (req, res) => {
+app.delete('/api/history/:id', enhancedAuthMiddleware('records:write'), async (req, res) => {
   try {
     const db = await getPool();
     const [result] = await db.query('DELETE FROM assessments WHERE record_id = ?', [req.params.id]);

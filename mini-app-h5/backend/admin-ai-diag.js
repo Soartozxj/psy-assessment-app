@@ -254,6 +254,7 @@ function renderAiDiagScaleList() {
     return;
   }
   const scales = SharedData.getAllScales().filter((s) => s.status !== 0);
+  // ✅ P2安全修复：对所有用户数据进行HTML转义
   container.innerHTML = scales
     .map((s) => {
       const hasDiag = s.aiDiag && s.aiDiag.enabled;
@@ -264,11 +265,20 @@ function renderAiDiagScaleList() {
         DEFAULT_SCALES.find(function (d) {
           return d.id === s.id;
         });
+
+      // 对所有动态数据进行HTML转义
+      const safeId = SecurityUtils.escapeHtml(s.id);
+      const safeName = SecurityUtils.escapeHtml(s.name || s.scaleName || '');
+      const safeIcon = SecurityUtils.escapeHtml(s.icon || '📋');
+      const safeCode = SecurityUtils.escapeHtml(s.code || '');
+      const safeColor = SecurityUtils.escapeHtml(s.color || 'var(--primary)');
+      const safePromptPreview = SecurityUtils.escapeHtml(promptPreview);
+
       return (
         '<div class="ai-diag-scale-item" data-id="' +
-        s.id +
+        safeId +
         '" onclick="selectAiDiagScale(\'' +
-        s.id +
+        safeId +
         '\')" style="padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .2s;' +
         (currentAiDiagScaleId === s.id ? 'background:var(--primary-light);' : '') +
         '" onmouseover="this.style.background=this.style.background||\'var(--bg)\'" onmouseout="this.style.background=\'' +
@@ -276,14 +286,14 @@ function renderAiDiagScaleList() {
         '\'">' +
         '<div style="display:flex;align-items:center;gap:10px">' +
         '<div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:' +
-        (s.color || 'var(--primary)') +
+        safeColor +
         '18">' +
-        (s.icon || '📋') +
+        safeIcon +
         '</div>' +
         '<div style="flex:1;min-width:0">' +
         '<div style="display:flex;align-items:center;gap:6px">' +
         '<span style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
-        (s.name || s.scaleName || '') +
+        safeName +
         '</span>' +
         (hasDiag
           ? '<span style="color:var(--success);font-size:11px;flex-shrink:0">✓ 已配置</span>'
@@ -292,11 +302,11 @@ function renderAiDiagScaleList() {
             : '<span style="color:var(--text-muted);font-size:11px;flex-shrink:0">○ 未配置</span>') +
         '</div>' +
         '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' +
-        (s.code || '') +
+        safeCode +
         '</div>' +
         (promptPreview
           ? '<div style="font-size:11px;color:var(--text-sec);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.8">' +
-            promptPreview +
+            safePromptPreview +
             '</div>'
           : '') +
         '</div>' +
