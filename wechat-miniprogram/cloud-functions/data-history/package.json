@@ -1,9 +1,0 @@
-{
-  "name": "data-history",
-  "version": "1.0.0",
-  "description": "查询/删除测评历史",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}

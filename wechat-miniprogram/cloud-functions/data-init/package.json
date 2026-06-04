@@ -1,9 +1,0 @@
-{
-  "name": "data-init",
-  "version": "1.0.0",
-  "description": "前端初始化 - 拉取量表列表",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}

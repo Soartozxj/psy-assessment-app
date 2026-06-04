@@ -1,9 +1,0 @@
-{
-  "name": "ai-call",
-  "version": "1.0.0",
-  "description": "AI 接口代理调用（保护 API Key）",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}

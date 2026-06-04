@@ -1,9 +1,0 @@
-{
-  "name": "get-my-openid",
-  "version": "1.0.0",
-  "description": "临时获取 OpenID",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}

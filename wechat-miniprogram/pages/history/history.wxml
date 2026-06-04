@@ -1,5 +1,0 @@
-<view class="placeholder-page">
-  <text class="placeholder-icon">{{icon}}</text>
-  <text class="placeholder-text">{{title}}</text>
-  <text class="placeholder-hint">{{hint}}</text>
-</view>

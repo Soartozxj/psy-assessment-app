@@ -1,9 +1,0 @@
-{
-  "name": "data-sync",
-  "version": "1.0.0",
-  "description": "后台管理 - 量表配置同步",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}

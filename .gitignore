@@ -93,3 +93,12 @@ sync-from-live.py
 update-*-prompt.js
 upload-*.py
 verify_*.py
+
+# 归档目录（存放历史文件，不需要版本控制）
+archive/
+
+# 数据目录（可能包含测试数据或临时数据）
+data/
+
+# 项目清理报告（临时文件）
+*_CLEANUP_REPORT_*.md

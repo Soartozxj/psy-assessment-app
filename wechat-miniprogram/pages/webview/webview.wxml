@@ -1,4 +1,0 @@
-<!-- pages/webview/webview.wxml -->
-<!-- v12.3 - 恢复原生导航栏，H5 内部子页面返回按钮负责内部导航 -->
-<!-- 小程序原生返回 = 退出 WebView（标准行为，无法拦截） -->
-<web-view id="mainWebView" src="{{url}}" bindmessage="onMessage" binderror="onError"></web-view>
