@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "pages": [
     "pages/home/home",
     "pages/scales/scales",
@@ -9,6 +10,9 @@
     "pages/mine/mine",
     "pages/mood/mood"
   ],
+=======
+  "pages": ["pages/index/index", "pages/webview/webview"],
+>>>>>>> Stashed changes
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#ffffff",

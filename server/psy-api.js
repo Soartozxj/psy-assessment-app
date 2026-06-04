@@ -41,10 +41,19 @@ initCsrfTokenStorage(app);
 // ✅ P2安全修复：添加CSRF保护中间件
 app.use(csrfProtection);
 
+// ✅ 情绪日记API
+const diaryApi = require('./diary-api.js');
+diaryApi(app, authMiddleware, getPool, validationResult, body, param, query);
+
+// ✅ 冥想功能API
+const meditationApi = require('./meditation-api.js');
+meditationApi(app, authMiddleware, getPool, validationResult, body, param, query);
+
 const PORT = process.env.PORT || 3100;
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'psy-default-secret';
 const TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 天
 
+<<<<<<< Updated upstream
 // CORS 配置 - 允许跨域请求（开发环境）
 // 生产环境应从环境变量读取允许的域名
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map((s) => s.trim());
@@ -67,6 +76,19 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
   res.setHeader('Vary', 'Origin');
 
+=======
+// CORS 白名单：从环境变量读取，默认允许本地和已有域名
+// CORS 中间件
+app.use(function (req, res, next) {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+    res.setHeader('Vary', 'Origin');
+  }
+>>>>>>> Stashed changes
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
@@ -80,9 +102,13 @@ app.use(function (req, res, next) {
 let pool;
 let dbReady = false;
 async function getPool() {
+<<<<<<< Updated upstream
   if (pool) {
     return pool;
   }
+=======
+  if (pool) return pool;
+>>>>>>> Stashed changes
   pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 3306,
@@ -142,14 +168,10 @@ function verifyToken(token) {
   }
 }
 
-// 认证中间件
+// 认证中间件（临时禁用，用于本地测试）
 function authMiddleware(req, res, next) {
-  const token = (req.headers['authorization'] || '').replace('Bearer ', '');
-  const payload = verifyToken(token);
-  if (!payload) {
-    return res.status(401).json({ code: -3, message: '未登录或登录已过期' });
-  }
-  req.user = payload;
+  // TODO: 测试完成后恢复认证
+  req.user = { sub: 'test_openid_123', role: 'admin' };
   next();
 }
 
@@ -380,7 +402,10 @@ app.post('/api/submit', async (req, res) => {
       level,
       levelName,
       color,
+<<<<<<< Updated upstream
       emoji,
+=======
+>>>>>>> Stashed changes
       answers,
       dimensions,
       aiDiagnosis,
@@ -433,6 +458,7 @@ app.post('/api/submit', async (req, res) => {
  * GET /api/history?page=1&pageSize=20&openid=xxx
  * 查询测评历史
  */
+<<<<<<< Updated upstream
 app.get(
   '/api/history',
   [
@@ -471,6 +497,80 @@ app.get(
 
       // 解析 JSON 字段，对齐前端 record 对象结构
       const records = list.map((r) => ({
+=======
+app.get('/api/history', async (req, res) => {
+  try {
+    const db = await getPool();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 20));
+    const openid = req.query.openid || '';
+    const offset = (page - 1) * pageSize;
+
+    let where = 'WHERE 1=1';
+    const params = [];
+    if (openid) {
+      where += ' AND openid = ?';
+      params.push(openid);
+    }
+
+    const [list] = await db.query(
+      `SELECT id, record_id, openid, scale_id, scale_name, total_score, max_score, level, level_name, color, dimensions, ai_diagnosis, source, duration, category_name, created_at
+       FROM assessments ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...params, pageSize, offset]
+    );
+
+    const [countResult] = await db.query(`SELECT COUNT(*) as total FROM assessments ${where}`, params);
+
+    // 解析 JSON 字段，对齐前端 record 对象结构
+    const records = list.map((r) => ({
+      id: r.record_id,
+      scaleId: r.scale_id,
+      scaleName: r.scale_name,
+      emoji: '',
+      score: r.total_score,
+      maxScore: r.max_score,
+      level: r.level,
+      levelName: r.level_name,
+      color: r.color,
+      categoryName: r.category_name,
+      dims: r.dimensions ? (typeof r.dimensions === 'string' ? JSON.parse(r.dimensions) : r.dimensions) : null,
+      aiDiagnosis: r.ai_diagnosis,
+      source: r.source,
+      date: r.created_at ? new Date(r.created_at).toLocaleDateString('zh-CN') : '',
+      completedAt: r.created_at
+    }));
+
+    res.json({
+      code: 0,
+      data: {
+        list: records,
+        total: countResult[0].total,
+        page,
+        pageSize
+      }
+    });
+  } catch (err) {
+    console.error('[History] 错误:', err);
+    res.status(500).json({ code: -1, message: '查询失败: ' + err.message });
+  }
+});
+
+/**
+ * GET /api/history/:id
+ * 查询单条测评详情
+ */
+app.get('/api/history/:id', async (req, res) => {
+  try {
+    const db = await getPool();
+    const [rows] = await db.query('SELECT * FROM assessments WHERE record_id = ? LIMIT 1', [req.params.id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ code: -1, message: '记录不存在' });
+    }
+    const r = rows[0];
+    res.json({
+      code: 0,
+      data: {
+>>>>>>> Stashed changes
         id: r.record_id,
         scaleId: r.scale_id,
         scaleName: r.scale_name,
@@ -589,7 +689,11 @@ app.delete('/api/history/:id', enhancedAuthMiddleware('records:write'), async (r
  * 也可通过 POST /api/ai-config 动态更新
  */
 const _apiKeys = { dashscope: [], deepseek: [] };
+<<<<<<< Updated upstream
 const _keyIndex = { dashscope: 0, deepseek: 0 };
+=======
+let _keyIndex = { dashscope: 0, deepseek: 0 };
+>>>>>>> Stashed changes
 
 // 从 .env 加载（逗号分隔）
 ['DASHSCOPE_API_KEY', 'DEEPSEEK_API_KEY'].forEach(function (envKey) {
@@ -597,9 +701,13 @@ const _keyIndex = { dashscope: 0, deepseek: 0 };
   if (process.env[envKey]) {
     process.env[envKey].split(/[,，]/).forEach(function (k) {
       const trimmed = k.trim();
+<<<<<<< Updated upstream
       if (trimmed.length > 10) {
         _apiKeys[provider].push(trimmed);
       }
+=======
+      if (trimmed.length > 10) _apiKeys[provider].push(trimmed);
+>>>>>>> Stashed changes
     });
   }
 });
@@ -610,9 +718,13 @@ console.log(
 /** 获取当前 Key（轮询） */
 function _nextKey(provider) {
   const keys = _apiKeys[provider] || [];
+<<<<<<< Updated upstream
   if (keys.length === 0) {
     return '';
   }
+=======
+  if (keys.length === 0) return '';
+>>>>>>> Stashed changes
   const idx = _keyIndex[provider] || 0;
   const key = keys[idx % keys.length];
   _keyIndex[provider] = (idx + 1) % keys.length;
@@ -632,11 +744,17 @@ const _PROVIDER_DEFAULT_MODEL = {
 };
 
 /** 通用的 OpenAI 兼容格式 AI 调用（带 Key 轮询） */
+<<<<<<< Updated upstream
 async function _callAi(messages, model, temperature, maxTokens, provider, responseFormat) {
   const baseUrl = _PROVIDER_BASE_URL[provider];
   if (!baseUrl) {
     throw new Error('不支持的 AI 服务商: ' + provider);
   }
+=======
+async function _callAi(messages, model, temperature, maxTokens, provider) {
+  const baseUrl = _PROVIDER_BASE_URL[provider];
+  if (!baseUrl) throw new Error('不支持的 AI 服务商: ' + provider);
+>>>>>>> Stashed changes
 
   const keys = _apiKeys[provider] || [];
   if (keys.length === 0) {
@@ -663,17 +781,24 @@ async function _callAi(messages, model, temperature, maxTokens, provider, respon
       }, 120000);
 
       console.log('[AI][' + provider + '] 开始 fetch()，model=' + model + ', messages.length=' + messages.length);
+<<<<<<< Updated upstream
       const requestBody = { model, messages, max_tokens: maxTokens, temperature };
       if (responseFormat) {
         requestBody.response_format = responseFormat;
       }
+=======
+>>>>>>> Stashed changes
       const response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + key
         },
+<<<<<<< Updated upstream
         body: JSON.stringify(requestBody),
+=======
+        body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
+>>>>>>> Stashed changes
         signal: controller.signal
       });
       clearTimeout(timeout);
@@ -705,9 +830,13 @@ async function _callAi(messages, model, temperature, maxTokens, provider, respon
       const finishReason = data.choices && data.choices[0] ? data.choices[0].finish_reason : 'unknown';
       const usage = data.usage || {};
       console.log('[AI][' + provider + '] 返回：finish_reason=' + finishReason + ', usage=' + JSON.stringify(usage));
+<<<<<<< Updated upstream
       if (!result) {
         return { error: true, message: 'AI 返回为空' };
       }
+=======
+      if (!result) return { error: true, message: 'AI 返回为空' };
+>>>>>>> Stashed changes
 
       return { error: false, data: result, finishReason: finishReason };
     } catch (err) {
@@ -730,6 +859,7 @@ function _callDashScope(messages, model, temperature, maxTokens) {
   return _callAi(messages, model, temperature, maxTokens, 'dashscope');
 }
 
+<<<<<<< Updated upstream
 /**
  * 智能修复被截断的 JSON（常见于 AI 输出被 token 限制截断的情况）
  * 策略：金字塔式回退
@@ -860,6 +990,8 @@ function _fixTruncatedJson(str) {
   return null;
 }
 
+=======
+>>>>>>> Stashed changes
 app.post('/api/ai-diagnose', async (req, res) => {
   try {
     const { messages, provider, model, temperature, maxTokens, apiKey } = req.body;
@@ -875,7 +1007,11 @@ app.post('/api/ai-diagnose', async (req, res) => {
       return res.status(400).json({ code: -1, message: '参数错误：需要 messages 数组' });
     }
 
+<<<<<<< Updated upstream
     const effectiveProvider = provider || 'deepseek';
+=======
+    const effectiveProvider = provider || 'dashscope';
+>>>>>>> Stashed changes
     const baseUrl = _PROVIDER_BASE_URL[effectiveProvider];
     if (!baseUrl) {
       return res.status(400).json({ code: -1, message: '不支持的 AI 服务商: ' + effectiveProvider });
@@ -904,6 +1040,7 @@ app.post('/api/ai-diagnose', async (req, res) => {
         });
         clearTimeout(timeout);
         const data = await response.json();
+<<<<<<< Updated upstream
         if (data.error) {
           return res.status(502).json({ code: -1, message: data.error.message || 'AI 调用失败' });
         }
@@ -914,6 +1051,12 @@ app.post('/api/ai-diagnose', async (req, res) => {
         }
         // Pre-warm TTS 缓存（异步，不阻塞响应）
         _prewarmTtsCache(result, '');
+=======
+        if (data.error) return res.status(502).json({ code: -1, message: data.error.message || 'AI 调用失败' });
+        const result =
+          data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
+        if (!result) return res.status(502).json({ code: -1, message: 'AI 返回为空' });
+>>>>>>> Stashed changes
         return res.json({ code: 0, data: result });
       } catch (err) {
         clearTimeout(timeout);
@@ -926,11 +1069,15 @@ app.post('/api/ai-diagnose', async (req, res) => {
 
     // 服务端多 Key 轮询
     const result = await _callAi(messages, effectiveModel, effectiveTemp, effectiveMaxTokens, effectiveProvider);
+<<<<<<< Updated upstream
     if (result.error) {
       return res.status(502).json({ code: -1, message: result.message });
     }
     // Pre-warm TTS 缓存（异步，不阻塞响应）
     _prewarmTtsCache(result.data || '', '');
+=======
+    if (result.error) return res.status(502).json({ code: -1, message: result.message });
+>>>>>>> Stashed changes
     res.json({ code: 0, data: result.data });
   } catch (err) {
     console.error('[AI] 错误:', err);
@@ -957,6 +1104,7 @@ function adminSecretMiddleware(req, res, next) {
 app.put('/api/ai-config', adminSecretMiddleware, async (req, res) => {
   try {
     const { keys, provider: reqProvider } = req.body;
+<<<<<<< Updated upstream
     if (!keys) {
       return res.status(400).json({ code: -1, message: '需要 keys 参数' });
     }
@@ -976,6 +1124,21 @@ app.put('/api/ai-config', adminSecretMiddleware, async (req, res) => {
       return res.status(400).json({ code: -1, message: '无有效 Key' });
     }
 
+=======
+    if (!keys) return res.status(400).json({ code: -1, message: '需要 keys 参数' });
+    const provider = reqProvider || 'dashscope';
+    if (!_apiKeys[provider]) return res.status(400).json({ code: -1, message: '不支持的 provider: ' + provider });
+
+    const keyArr =
+      typeof keys === 'string'
+        ? keys
+            .split(/[,，]/)
+            .map((k) => k.trim())
+            .filter((k) => k.length > 10)
+        : keys.filter((k) => k.length > 10);
+    if (keyArr.length === 0) return res.status(400).json({ code: -1, message: '无有效 Key' });
+
+>>>>>>> Stashed changes
     _apiKeys[provider].length = 0;
     keyArr.forEach((k) => _apiKeys[provider].push(k));
     _keyIndex[provider] = 0;
@@ -1052,9 +1215,13 @@ function loadOpsConfig() {
     for (const line of lines) {
       if (line.startsWith('OPS_CONFIG=')) {
         const val = line.substring('OPS_CONFIG='.length).trim();
+<<<<<<< Updated upstream
         if (val) {
           return JSON.parse(val);
         }
+=======
+        if (val) return JSON.parse(val);
+>>>>>>> Stashed changes
       }
     }
   } catch (e) {
@@ -1082,9 +1249,13 @@ function saveOpsConfigToEnv(config) {
       break;
     }
   }
+<<<<<<< Updated upstream
   if (!found) {
     lines.push(newLine);
   }
+=======
+  if (!found) lines.push(newLine);
+>>>>>>> Stashed changes
   fs.writeFileSync(envPath, lines.join('\n'));
   console.log('[OpsConfig] 已持久化到 .env');
 }
@@ -1416,9 +1587,13 @@ ${scoring?.metrics?.length ? '评估指标：' + scoring.metrics.map((m) => m.na
  * - 数组元素为对象（含 name/code）→ 取第一个作为量表对象
  */
 function _arrayToScaleObject(arr, userText) {
+<<<<<<< Updated upstream
   if (!Array.isArray(arr) || arr.length === 0) {
     return null;
   }
+=======
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+>>>>>>> Stashed changes
 
   const first = arr[0];
   // 情况1：数组元素是量表对象 { name, code, questions, ... }
@@ -1440,12 +1615,17 @@ function _arrayToScaleObject(arr, userText) {
       code: 'AI_GEN_' + Date.now().toString(36).toUpperCase(),
       category: 'unknown',
       questions: arr.map(function (q, i) {
+<<<<<<< Updated upstream
         if (!q.id) {
           q.id = 'q' + (i + 1);
         }
         if (!q.options) {
           q.options = [];
         }
+=======
+        if (!q.id) q.id = 'q' + (i + 1);
+        if (!q.options) q.options = [];
+>>>>>>> Stashed changes
         return q;
       })
     };
@@ -1467,6 +1647,7 @@ function _arrayToScaleObject(arr, userText) {
 }
 
 /**
+<<<<<<< Updated upstream
  * 展开精简格式量表为标准格式
  * AI 输出用 _qs 压缩 questions 以减少 token 消耗
  * 映射：_qs[].t→content, _qs[].d→dimension, _opts→全局默认 options
@@ -1566,10 +1747,19 @@ app.post('/api/generate-scale', async (req, res) => {
       model: requestedModel,
       maxTokens: requestedMaxTokens
     } = req.body;
+=======
+ * POST /api/generate-scale — 根据描述生成量表 JSON
+ * body: { text: string, temperature?: number, systemPrompt?: string }
+ */
+app.post('/api/generate-scale', async (req, res) => {
+  try {
+    const { text, temperature = 0.3, systemPrompt: customPrompt } = req.body;
+>>>>>>> Stashed changes
     if (!text || typeof text !== 'string' || text.trim().length < 5) {
       return res.status(400).json({ code: -1, message: '请提供量表描述（至少5个字）' });
     }
 
+<<<<<<< Updated upstream
     console.log('[GenerateScale] 收到请求，长度:', text.length, 'model:', requestedModel || 'default');
 
     // 直接使用前端传入的完整 systemPrompt
@@ -1578,17 +1768,106 @@ app.post('/api/generate-scale', async (req, res) => {
       customPrompt && typeof customPrompt === 'string' && customPrompt.trim().length > 50
         ? customPrompt
         : '你是心理测量学专家，根据量表文档生成量表 JSON，直接输出代码块：```json{"name":"","code":"","questions":[{"id":1,"content":"","dimension":"","options":[{"label":"","score":0}]}]}```';
+=======
+    console.log('[GenerateScale] 收到请求，长度:', text.length, customPrompt ? '（自定义 prompt）' : '');
+
+    // JSON 输出格式强制指令（自定义 prompt 时追加，确保 AI 输出合法 JSON）
+    const OUTPUT_FORMAT_INSTRUCTION = `
+
+【⚠️ 输出格式要求】
+直接输出一个完整的量表 JSON 对象（不是数组），放在 \`\`\`json \`\`\` 代码块中，不要任何解释文字：
+\`\`\`json
+{
+  "name": "量表全名",
+  "code": "CODE",
+  "questions": [{"id":1,"content":"题目","dimension":"维度","options":[{"id":"A","label":"选项","score":0}]}]
+}
+\`\`\`
+所有字段必须填写完整，questions 数组不可为空。`;
+
+    // 优先使用前端传入的自定义 systemPrompt，fallback 到硬编码默认 prompt
+    const systemPrompt =
+      customPrompt && typeof customPrompt === 'string' && customPrompt.trim().length > 50
+        ? customPrompt + OUTPUT_FORMAT_INSTRUCTION
+        : `你是心理测量学专家，精通量表设计与 JSON 结构化输出。
+
+【任务】
+根据用户描述，生成一个完整的心理评估量表 JSON。
+
+【量表 JSON 结构】
+
+量表对象字段：
+- name: 量表完整名称（含版本/修订信息），string
+- code: 仅字母+数字+下划线，全大写，如 "PHQ9"
+- category: anxiety | depression | personality | comprehensive | stress | bond | unknown
+- desc: 学术描述，string
+- instruction: 指导语，string
+- notice: 答题须知，string[]
+- duration: 预计分钟数，number
+- applicablePeople: 适用人群，string
+- displayName: 通俗展示名（6-9字名词短语，不加问号），用于替代过于学术的名称
+- shortDesc: 卡片简介（用"你"或"您的孩子"开头，1-2句话，点名1-2个核心维度）
+- emoji: 单个 emoji，默认 "📋"
+- color: 十六进制颜色，如 "#5B8DEF"
+- questions: 题目数组，每题含 id（从1开始）、content、dimension、options
+
+题目类型：
+- 标准单选题：省略 type，options 含 id/label/score
+- hasInput 选项：{"id":"X","label":"其他","score":0,"hasInput":true,"inputPlaceholder":"请填写"}
+- 矩阵题 type:"matrix"：含 rows 数组和共用 options
+- 父子题 type:"parent-child"：含 options 和 subOptions
+- 分组下拉题 type:"grouped"：含 groups 数组（每组含 id/label/options）
+- 文字题 type:"text"：无 options，含 placeholder/maxLength/required
+
+选项格式：{"id":"A","label":"非常符合","score":0}
+- 选项 id 依次为 A、B、C、D...
+- score 已是翻转后的分值
+- 反向题已翻转，reverse 统一填 false
+
+【生成规则】
+
+1. 逐字照搬：题目内容和选项文本必须来自你的专业知识库，表述规范准确
+2. 合理维度：根据量表主题设计专业维度（2-6个），每个维度含3-10题
+3. 反向计分：设计合理比例的反向计分题（通常20-30%），翻转分值后 reverse 填 false
+4. 选项设计：Likert 5点或7点量表，文字描述清晰区分
+5. preQuestions：可添加简短测前问卷（gender/age/education 等），options 格式为 {value,label} 无 score
+6. displayName/shortDesc：名称含英文缩写/版本/超12字/负面词时必须生成
+7. 颜色/emoji：焦虑😰 抑郁💙 人格🧠 综合🧬 家庭👨‍👩‍👧 压力🔥 睡眠😴 其他📋
+
+【输出格式】
+
+直接输出一个 JSON 数组（单张量表直接输出对象，不用数组包裹）：
+
+单量表：直接输出量表对象
+多量表：JSON 数组
+
+在 \`\`\`json \`\`\` 代码块中输出，内容必须是合法的、可被 JSON.parse 解析的 JSON。
+
+【重要】
+- 不输出文件下载链接，不输出解释文字，只输出 JSON 代码块
+- 所有字段填写完整，questions 数组不可为空
+- **name 和 code 为必填字段**：name 为完整量表名称，code 为纯字母数字大写缩写（如 "CBF-PI-15"→"CBFPI15"）
+- 若量表有英文名/缩写，务必通过 shortName 字段传递，code 从 shortName 生成
+- 维度设计符合心理测量学规范，题数合理（通常 10-66 题）
+- 颜色使用协调的 HEX 色值`;
+>>>>>>> Stashed changes
 
     const messages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: text.trim() }
     ];
 
+<<<<<<< Updated upstream
     // temperature 限制在 0.1~1.5 之间
     const effectiveTemp = Math.max(0.1, Math.min(1.5, temperature));
     // maxTokens：优先使用前端传入的值，限制在 100~64000 之间，默认 16000
     const effectiveMaxTokens = Math.max(100, Math.min(64000, requestedMaxTokens || 16000));
     const result = await _callAi(messages, 'deepseek-chat', effectiveTemp, effectiveMaxTokens, 'deepseek');
+=======
+    // 使用 deepseek-v4-flash，temperature 由前端控制
+    const effectiveTemp = Math.max(0.1, Math.min(1.5, temperature));
+    const result = await _callAi(messages, 'deepseek-v4-flash', effectiveTemp, 8000, 'deepseek');
+>>>>>>> Stashed changes
 
     if (result.error) {
       console.warn('[GenerateScale] AI 调用失败:', result.message);
@@ -1597,6 +1876,7 @@ app.post('/api/generate-scale', async (req, res) => {
 
     let raw = result.data;
 
+<<<<<<< Updated upstream
     // 检测 AI 输出是否被截断（finish_reason=length 表示输出 token 用完）
     if (result.finishReason === 'length') {
       const qCount = (raw.match(/"id"\s*:\s*\d+/g) || []).length;
@@ -1616,6 +1896,8 @@ app.post('/api/generate-scale', async (req, res) => {
     console.log('[GenerateScale] AI 原始响应长度:', raw.length);
     console.log('[GenerateScale] AI 响应后300字符:', JSON.stringify(raw.slice(-300)));
 
+=======
+>>>>>>> Stashed changes
     // 提取 ```json ... ``` 代码块中的内容
     const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/);
     if (jsonMatch) {
@@ -1635,6 +1917,7 @@ app.post('/api/generate-scale', async (req, res) => {
       parsed = JSON.parse(raw);
     } catch (parseErr) {
       console.warn('[GenerateScale] JSON 解析失败，尝试修复...');
+<<<<<<< Updated upstream
       console.warn('[GenerateScale] 原始内容前500字符:', raw.substring(0, 500));
       console.warn('[GenerateScale] 原始内容后300字符:', raw.substring(Math.max(0, raw.length - 300)));
       // 尝试修复常见格式问题
@@ -1643,6 +1926,10 @@ app.post('/api/generate-scale', async (req, res) => {
       fixed = fixed.replace(/^[\t ]+/gm, '');
       // 修复：去除行尾的未闭合反引号
       fixed = fixed.replace(/`+$/, '');
+=======
+      // 尝试修复常见格式问题
+      let fixed = raw.replace(/,(\s*[}\]])/g, '$1'); // 去除尾随逗号
+>>>>>>> Stashed changes
       // 尝试修复数组中混入 key:value 的畸形格式（AI 常见错误）
       // 例如：["notice1","notice2","duration":8,...] → 提取为对象
       if (!fixed.startsWith('{')) {
@@ -1661,6 +1948,7 @@ app.post('/api/generate-scale', async (req, res) => {
       try {
         parsed = JSON.parse(fixed);
       } catch {
+<<<<<<< Updated upstream
         // AI 输出完全无法解析：尝试截断修复（可能是 token 限制导致 JSON 被截断）
         console.warn('[GenerateScale] JSON 修复失败，尝试截断补全...');
         const truncated = _fixTruncatedJson(fixed);
@@ -1703,6 +1991,19 @@ app.post('/api/generate-scale', async (req, res) => {
       console.log('[GenerateScale] 共享分组已展开，组数:', parsed._sharedGroups?.length || 0);
     }
 
+=======
+        // AI 输出完全无法解析：返回错误并附带原始预览
+        console.warn('[GenerateScale] 无法解析 JSON，原始前300字符:', raw.substring(0, 300));
+        console.warn('[GenerateScale] 原始后200字符:', raw.substring(Math.max(0, raw.length - 200)));
+        return res.json({
+          code: -1,
+          message: 'AI 生成的内容不是有效的 JSON 格式，请重试或降低 Temperature 参数',
+          rawPreview: raw.substring(0, 500)
+        });
+      }
+    }
+
+>>>>>>> Stashed changes
     // 结构验证：必须是对象（非数组），且包含 name/questions 字段
     if (Array.isArray(parsed)) {
       console.log('[GenerateScale] 解析结果是数组，尝试转换为量表对象');
@@ -2373,6 +2674,7 @@ app.post('/api/tts/segments', async (req, res) => {
       // 将换行替换为句号，避免 edge-tts 命令行参数问题
       segText = segText.replace(/[\r\n]+/g, '。');
       try {
+<<<<<<< Updated upstream
         const audioBuffer = await _synthesizeToBuffer(segText, voice, prosody.rate, {
           pitch: prosody.pitch,
           volume: prosody.volume
@@ -2384,6 +2686,10 @@ app.post('/api/tts/segments', async (req, res) => {
           resultBase64 += silenceBuffer.toString('base64');
         }
         audios.push(resultBase64);
+=======
+        const audioBuffer = await _synthesizeToBuffer(segText, voice, rate);
+        audios.push(audioBuffer.toString('base64'));
+>>>>>>> Stashed changes
         console.log(
           '[TTS]   段 ' +
             (i + 1) +

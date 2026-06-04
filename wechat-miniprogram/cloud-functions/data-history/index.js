@@ -43,9 +43,13 @@ exports.main = async (event, context) => {
 
       case 'listByScale': {
         // 查询某个量表的历史（仅管理员可用）
+<<<<<<< Updated upstream
         if (!isAdmin) {
           return { code: -2, message: '无管理权限' };
         }
+=======
+        if (!isAdmin) return { code: -2, message: '无管理权限' };
+>>>>>>> Stashed changes
         const res = await db.collection('history').where({ scaleId }).orderBy('createdAt', 'desc').limit(100).get();
         return { code: 0, data: res.data };
       }

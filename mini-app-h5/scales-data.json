@@ -8656,9 +8656,388 @@
       "welcome": "根据您的测评结果，我为您生成了以下分析报告。",
       "temperature": 0.7,
       "maxTokens": 2000
+<<<<<<< Updated upstream
     },
     "displayName": "压力应对方式测评",
     "shortDesc": "面对压力时你通常怎么做？了解你的应对风格"
+=======
+    }
+  },
+  {
+    "name": "社会支持评定量表",
+    "shortName": "SSRS",
+    "code": "SSRS",
+    "category": "stress",
+    "categoryName": "压力自评",
+    "emoji": "🤝",
+    "color": "#4CAF50",
+    "duration": 5,
+    "questionTime": 20,
+    "questionCount": 10,
+    "applicablePeople": "成年人",
+    "desc": "社会支持评定量表(SSRS)由肖水源编制，用于测量个体在社会中所获得的社会支持程度。该量表包含客观支持、主观支持和对支持的利用度三个维度，共10个条目，总分12-66分，分数越高表示获得的社会支持越多。",
+    "instruction": "下面的问题用于反映你在社会中所获得的支持，请按各个问题的具体要求，根据你的实际情况填写。",
+    "notice": ["请根据您的实际情况选择最符合的选项"],
+    "tags": ["社会支持", "应激", "应对"],
+    "status": 1,
+    "sortOrder": 10,
+    "rating": 4,
+    "npcConfig": {
+      "counselorId": "",
+      "backgroundId": ""
+    },
+    "questions": [
+      {
+        "id": 1,
+        "content": "你有多少个关系密切，并可以得到支持和帮助的朋友",
+        "options": [
+          {
+            "label": "一个也没有",
+            "score": 1
+          },
+          {
+            "label": "1~2个",
+            "score": 2
+          },
+          {
+            "label": "3~5个",
+            "score": 3
+          },
+          {
+            "label": "6个或6个以上",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 2,
+        "content": "你近1年来",
+        "options": [
+          {
+            "label": "远离家人，且独居一室",
+            "score": 1
+          },
+          {
+            "label": "住处经常变动，多数时间和陌生人住在一起",
+            "score": 2
+          },
+          {
+            "label": "和同学、同事或朋友住在一起",
+            "score": 3
+          },
+          {
+            "label": "和家人住在一起",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 3,
+        "content": "你与邻居",
+        "options": [
+          {
+            "label": "相互之间从不关心，只是点头之交",
+            "score": 1
+          },
+          {
+            "label": "遇到困难可能稍微关心",
+            "score": 2
+          },
+          {
+            "label": "有些邻居很关心你",
+            "score": 3
+          },
+          {
+            "label": "大多数邻居都很关心你",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 4,
+        "content": "你与同事",
+        "options": [
+          {
+            "label": "相互之间从不关心，只是点头之交",
+            "score": 1
+          },
+          {
+            "label": "遇到困难可能稍微关心",
+            "score": 2
+          },
+          {
+            "label": "有些同事很关心你",
+            "score": 3
+          },
+          {
+            "label": "大多数同事都很关心你",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 5,
+        "type": "matrix",
+        "content": "从家庭成员中得到的支持和照顾",
+        "rows": [
+          {
+            "id": "A",
+            "label": "夫妻(恋人)"
+          },
+          {
+            "id": "B",
+            "label": "父母"
+          },
+          {
+            "id": "C",
+            "label": "儿女"
+          },
+          {
+            "id": "D",
+            "label": "兄弟姐妹"
+          },
+          {
+            "id": "E",
+            "label": "其他成员(如嫂子)"
+          }
+        ],
+        "options": [
+          {
+            "id": 0,
+            "label": "无",
+            "score": 1
+          },
+          {
+            "id": 1,
+            "label": "极少",
+            "score": 2
+          },
+          {
+            "id": 2,
+            "label": "一般",
+            "score": 3
+          },
+          {
+            "id": 3,
+            "label": "全力支持",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 6,
+        "type": "parent-child",
+        "content": "过去，在你遇到急难情况时，曾经得到的经济支持和解决实际问题的帮助的来源",
+        "options": [
+          {
+            "id": 0,
+            "label": "无任何来源",
+            "isTerminal": true
+          },
+          {
+            "id": 1,
+            "label": "下列来源(可选多项)",
+            "hasChildren": true
+          }
+        ],
+        "subOptions": [
+          {
+            "id": "A",
+            "label": "配偶"
+          },
+          {
+            "id": "B",
+            "label": "其他家人"
+          },
+          {
+            "id": "C",
+            "label": "朋友"
+          },
+          {
+            "id": "D",
+            "label": "亲戚"
+          },
+          {
+            "id": "E",
+            "label": "同事"
+          },
+          {
+            "id": "F",
+            "label": "工作单位"
+          },
+          {
+            "id": "G",
+            "label": "党团工会等官方或半官方组织"
+          },
+          {
+            "id": "H",
+            "label": "宗教、社会团体等非官方组织"
+          },
+          {
+            "id": "I",
+            "label": "其他",
+            "hasInput": true
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 7,
+        "type": "parent-child",
+        "content": "过去，在你遇到急难情况时，曾经得到的安慰和关心的来源",
+        "options": [
+          {
+            "id": 0,
+            "label": "无任何来源",
+            "isTerminal": true
+          },
+          {
+            "id": 1,
+            "label": "下列来源(可选多项)",
+            "hasChildren": true
+          }
+        ],
+        "subOptions": [
+          {
+            "id": "A",
+            "label": "配偶"
+          },
+          {
+            "id": "B",
+            "label": "其他家人"
+          },
+          {
+            "id": "C",
+            "label": "朋友"
+          },
+          {
+            "id": "D",
+            "label": "亲戚"
+          },
+          {
+            "id": "E",
+            "label": "同事"
+          },
+          {
+            "id": "F",
+            "label": "工作单位"
+          },
+          {
+            "id": "G",
+            "label": "党团工会等官方或半官方组织"
+          },
+          {
+            "id": "H",
+            "label": "宗教、社会团体等非官方组织"
+          },
+          {
+            "id": "I",
+            "label": "其他",
+            "hasInput": true
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 8,
+        "content": "当你遇到烦恼时的倾诉方式",
+        "options": [
+          {
+            "label": "从不向任何人倾诉",
+            "score": 1
+          },
+          {
+            "label": "只向关系极为密切的1~2个人倾诉",
+            "score": 2
+          },
+          {
+            "label": "如果朋友主动询问你时会说出来",
+            "score": 3
+          },
+          {
+            "label": "主动倾诉自己的烦恼，以获得支持和理解",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 9,
+        "content": "当你遇到烦恼时的求助方式",
+        "options": [
+          {
+            "label": "只靠自己，不接受别人的帮助",
+            "score": 1
+          },
+          {
+            "label": "很少请求别人的帮助",
+            "score": 2
+          },
+          {
+            "label": "有时请求别人的帮助",
+            "score": 3
+          },
+          {
+            "label": "有困难时经常向家人、亲友、组织求助",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      },
+      {
+        "id": 10,
+        "content": "你对于团体(如党团组织、宗教组织、工会、学生会等)组织活动",
+        "options": [
+          {
+            "label": "从不参加",
+            "score": 1
+          },
+          {
+            "label": "偶尔参加",
+            "score": 2
+          },
+          {
+            "label": "经常参加",
+            "score": 3
+          },
+          {
+            "label": "主动参加并积极活动",
+            "score": 4
+          }
+        ],
+        "transition": "random"
+      }
+    ],
+    "scoring": {
+      "type": "SUM",
+      "maxScore": 66,
+      "minScore": 12,
+      "keys": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "dimensions": [
+        {
+          "name": "客观支持",
+          "score": 0,
+          "desc": "客观的、可见的或实际的支持"
+        },
+        {
+          "name": "主观支持",
+          "score": 0,
+          "desc": "主观的、体验到的情感支持"
+        },
+        {
+          "name": "对支持的利用度",
+          "score": 0,
+          "desc": "个体对支持的利用情况"
+        }
+      ]
+    },
+    "completedCount": 0
+>>>>>>> Stashed changes
   },
   {
     "name": "青少年社会支持量表",

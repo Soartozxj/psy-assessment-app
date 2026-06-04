@@ -368,5 +368,107 @@ module.exports = {
   isAvailable: isAvailable,
   resetAvailability: resetAvailability,
   getBaseUrl: getBaseUrl,
-  setBaseUrl: setBaseUrl
+  setBaseUrl: setBaseUrl,
+
+  // ========== 情绪日记 API ==========
+  
+  /**
+   * 创建情绪日记
+   * POST /api/diary
+   * @param {object} data - {mood_score, mood_emoji, content, related_assessment_id}
+   * @returns {Promise<object>} {id}
+   */
+  createDiary: function(data) {
+    return post('/api/diary', data);
+  },
+  
+  // ========== 冥想功能 API ==========
+  
+  /**
+   * 获取冥想音频列表
+   * GET /api/meditation/audios
+   * @param {string} [category='all'] - 分类：sleep/focus/relax/all
+   * @returns {Promise<object>} {list, total}
+   */
+  fetchMeditationAudios: function(category) {
+    const cat = category || 'all';
+    return request('GET', `/api/meditation/audios?category=${cat}`);
+  },
+  
+  /**
+   * 记录冥想开始
+   * POST /api/meditation/start
+   * @param {number} audioId - 音频ID
+   * @returns {Promise<object>} {recordId}
+   */
+  startMeditation: function(audioId) {
+    return post('/api/meditation/start', { audio_id: audioId });
+  },
+  
+  /**
+   * 记录冥想完成
+   * POST /api/meditation/complete
+   * @param {number} recordId - 记录ID
+   * @param {number} duration - 实际冥想时长（秒）
+   * @returns {Promise<object>} {success}
+   */
+  completeMeditation: function(recordId, duration) {
+    return post('/api/meditation/complete', { record_id: recordId, duration: duration });
+  },
+  
+  /**
+   * 获取冥想统计数据
+   * GET /api/meditation/stats
+   * @returns {Promise<object>} {totalSessions, totalDuration, ...}
+   */
+  fetchMeditationStats: function() {
+    return request('GET', '/api/meditation/stats');
+  },
+  
+  /**
+   * 获取冥想历史记录
+   * GET /api/meditation/history
+   * @param {number} [page=1] - 页码
+   * @param {number} [pageSize=20] - 每页条数
+   * @returns {Promise<object>} {list, total, page, pageSize}
+   */
+  fetchMeditationHistory: function(page, pageSize) {
+    const p = page || 1;
+    const ps = pageSize || 20;
+    return request('GET', `/api/meditation/history?page=${p}&pageSize=${ps}`);
+  }
+  
+  /**
+   * 获取情绪日记列表
+   * GET /api/diary
+   * @param {number} [page=1] - 页码
+   * @param {number} [pageSize=20] - 每页条数
+   * @returns {Promise<object>} {list, total, page, pageSize}
+   */
+  fetchDiaryEntries: function(page, pageSize) {
+    const p = page || 1;
+    const ps = pageSize || 20;
+    return request('GET', `/api/diary?page=${p}&pageSize=${ps}`);
+  },
+  
+  /**
+   * 删除情绪日记
+   * DELETE /api/diary/:id
+   * @param {number|string} id - 日记ID
+   * @returns {Promise<object>} {success}
+   */
+  deleteDiary: function(id) {
+    return request('DELETE', `/api/diary/${id}`);
+  },
+  
+  /**
+   * 获取情绪统计数据
+   * GET /api/diary/stats
+   * @param {string} [period='week'] - 统计周期：week/month/year
+   * @returns {Promise<object>} {period, stats, summary}
+   */
+  fetchDiaryStats: function(period) {
+    const p = period || 'week';
+    return request('GET', `/api/diary/stats?period=${p}`);
+  }
 };

@@ -1,0 +1,319 @@
+          <div>
+            <!-- 说明 -->
+            <div
+              class="preview-card"
+              style="
+                background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+                box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+              "
+            >
+              <span class="icon">🎭</span>
+              <div class="info">
+                <h3>NPC测评场景配置</h3>
+                <p>管理咨询师立绘、场景背景和过渡语池。量表编辑时可从素材库中选择，实现差异化测评体验。</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center">
+                <button
+                  class="btn btn-default"
+                  data-action="restore"
+                  data-restore-type="npc-config"
+                  style="font-size: 12px; padding: 6px 14px"
+                  title="恢复配置元数据（咨询师、背景、过渡语），同时恢复云端已有的图片"
+                >
+                  📥 从云端恢复
+                </button>
+                <button
+                  class="btn btn-default"
+                  data-action="restore"
+                  data-restore-type="npc-images"
+                  style="font-size: 12px; padding: 6px 14px"
+                  title="仅从云端恢复图片到本地 IndexedDB，不覆盖配置"
+                >
+                  🖼️ 恢复云端图片
+                </button>
+                <button
+                  class="btn btn-primary"
+                  data-action="manual-sync"
+                  data-sync-type="npc-images"
+                  style="font-size: 12px; padding: 6px 14px"
+                  title="将本地 IndexedDB 中的图片上传到云端"
+                >
+                  ☁️ 同步图片到云端
+                </button>
+                <a href="../frontend/index.html" target="_blank" class="preview-link-btn">
+                  <span>📱</span> 预览前端效果
+                </a>
+              </div>
+            </div>
+
+            <!-- NPC Tab 页签 -->
+            <div class="npc-tab-bar" data-npc-tab-group="npc">
+              <button class="npc-tab-btn active" data-action="switch-npc-tab" data-tab="tab-counselor">
+                <span>🖼️</span> 咨询师立绘 <span class="tab-badge" id="counselor-tab-badge">0</span>
+              </button>
+              <button class="npc-tab-btn" data-action="switch-npc-tab" data-tab="tab-background">
+                <span>🏠</span> 场景背景 <span class="tab-badge" id="background-tab-badge">0</span>
+              </button>
+              <button class="npc-tab-btn" data-action="switch-npc-tab" data-tab="tab-transition">
+                <span>💬</span> 过渡语池 <span class="tab-badge" id="transition-tab-badge">0</span>
+              </button>
+            </div>
+            <div class="npc-tab-body">
+              <!-- Tab 1: 咨询师立绘 -->
+              <div class="npc-tab-panel active" id="tab-counselor">
+                <div class="npc-config-card">
+                  <h3>
+                    <span>🖼️</span> 咨询师立绘
+                    <small style="font-weight: 400; color: var(--text-muted); font-size: 12px" id="counselor-count"
+                      >(0个)</small
+                    >
+                  </h3>
+                  <div class="counselor-filter-bar" id="counselor-filter-bar" style="display: none">
+                    <select class="counselor-filter-select" id="filter-gender" onchange="filterCounselors()">
+                      <option value="">全部性别</option>
+                      <option value="female">女</option>
+                      <option value="male">男</option>
+                    </select>
+                    <select class="counselor-filter-select" id="filter-role" onchange="filterCounselors()">
+                      <option value="">全部身份</option>
+                    </select>
+                    <select class="counselor-filter-select" id="filter-style" onchange="filterCounselors()">
+                      <option value="">全部风格</option>
+                    </select>
+                    <select
+                      class="counselor-filter-select"
+                      id="filter-sort"
+                      onchange="filterCounselors()"
+                      style="margin-left: auto"
+                    >
+                      <option value="seq">按编号排序</option>
+                      <option value="time">按时间排序</option>
+                    </select>
+                    <button
+                      class="btn btn-sm btn-default"
+                      data-action="reset-counselor-filters"
+                      style="padding: 5px 10px; font-size: 11px"
+                    >
+                      重置
+                    </button>
+                  </div>
+                  <div class="asset-list" id="counselor-list">
+                    <!-- 动态渲染 -->
+                  </div>
+                  <input
+                    type="file"
+                    id="counselor-upload"
+                    accept="image/*"
+                    style="display: none"
+                    onchange="handleCounselorUpload(event)"
+                  />
+                </div>
+              </div>
+              <!-- /tab-counselor -->
+
+              <!-- Tab 2: 场景背景 -->
+              <div class="npc-tab-panel" id="tab-background">
+                <div class="npc-config-card">
+                  <h3>
+                    <span>🏠</span> 场景背景
+                    <small style="font-weight: 400; color: var(--text-muted); font-size: 12px" id="background-count"
+                      >(0个)</small
+                    >
+                  </h3>
+                  <div class="counselor-filter-bar" id="background-filter-bar" style="display: none">
+                    <select class="counselor-filter-select" id="bg-filter-theme" onchange="filterBackgrounds()">
+                      <option value="">全部主题</option>
+                    </select>
+                    <select class="counselor-filter-select" id="bg-filter-style" onchange="filterBackgrounds()">
+                      <option value="">全部风格</option>
+                      <option value="自然清新">自然清新</option>
+                      <option value="温馨治愈">温馨治愈</option>
+                      <option value="简约现代">简约现代</option>
+                      <option value="梦幻童话">梦幻童话</option>
+                      <option value="国风水墨">国风水墨</option>
+                      <option value="科幻未来">科幻未来</option>
+                    </select>
+                    <select class="counselor-filter-select" id="bg-filter-tone" onchange="filterBackgrounds()">
+                      <option value="">全部格调</option>
+                      <option value="明亮活泼">明亮活泼</option>
+                      <option value="柔和温暖">柔和温暖</option>
+                      <option value="沉稳安静">沉稳安静</option>
+                      <option value="清新淡雅">清新淡雅</option>
+                      <option value="梦幻浪漫">梦幻浪漫</option>
+                    </select>
+                    <select class="counselor-filter-select" id="bg-filter-layout" onchange="filterBackgrounds()">
+                      <option value="">全部布局</option>
+                      <option value="左侧人物">左侧人物</option>
+                      <option value="居中人物">居中人物</option>
+                      <option value="右侧人物">右侧人物</option>
+                      <option value="全身立绘">全身立绘</option>
+                      <option value="半身特写">半身特写</option>
+                    </select>
+                    <select
+                      class="counselor-filter-select"
+                      id="bg-filter-sort"
+                      onchange="filterBackgrounds()"
+                      style="margin-left: auto"
+                    >
+                      <option value="seq">按编号排序</option>
+                      <option value="time">按时间排序</option>
+                    </select>
+                    <button
+                      class="btn btn-sm btn-default"
+                      data-action="reset-background-filters"
+                      style="padding: 5px 10px; font-size: 11px"
+                    >
+                      重置
+                    </button>
+                  </div>
+                  <div class="asset-list" id="background-list">
+                    <!-- 动态渲染 -->
+                  </div>
+                  <input
+                    type="file"
+                    id="background-upload"
+                    accept="image/*"
+                    style="display: none"
+                    onchange="handleBackgroundUpload(event)"
+                  />
+                </div>
+              </div>
+              <!-- /tab-background -->
+
+              <!-- Tab 3: 过渡语池 -->
+              <div class="npc-tab-panel" id="tab-transition">
+                <div class="npc-config-card">
+                  <h3>
+                    <span>💬</span> 过渡语池
+                    <small style="font-weight: 400; color: var(--text-muted); font-size: 12px" id="transition-count"
+                      >(0条)</small
+                    >
+                  </h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px">
+                    题目间的过渡语。设置"随机"的题目会从此池中随机抽取一句显示。
+                  </p>
+                  <div class="counselor-filter-bar" id="transition-filter-bar" style="display: none">
+                    <select class="counselor-filter-select" id="trans-filter-phase" onchange="filterTransitions()">
+                      <option value="">全部阶段</option>
+                      <option value="开始阶段">开始阶段</option>
+                      <option value="中间阶段">中间阶段</option>
+                      <option value="结束阶段">结束阶段</option>
+                      <option value="全部阶段">全部阶段（不限）</option>
+                    </select>
+                    <button
+                      class="btn btn-sm btn-default"
+                      data-action="reset-transition-filters"
+                      style="padding: 5px 10px; font-size: 11px"
+                    >
+                      重置
+                    </button>
+                  </div>
+                  <div class="transition-list" id="transition-list">
+                    <!-- 动态渲染 -->
+                  </div>
+                  <button class="btn btn-primary btn-sm" data-action="open-transition-modal" style="margin-top: 10px">
+                    ➕ 批量添加
+                  </button>
+                </div>
+              </div>
+              <!-- /tab-transition -->
+            </div>
+            <!-- /npc-tab-body -->
+
+            <!-- 过渡语批量添加弹窗 -->
+            <div class="modal-overlay" id="transition-modal" style="display: none">
+              <div class="modal" style="width: 520px">
+                <div class="modal-header">
+                  <span class="modal-title">💬 批量添加过渡语</span>
+                  <button class="modal-close" data-action="close-this-modal">✕</button>
+                </div>
+                <div class="modal-body">
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px">
+                    每行一条过渡语，点击确定后一次性添加到过渡语池中。
+                  </p>
+                  <textarea
+                    id="transition-batch-input"
+                    class="form-control"
+                    rows="10"
+                    placeholder="放轻松，这只是一个小测试。&#10;很好，我们继续下一题。&#10;这道题没有对错之分，请凭第一直觉选择。"
+                    style="
+                      height: auto;
+                      min-height: 160px;
+                      resize: vertical;
+                      line-height: 1.7;
+                      font-size: 13px;
+                      padding: 10px;
+                    "
+                  ></textarea>
+                </div>
+                <div class="modal-footer">
+                  <button class="btn btn-default" data-action="close-this-modal">取消</button>
+                  <button class="btn btn-primary" data-action="add-item" data-add-type="transition">确定添加</button>
+                </div>
+              </div>
+            </div>
+            <!-- 过渡语编辑弹窗 -->
+            <div class="modal-overlay" id="transition-edit-modal" style="display: none">
+              <div class="modal" style="width: 480px">
+                <div class="modal-header">
+                  <span class="modal-title">✏️ 编辑过渡语</span>
+                  <button class="modal-close" data-action="close-this-modal">✕</button>
+                </div>
+                <div class="modal-body">
+                  <div style="margin-bottom: 12px">
+                    <label
+                      style="
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                        display: block;
+                      "
+                      >适用阶段</label
+                    >
+                    <select id="transition-edit-phase" class="form-control" style="width: 100%">
+                      <option value="全部阶段">全部阶段（不限）</option>
+                      <option value="开始阶段">开始阶段</option>
+                      <option value="中间阶段">中间阶段</option>
+                      <option value="结束阶段">结束阶段</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      style="
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                        display: block;
+                      "
+                      >过渡语内容</label
+                    >
+                    <textarea
+                      id="transition-edit-input"
+                      class="form-control"
+                      rows="4"
+                      placeholder="请输入过渡语内容..."
+                      style="
+                        height: auto;
+                        min-height: 80px;
+                        resize: vertical;
+                        line-height: 1.7;
+                        font-size: 14px;
+                        padding: 10px;
+                      "
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button class="btn btn-default" data-action="close-this-modal">取消</button>
+                  <button class="btn btn-danger" style="margin-right: auto" data-action="delete-transition">
+                    🗑️ 删除
+                  </button>
+                  <button class="btn btn-primary" data-action="save-edit" data-edit-type="transition">保存</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+

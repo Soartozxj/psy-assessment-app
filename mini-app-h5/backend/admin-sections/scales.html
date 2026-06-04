@@ -1,0 +1,957 @@
+          <!-- Tab页面容器 -->
+          <div class="tab-container">
+            <!-- Tab内容 -->
+            <div class="tab-content">
+              <!-- 量表列表Tab -->
+              <div class="tab-content-section active" id="tab-scale-list">
+                <div class="action-bar">
+                  <div class="search-box">
+                    <span>🔍</span>
+                    <input
+                      type="text"
+                      placeholder="搜索量表名称或编码"
+                      id="scale-search"
+                      oninput="filterScaleTable()"
+                    />
+                  </div>
+                  <div style="flex: 1"></div>
+                  <button class="btn btn-default" id="btn-drag-sort" data-action="toggle-drag-sort">
+                    <span>↕️</span> 拖拽排序
+                  </button>
+                  <button class="btn btn-primary" data-action="open-create-modal"><span>＋</span> 新建量表</button>
+                  <button class="btn btn-default" data-action="download-template" data-template-type="scale">
+                    <span>📋</span> 模板下载
+                  </button>
+                  <button class="btn btn-success" data-action="open-blank" data-url="scale-onboard.html">
+                    <span>🚀</span> 一键上架
+                  </button>
+                </div>
+
+                <div class="table-card">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style="width: 300px">
+                          量表名称
+                          <select
+                            onchange="
+                              scaleFilterCat = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 6px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                            id="cat-filter-hdr"
+                          >
+                            <option value="">全部分类</option>
+                          </select>
+                        </th>
+                        <th style="width: 70px">
+                          题数
+                          <select
+                            onchange="
+                              scaleSortField = 'questionCount';
+                              scaleSortOrder = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">默认</option>
+                            <option value="asc">升序</option>
+                            <option value="desc">降序</option>
+                          </select>
+                        </th>
+                        <th style="width: 70px">
+                          时长
+                          <select
+                            onchange="
+                              scaleSortField = 'duration';
+                              scaleSortOrder = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">默认</option>
+                            <option value="asc">升序</option>
+                            <option value="desc">降序</option>
+                          </select>
+                        </th>
+                        <th style="width: 85px">
+                          完成人次
+                          <select
+                            onchange="
+                              scaleSortField = 'completedCount';
+                              scaleSortOrder = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">默认</option>
+                            <option value="asc">升序</option>
+                            <option value="desc">降序</option>
+                          </select>
+                        </th>
+                        <th style="width: 65px">
+                          评分
+                          <select
+                            onchange="
+                              scaleSortField = 'rating';
+                              scaleSortOrder = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">默认</option>
+                            <option value="asc">升序</option>
+                            <option value="desc">降序</option>
+                          </select>
+                        </th>
+                        <th style="width: 115px">
+                          更新时间
+                          <select
+                            onchange="
+                              scaleSortField = 'updatedAt';
+                              scaleSortOrder = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">默认</option>
+                            <option value="asc">最早优先</option>
+                            <option value="desc">最新优先</option>
+                          </select>
+                        </th>
+                        <th style="width: 75px">
+                          状态
+                          <select
+                            onchange="
+                              scaleFilterStatus = this.value;
+                              scaleSortField = '';
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                            id="status-filter-hdr"
+                          >
+                            <option value="">全部</option>
+                            <option value="1">已上架</option>
+                            <option value="2">草稿</option>
+                            <option value="0">已下架</option>
+                          </select>
+                        </th>
+                        <th style="width: 90px">
+                          NPC 配置
+                          <select
+                            onchange="
+                              scaleNpcFilter = this.value;
+                              renderScaleTable();
+                            "
+                            style="
+                              margin-left: 4px;
+                              font-size: 11px;
+                              padding: 2px 4px;
+                              border-radius: 4px;
+                              border: 1px solid #ddd;
+                              background: #fff;
+                            "
+                          >
+                            <option value="">全部</option>
+                            <option value="yes">已配置</option>
+                            <option value="no">未配置</option>
+                          </select>
+                        </th>
+                        <th style="width: 60px">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="scale-table-body"></tbody>
+                  </table>
+                  <div class="pagination" id="scale-pagination"></div>
+                </div>
+              </div>
+
+              <!-- 量表类型管理Tab -->
+              <div class="tab-content-section" id="tab-scale-types">
+                <div class="action-bar">
+                  <div style="flex: 1"></div>
+                  <button class="btn btn-primary" data-action="open-create-type-modal"><span>＋</span> 新增类型</button>
+                  <button class="btn btn-default" data-action="download-scale-template">
+                    <span>📋</span> 量表模板
+                  </button>
+                </div>
+
+                <div class="scale-types-section">
+                  <div class="scale-types-grid" id="scale-types-grid">
+                    <!-- 量表类型将通过JS动态生成 -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- 计分规则Tab -->
+
+              <!-- AI 诊断 Tab -->
+              <div class="tab-content-section" id="tab-ai-diag">
+                <div style="display: flex; gap: 20px; min-height: calc(100vh - 200px)">
+                  <!-- 左侧：量表列表 -->
+                  <div style="width: 260px; flex-shrink: 0">
+                    <div class="table-card" style="height: 100%; display: flex; flex-direction: column">
+                      <div style="padding: 14px 16px; border-bottom: 1px solid var(--border)">
+                        <!-- 筛选栏 -->
+                        <div style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px">
+                          <select
+                            id="ai-diag-type-filter"
+                            onchange="renderAiDiagScaleList()"
+                            style="
+                              height: 32px;
+                              border-radius: 6px;
+                              border: 1px solid var(--border);
+                              background: var(--bg);
+                              color: var(--text);
+                              font-size: 13px;
+                              padding: 0 8px;
+                              cursor: pointer;
+                            "
+                          >
+                            <option value="">全部类型</option>
+                          </select>
+                          <select
+                            id="ai-diag-status-filter"
+                            onchange="renderAiDiagScaleList()"
+                            style="
+                              height: 32px;
+                              border-radius: 6px;
+                              border: 1px solid var(--border);
+                              background: var(--bg);
+                              color: var(--text);
+                              font-size: 13px;
+                              padding: 0 8px;
+                              cursor: pointer;
+                            "
+                          >
+                            <option value="">全部状态</option>
+                            <option value="configured">已配置</option>
+                            <option value="default">默认</option>
+                            <option value="unconfigured">未配置</option>
+                          </select>
+                        </div>
+                        <div class="action-bar" style="margin-bottom: 0; gap: 8px">
+                          <input
+                            type="text"
+                            id="ai-diag-search"
+                            placeholder="搜索量表..."
+                            class="form-control"
+                            style="flex: 1; height: 32px; font-size: 13px"
+                            oninput="renderAiDiagScaleList()"
+                          />
+                        </div>
+                      </div>
+                      <div id="ai-diag-scale-list" style="flex: 1; overflow-y: auto; padding: 8px">
+                        <!-- 动态渲染量表列表 -->
+                      </div>
+                      <div id="ai-diag-list-pagination"></div>
+                    </div>
+                  </div>
+
+                  <!-- 右侧：配置编辑区 -->
+                  <div style="flex: 1" id="ai-diag-editor-area">
+                    <div id="ai-diag-empty" style="text-align: center; padding: 80px 20px; color: var(--text-muted)">
+                      <div style="font-size: 48px; margin-bottom: 16px">🩺</div>
+                      <div style="font-size: 16px; color: var(--text-sec); margin-bottom: 8px">测评报告配置</div>
+                      <div style="font-size: 13px; margin-bottom: 20px">
+                        从左侧选择一个量表，配置其专属的 AI 测评报告 Prompt
+                      </div>
+                      <div
+                        style="
+                          background: var(--bg);
+                          padding: 16px;
+                          border-radius: 8px;
+                          text-align: left;
+                          font-size: 13px;
+                          color: var(--text-sec);
+                          line-height: 1.8;
+                          max-width: 420px;
+                          margin: 0 auto;
+                        "
+                      >
+                        <div style="font-weight: 600; color: var(--text); margin-bottom: 8px">💡 Prompt 编写要点</div>
+                        <div>1. 角色设定：告诉 AI 它是专业心理咨询师</div>
+                        <div>
+                          2. 输入变量：<code>{scaleName}</code> <code>{score}</code> <code>{level}</code>
+                          <code>{dimensions}</code> <code>{answers}</code>
+                        </div>
+                        <div>3. 输出要求：综合评估、维度分析、改善建议</div>
+                        <div>4. 约束条件：不给出明确诊断结论，强调仅供参考</div>
+                      </div>
+                    </div>
+
+                    <div id="ai-diag-editor" style="display: none">
+                      <div class="table-card" style="margin-bottom: 16px">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 16px;
+                          "
+                        >
+                          <div>
+                            <h3 style="font-size: 16px; margin-bottom: 2px" id="ai-diag-scale-name"></h3>
+                            <span style="font-size: 12px; color: var(--text-muted)" id="ai-diag-scale-code"></span>
+                          </div>
+                          <div style="display: flex; gap: 8px">
+                            <label
+                              style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer"
+                            >
+                              <input type="checkbox" id="ai-diag-enabled" onchange="toggleAiDiagEnabled()" checked />
+                              已启用
+                            </label>
+                            <button
+                              class="btn btn-primary btn-sm"
+                              data-action="generate"
+                              data-generate-type="ai-diag"
+                              id="ai-diag-gen-btn"
+                              style="display: flex; align-items: center; gap: 4px"
+                            >
+                              🤖 AI 智能生成
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Prompt 编辑器 -->
+                        <div style="margin-bottom: 16px">
+                          <label
+                            style="
+                              display: block;
+                              font-size: 13px;
+                              font-weight: 500;
+                              color: var(--text-sec);
+                              margin-bottom: 6px;
+                            "
+                            >测评报告系统提示词（System Prompt）</label
+                          >
+                          <textarea
+                            id="ai-diag-prompt"
+                            rows="14"
+                            placeholder="点击上方「🤖 AI 智能生成」按钮，根据量表信息自动生成专属测评提示词...&#10;&#10;可用变量：{scaleName} {score} {level} {dimensions} {answers}"
+                            style="
+                              width: 100%;
+                              padding: 12px;
+                              border: 1px solid var(--border);
+                              border-radius: 8px;
+                              font-size: 13px;
+                              line-height: 1.7;
+                              resize: vertical;
+                              font-family: 'SF Mono', 'Fira Code', monospace;
+                            "
+                          ></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 16px">
+                          <label
+                            style="
+                              display: block;
+                              font-size: 13px;
+                              font-weight: 500;
+                              color: var(--text-sec);
+                              margin-bottom: 6px;
+                            "
+                            >欢迎语（测评报告开头）</label
+                          >
+                          <input
+                            type="text"
+                            id="ai-diag-welcome"
+                            placeholder="例如：根据您的测评结果，我为您生成了以下分析报告..."
+                            style="
+                              width: 100%;
+                              padding: 10px 12px;
+                              border: 1px solid var(--border);
+                              border-radius: 6px;
+                              font-size: 13px;
+                            "
+                          />
+                        </div>
+
+                        <div style="display: flex; gap: 16px; margin-bottom: 16px">
+                          <div style="flex: 1">
+                            <label
+                              style="
+                                display: block;
+                                font-size: 13px;
+                                font-weight: 500;
+                                color: var(--text-sec);
+                                margin-bottom: 6px;
+                              "
+                              >Temperature</label
+                            >
+                            <input
+                              type="number"
+                              id="ai-diag-temp"
+                              value="0.7"
+                              min="0"
+                              max="2"
+                              step="0.1"
+                              style="
+                                width: 100%;
+                                padding: 10px 12px;
+                                border: 1px solid var(--border);
+                                border-radius: 6px;
+                                font-size: 13px;
+                              "
+                            />
+                          </div>
+                          <div style="flex: 1">
+                            <label
+                              style="
+                                display: block;
+                                font-size: 13px;
+                                font-weight: 500;
+                                color: var(--text-sec);
+                                margin-bottom: 6px;
+                              "
+                              >Max Tokens</label
+                            >
+                            <input
+                              type="number"
+                              id="ai-diag-max-tokens"
+                              value="2000"
+                              min="100"
+                              max="8000"
+                              step="100"
+                              style="
+                                width: 100%;
+                                padding: 10px 12px;
+                                border: 1px solid var(--border);
+                                border-radius: 6px;
+                                font-size: 13px;
+                              "
+                            />
+                          </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; justify-content: flex-end">
+                          <button class="btn btn-default" data-action="reset-ai-diag">重置</button>
+                          <button class="btn btn-primary" data-action="save-config" data-config-type="ai-diag">
+                            💾 保存配置
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- 测试区 -->
+                      <div class="table-card">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 12px;
+                          "
+                        >
+                          <h4 style="font-size: 15px">🧪 测试测评报告效果</h4>
+                          <button
+                            class="btn btn-primary btn-sm"
+                            data-action="test"
+                            data-test-type="ai-diag"
+                            id="ai-diag-test-btn"
+                          >
+                            发送测试请求
+                          </button>
+                        </div>
+                        <div id="ai-diag-test-input" style="margin-bottom: 12px">
+                          <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px"
+                            >模拟输入（JSON 格式的计分结果）</label
+                          >
+                          <textarea
+                            id="ai-diag-test-data"
+                            rows="4"
+                            placeholder='{"score":156,"level":"轻度异常","dimensions":[{"name":"躯体化","score":1.6}]}'
+                            style="
+                              width: 100%;
+                              padding: 10px 12px;
+                              border: 1px solid var(--border);
+                              border-radius: 6px;
+                              font-size: 12px;
+                              font-family: monospace;
+                              resize: vertical;
+                            "
+                          ></textarea>
+                        </div>
+                        <div
+                          id="ai-diag-test-result"
+                          style="
+                            display: none;
+                            background: var(--bg);
+                            padding: 16px;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            line-height: 1.8;
+                            color: var(--text-sec);
+                            white-space: pre-wrap;
+                          "
+                        ></div>
+                      </div>
+
+                      <!-- AI 生成规则（Meta Prompt）只读展示 -->
+                      <div class="table-card" style="margin-top: 16px">
+                        <div
+                          style="display: flex; align-items: center; justify-content: space-between; cursor: pointer"
+                          data-action="toggle-panel"
+                          data-panel="meta-prompt-panel"
+                          data-icon-open="▼ 展开"
+                          data-icon-close="▲ 收起"
+                          data-load="loadMetaPromptToEditor"
+                        >
+                          <h4 style="font-size: 15px">⚙️ AI 生成规则（Meta Prompt）</h4>
+                          <span
+                            id="meta-prompt-toggle-icon"
+                            style="font-size: 12px; color: var(--text-muted); transition: transform 0.2s"
+                            >▼ 展开</span
+                          >
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0">
+                          控制「🤖 AI 智能生成」按钮的行为：定义如何根据量表信息生成 System Prompt。<span
+                            style="color: #e6a23c"
+                            >🔒 仅展示，不可修改。</span
+                          >
+                        </p>
+                        <div id="meta-prompt-panel" style="display: none; margin-top: 12px">
+                          <textarea
+                            id="ai-diag-meta-prompt"
+                            readonly
+                            rows="22"
+                            style="
+                              width: 100%;
+                              padding: 12px;
+                              border: 1px solid var(--border);
+                              border-radius: 8px;
+                              font-size: 13px;
+                              line-height: 1.7;
+                              resize: none;
+                              font-family: 'SF Mono', 'Fira Code', monospace;
+                              background: #f7f8fa;
+                              color: #555;
+                            "
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- AI 接口配置 -->
+            <div class="table-card" style="padding: 24px; margin-top: 16px">
+              <h3 style="font-size: 16px; margin-bottom: 20px">🤖 AI 接口配置</h3>
+              <div style="margin-bottom: 20px">
+                <label
+                  style="display: block; font-size: 13px; font-weight: 500; color: var(--text-sec); margin-bottom: 8px"
+                  >服务商</label
+                >
+                <div style="display: flex; gap: 12px">
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 12px 20px;
+                      border: 2px solid var(--border);
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-size: 14px;
+                      transition: all 0.2s;
+                    "
+                    id="provider-dashscope"
+                  >
+                    <input
+                      type="radio"
+                      name="ai-provider"
+                      value="dashscope"
+                      onchange="switchAiProvider('dashscope')"
+                      style="margin: 0"
+                    />
+                    <span>☁️</span> DashScope（阿里云）
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 12px 20px;
+                      border: 2px solid var(--border);
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-size: 14px;
+                      transition: all 0.2s;
+                    "
+                    id="provider-deepseek"
+                  >
+                    <input
+                      type="radio"
+                      name="ai-provider"
+                      value="deepseek"
+                      onchange="switchAiProvider('deepseek')"
+                      style="margin: 0"
+                    />
+                    <span>🔮</span> DeepSeek
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 12px 20px;
+                      border: 2px solid var(--border);
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-size: 14px;
+                      transition: all 0.2s;
+                    "
+                    id="provider-ollama"
+                  >
+                    <input
+                      type="radio"
+                      name="ai-provider"
+                      value="ollama"
+                      onchange="switchAiProvider('ollama')"
+                      style="margin: 0"
+                    />
+                    <span>🏠</span> Ollama（本地）
+                  </label>
+                </div>
+              </div>
+
+              <div id="ai-dashscope-config" style="display: none; margin-bottom: 20px">
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border)">
+                  <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px">☁️ DashScope 配置</div>
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >模型名称</label
+                    >
+                    <select
+                      id="ds-model"
+                      style="
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                      "
+                    >
+                      <option value="qwen-max">qwen-max（最强推理）</option>
+                      <option value="qwen-plus" selected>qwen-plus（均衡性价比）</option>
+                      <option value="qwen-turbo">qwen-turbo（快速响应）</option>
+                    </select>
+                  </div>
+                  <!-- 服务端 Key 状态（脱敏显示，不可编辑） -->
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >🔑 API Key 状态</label
+                    >
+                    <div
+                      id="ai-key-status-panel"
+                      style="
+                        padding: 12px 16px;
+                        background: var(--bg);
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                        color: var(--text-muted);
+                        min-height: 40px;
+                      "
+                    >
+                      点击"刷新状态"查询服务端 Key 配置
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px">
+                      <button
+                        class="btn btn-default"
+                        data-action="refresh-status"
+                        data-provider="lnmp"
+                        style="flex: 1; font-size: 12px; padding: 8px"
+                      >
+                        🌐 刷新 LNMP 状态
+                      </button>
+                      <button
+                        class="btn btn-default"
+                        data-action="refresh-status"
+                        data-provider="cloud"
+                        style="flex: 1; font-size: 12px; padding: 8px"
+                      >
+                        ☁️ 刷新 CloudBase 状态
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 10px 14px;
+                      background: linear-gradient(135deg, #e8f4fd, #f0e6ff);
+                      border-radius: 8px;
+                      font-size: 12px;
+                      color: var(--text-sec);
+                      line-height: 1.6;
+                    "
+                  >
+                    📌 API Key 已统一由服务端管理，前端不再持有密钥。<br />
+                    如需配置/修改 Key，请前往「运维工具 → AI 密钥管理」操作。
+                  </div>
+                </div>
+              </div>
+
+              <div id="ai-deepseek-config" style="display: none; margin-bottom: 20px">
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border)">
+                  <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px">🔮 DeepSeek 配置</div>
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >模型名称</label
+                    >
+                    <select
+                      id="dk-model"
+                      style="
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                      "
+                    >
+                      <option value="deepseek-v4-flash" selected>deepseek-v4-flash（推荐，32K输出）</option>
+                      <option value="deepseek-chat">deepseek-chat（旧版，8K输出）</option>
+                      <option value="deepseek-reasoner">deepseek-reasoner（深度推理 R1）</option>
+                    </select>
+                  </div>
+                  <!-- 服务端 Key 状态（脱敏显示，不可编辑） -->
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >🔑 API Key 状态</label
+                    >
+                    <div
+                      id="ai-key-status-panel-deepseek"
+                      style="
+                        padding: 12px 16px;
+                        background: var(--bg);
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                        color: var(--text-muted);
+                        min-height: 40px;
+                      "
+                    >
+                      点击"刷新状态"查询服务端 Key 配置
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px">
+                      <button
+                        class="btn btn-default"
+                        data-action="refresh-status"
+                        data-provider="lnmp"
+                        data-model="deepseek"
+                        style="flex: 1; font-size: 12px; padding: 8px"
+                      >
+                        🌐 刷新 LNMP 状态
+                      </button>
+                      <button
+                        class="btn btn-default"
+                        data-action="refresh-status"
+                        data-provider="cloud"
+                        data-model="deepseek"
+                        style="flex: 1; font-size: 12px; padding: 8px"
+                      >
+                        ☁️ 刷新 CloudBase 状态
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 10px 14px;
+                      background: linear-gradient(135deg, #e8f4fd, #f0e6ff);
+                      border-radius: 8px;
+                      font-size: 12px;
+                      color: var(--text-sec);
+                      line-height: 1.6;
+                    "
+                  >
+                    📌 API Key 已统一由服务端管理，前端不再持有密钥。<br />
+                    如需配置/修改 Key，请前往「运维工具 → AI 密钥管理」操作。<br />
+                    🔗 DeepSeek API 文档：<a
+                      href="https://platform.deepseek.com/api-docs"
+                      target="_blank"
+                      style="color: var(--primary)"
+                      >platform.deepseek.com</a
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div id="ai-ollama-config" style="display: none; margin-bottom: 20px">
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border)">
+                  <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px">🏠 Ollama 配置</div>
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >服务地址</label
+                    >
+                    <input
+                      type="text"
+                      id="ol-base-url"
+                      placeholder="http://localhost:11434"
+                      value="http://localhost:11434"
+                      style="
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                      "
+                    />
+                  </div>
+                  <div style="margin-bottom: 16px">
+                    <label
+                      style="
+                        display: block;
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--text-sec);
+                        margin-bottom: 6px;
+                      "
+                      >模型名称</label
+                    >
+                    <input
+                      type="text"
+                      id="ol-model"
+                      placeholder="qwen2.5:7b"
+                      value="qwen2.5:7b"
+                      style="
+                        width: 100%;
+                        padding: 10px 12px;
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        font-size: 13px;
+                      "
+                    />
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px">
+                      需先通过 <code>ollama pull qwen2.5:7b</code> 拉取模型
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+                <button
+                  class="btn btn-default"
+                  data-action="test"
+                  data-test-type="ai-connection"
+                  id="ai-test-btn"
+                  style="flex: 1"
+                >
+                  🔌 测试连接
+                </button>
+                <button class="btn btn-primary" data-action="save-config" data-config-type="ai">💾 保存配置</button>
+              </div>
+              <div id="ai-test-result" style="margin-bottom: 16px; display: none"></div>
+
+              <div
+                style="
+                  background: linear-gradient(135deg, #667eea, #764ba2);
+                  padding: 20px;
+                  border-radius: 8px;
+                  color: #fff;
+                "
+              >
+                <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px">✨ AI 智能解析计分规则</div>
+                <div style="font-size: 13px; opacity: 0.9; margin-bottom: 16px">
+                  粘贴量表计分说明文字，AI 自动解析并生成配置 JSON，免去手动逐项填写的繁琐
+                </div>
+                <a
+                  href="ai-scoring-test.html"
+                  target="_blank"
+                  style="
+                    display: inline-block;
+                    padding: 10px 24px;
+                    background: #fff;
+                    color: #764ba2;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    font-weight: 500;
+                    text-decoration: none;
+                  "
+                  >进入测试页面 →</a
+                >
+              </div>
+            </div>
+          </div>

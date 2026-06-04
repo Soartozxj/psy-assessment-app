@@ -1524,6 +1524,7 @@
         const footerBtn = document.getElementById('aiFooterImportBtn');
         btn.disabled = true;
         footerBtn.disabled = true;
+<<<<<<< Updated upstream
         // 安全修复：使用textContent替代innerHTML设置纯文本
         btn.textContent = '⏳ 导入中...';
         footerBtn.textContent = '⏳ 导入中...';
@@ -1532,12 +1533,25 @@
           btn.textContent = '✅ 导入成功';
           btn.style.background = 'var(--success)';
           footerBtn.textContent = '✅ 导入成功';
+=======
+        btn.innerHTML = '⏳ 导入中...';
+        footerBtn.innerHTML = '⏳ 导入中...';
+
+        setTimeout(() => {
+          btn.innerHTML = '✅ 导入成功';
+          btn.style.background = 'var(--success)';
+          footerBtn.innerHTML = '✅ 导入成功';
+>>>>>>> Stashed changes
           footerBtn.style.background = 'var(--success)';
 
           // 激活所有步骤
           for (let i = 1; i <= 4; i++) activateStep(i);
 
+<<<<<<< Updated upstream
           showToast('✅ 计分规则已成功写入「' + SecurityUtils.escapeHtml(aiTargetScaleName) + '」');
+=======
+          showToast('✅ 计分规则已成功写入「' + aiTargetScaleName + '」');
+>>>>>>> Stashed changes
 
           // 2秒后关闭弹窗
           setTimeout(() => {
@@ -1552,8 +1566,12 @@
       // ===== Toast =====
       function showToast(msg) {
         const toast = document.getElementById('toast');
+<<<<<<< Updated upstream
         // 安全修复：使用textContent替代innerHTML，防止XSS
         toast.textContent = msg;
+=======
+        toast.innerHTML = msg;
+>>>>>>> Stashed changes
         toast.classList.add('show');
         setTimeout(() => {
           toast.classList.remove('show');
@@ -1565,7 +1583,10 @@
         // 默认展示弹窗说明
       });
     </script>
+<<<<<<< Updated upstream
     <!-- 安全工具库 -->
     <script src="security-utils.js"></script>
+=======
+>>>>>>> Stashed changes
   </body>
 </html>

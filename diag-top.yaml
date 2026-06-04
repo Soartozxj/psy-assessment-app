@@ -1,0 +1,155 @@
+- generic [active] [ref=e1]:
+    - generic [ref=e2]:
+        - generic [ref=e3]:
+            - generic [ref=e4]: 15:04
+            - generic [ref=e5]:
+                - generic [ref=e6]: 📶
+                - generic [ref=e7]: 📡
+                - generic [ref=e8]: 🔋
+        - generic [ref=e9]:
+            - generic:
+                - generic:
+                    - img "心理咨询师"
+            - generic [ref=e325]:
+                - generic [ref=e326]:
+                    - generic [ref=e327]:
+                        - generic [ref=e328] [cursor=pointer]: ‹
+                        - generic [ref=e329]: 测评详情报告
+                        - generic "评价本次测评" [ref=e330] [cursor=pointer]: 💬
+                        - generic "分享给朋友" [ref=e331] [cursor=pointer]:
+                            - img [ref=e332]
+                    - generic [ref=e334]:
+                        - generic [ref=e335]: 📋
+                        - generic [ref=e336]: 90项症状清单
+                        - generic [ref=e337]: '|'
+                        - generic [ref=e338]: '2.98'
+                        - generic [ref=e339]: 异常
+                - generic [ref=e350]:
+                    - generic [ref=e352]:
+                        - generic [ref=e353]:
+                            - generic [ref=e354]: 📝
+                            - generic [ref=e355]: 测评分析
+                        - generic [ref=e356]:
+                            - generic [ref=e357]: 心理健康筛查分析报告（SCL-90）
+                            - generic [ref=e358]:
+                                - text: 本报告基于您近一周的主观体验完成，依据中国常模与Derogatis原始量表结构进行专业解析。所有结论仅为
+                                - strong [ref=e359]: 心理健康状况的初步筛查参考
+                                - text: ，不构成医学诊断或精神疾病判定。如存在持续困扰，请务必寻求线下精神科医师或注册心理师的面对面评估。
+                            - separator [ref=e360]
+                            - generic [ref=e361]: 【综合评估】
+                            - text: 您的SCL-90总分为
+                            - strong [ref=e362]: 268分
+                            - text: （正常范围：90–160），阳性项目数为
+                            - strong [ref=e363]: 67项
+                            - text: （正常上限：43），全局均分为
+                            - strong [ref=e364]: '2.98'
+                            - text: （临界值：2.0）。
+                            - strong [ref=e365]: 本次筛查提示存在值得关注的心理不适信号
+                            - text: ——这反映您近期在多个心理维度上承受了较明显的情绪压力，整体心理资源处于相对紧张状态。需要说明的是：该结果具有时效性与情境性，是对“过去七天”主观感受的快筛捕捉，并非对人格或长期心理特质的定性判断。
+                            - separator [ref=e366]
+                            - generic [ref=e367]: 【维度分析】
+                            - text: 以下10个维度均分均高于2.0（临界值），提示各领域均存在不同程度的主观不适体验。我们以生活化语言为您逐项解读其现实意义：
+                            - generic [ref=e368]:
+                                - text: •
+                                - strong [ref=e369]: 抑郁（3.9分｜77%）
+                                - text: ：您在情绪低落、兴趣减退、精力不足、自我价值感下降等方面表现出较明显的体验，这可能提示近期压力应对资源显著消耗，需特别关注情绪能量的恢复节奏。
+                            - generic [ref=e370]:
+                                - text: •
+                                - strong [ref=e371]: 人际关系敏感（3.4分｜69%）
+                                - text: ：您在社交中较易感到被评价、难以建立信任、回避互动或过度在意他人反应，这种状态可能影响人际联结的质量与安全感。
+                            - generic [ref=e372]:
+                                - text: •
+                                - strong [ref=e373]: 强迫症状（3.3分｜66%）
+                                - text: ：您可能反复出现某些念头、产生重复检查或仪式化行为的冲动，这些表现若已干扰日常效率或带来内心耗竭感，值得温和觉察。
+                            - generic [ref=e374]:
+                                - text: •
+                                - strong [ref=e375]: 躯体化（2.8分｜57%）
+                                - text: ：您报告了较多身体不适感（如头痛、乏力、胃肠不适等），这些症状很可能与情绪压力相关，而非器质性疾病所致。
+                            - generic [ref=e376]:
+                                - text: •
+                                - strong [ref=e377]: 焦虑（2.8分｜56%）
+                                - text: ：您常体验到紧张不安、心慌出汗、莫名担忧或难以放松的状态，这是身心对压力的自然预警反应，但持续激活会加剧疲惫感。
+                            - generic [ref=e378]:
+                                - text: •
+                                - strong [ref=e379]: 敌对（2.8分｜57%）
+                                - text: ：您较易出现烦躁、易怒、怨恨或争执冲动等情绪反应，这种模式若频繁发生，可能影响关系质量与自我安抚能力。
+                            - generic [ref=e380]:
+                                - text: •
+                                - strong [ref=e381]: 恐怖（2.6分｜51%）
+                                - text: ：您对某些特定情境（如人群、封闭空间、社交场合）可能存在明显回避倾向与生理恐惧反应，属于压力下的条件性警觉增强。
+                            - generic [ref=e382]:
+                                - text: •
+                                - strong [ref=e383]: 精神病性（2.5分｜50%）
+                                - text: ：您偶有思维松散、注意力飘忽、不现实想法或轻微现实感波动等体验，需注意这不是精神疾病指标，而是高负荷下认知功能的暂时性波动。
+                            - generic [ref=e384]:
+                                - text: •
+                                - strong [ref=e385]: 其他（2.7分｜54%）
+                                - text: ：您存在睡眠障碍、注意力涣散、健忘或饮食节律紊乱等非特异性但影响功能的症状群，是身心系统整体承压的外显信号。
+                            - generic [ref=e386]:
+                                - text: •
+                                - strong [ref=e387]: 偏执（2.2分｜43%）
+                                - text: ：您偶有轻微多疑、误解他人意图或感觉被针对的倾向，属轻度认知偏差，在压力情境中较为常见。
+                            - generic [ref=e388]:
+                                - text: ✦ 温馨提醒：所有“异常”标签仅表示
+                                - strong [ref=e389]: 该维度得分超过群体常模临界值
+                                - text: ，代表“存在该因子相关症状”，绝非贴标签或下诊断。它更像一面镜子，映照出您此刻需要温柔关照的心理角落。
+                            - separator [ref=e390]
+                            - generic [ref=e391]: 【改善建议】
+                            - text: 聚焦您当前最突出的三个维度（
+                            - strong [ref=e392]: 抑郁、人际关系敏感、强迫症状
+                            - text: ），我们为您设计了具身化、低门槛的自我调节策略：
+                            - generic [ref=e393]:
+                                - text: •
+                                - strong [ref=e394]: 针对抑郁（3.9分）——启动“微行动启动法”
+                            - text: '- 每天只做1件能在5分钟内完成的小事（如整理桌面一角、给窗台植物浇水、写下今天1个微小感谢）'
+                            - text: '- 关键不在于事情本身，而在于专注体验“我完成了”的掌控感，重建神经系统的效能反馈回路'
+                            - text: '-'
+                            - emphasis [ref=e395]: 坚持1–2周，观察情绪能量是否出现细微回升
+                            - generic [ref=e396]:
+                                - text: •
+                                - strong [ref=e397]: 针对人际关系敏感（3.4分）——练习“暂停三秒回应法”
+                            - text: '- 当感到被冒犯/评价/不被理解时，默数“1…2…3…”再开口，同时轻触拇指与食指感受指尖温度与质地'
+                            - text: '- 这3秒创造安全缓冲带，帮助大脑从前额叶（理性区）接管杏仁核（警报区）'
+                            - text: '-'
+                            - emphasis [ref=e398]: 每日刻意练习3次，逐步延长心理反应窗口
+                            - generic [ref=e399]:
+                                - text: •
+                                - strong [ref=e400]: 针对强迫症状（3.3分）——尝试“念头云朵观察法”
+                            - text: '- 当反复念头出现时，不驱赶、不评判，想象它们是天空飘过的云朵，静静看着它们来去'
+                            - text: '- 可配合轻柔呼吸（吸气4秒→屏息7秒→呼气8秒），每天2次，每次3分钟'
+                            - text: '-'
+                            - emphasis [ref=e401]: 目标不是消除念头，而是松动“我=念头”的认同，培养内在观察者视角
+                            - generic [ref=e402]: 所有方法旨在增强心理弹性，效果因人而异。请以“实验心态”尝试，无需追求完美执行——您愿意开始，已是改变的重要一步。
+                            - separator [ref=e403]
+                            - generic [ref=e404]: 【注意事项】
+                            - generic [ref=e405]:
+                                - text: • ❗ 本报告是基于自评量表的
+                                - strong [ref=e406]: 心理健康快筛参考
+                                - text: ，不能替代临床面谈、精神科评估或医学检查。
+                            - generic [ref=e407]: • ⏳ SCL-90反映的是近一周主观体验，状态具有流动性。若您近期经历重大生活事件（如考试、离职、亲人离世），结果可能暂时性升高，属正常应激反应。
+                            - generic [ref=e408]: • 🚨 若出现以下任一情况，请立即联系专业支持：
+                            - text: '- 持续两周以上几乎每天情绪低落/无望感；'
+                            - text: '- 有伤害自己或他人的念头；'
+                            - text: '- 出现幻觉、妄想或现实感丧失；'
+                            - text: '- 无法维持基本饮食、睡眠或自理功能。'
+                            - generic [ref=e409]:
+                                - text: • 🌱 最后想对您说：
+                                - strong [ref=e410]: 关注自己，本身就是一种力量。
+                                - text: 您愿意完成这份量表、阅读这份报告，已是在照顾自己的重要一步——这份觉察，值得被温柔肯定。
+                    - generic [ref=e411]:
+                        - text: 本系统生成的测评报告，仅供参考，不构成医疗诊断
+                        - text: 生成时间：2026/4/27 09:33:07
+                    - generic [ref=e412]:
+                        - button "📷 保存为图片" [ref=e413] [cursor=pointer]
+                        - button "☆ 收藏" [ref=e414] [cursor=pointer]:
+                            - generic [ref=e415]: ☆
+                            - generic [ref=e416]: 收藏
+    - generic: 测评详情报告已生成
+    - generic:
+        - generic:
+            - generic: 🗑
+            - generic: 删除测评记录
+            - generic: 确定删除这条记录吗？删除后无法恢复。
+            - generic:
+                - button "取消"
+                - button "删除"

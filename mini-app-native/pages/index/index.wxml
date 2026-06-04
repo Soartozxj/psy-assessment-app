@@ -12,7 +12,7 @@
     </view>
     <view class="greeting-actions">
       <view class="greeting-chip" bindtap="onDiaryTap">📒 情绪日记</view>
-      <view class="greeting-chip" bindtap="onHistoryTap">📊 测评记录</view>
+      <view class="greeting-chip" bindtap="onMeditationTap">🧘 冥想</view>
     </view>
   </view>
 

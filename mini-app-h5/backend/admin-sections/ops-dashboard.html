@@ -1,0 +1,134 @@
+          <div style="max-width: none">
+            <!-- Tab 栏 -->
+            <div class="ops-tabs" data-ops-tab-group="ops">
+              <button class="ops-tab" data-action="switch-ops-tab" data-tab="ai">
+                <span>🤖</span> AI 配置
+                <span class="ops-tab-badge" style="background: rgba(74, 144, 217, 0.1); color: var(--primary)"
+                  >2项</span
+                >
+              </button>
+              <button class="ops-tab active" data-action="switch-ops-tab" data-tab="monitor">
+                <span>📡</span> 系统监控
+                <span class="ops-tab-badge" style="background: rgba(39, 174, 96, 0.1); color: var(--success)">2项</span>
+              </button>
+              <button class="ops-tab" data-action="switch-ops-tab" data-tab="manual"><span>📖</span> 运维手册</button>
+            </div>
+
+            <!-- ===== Tab: AI 配置 ===== -->
+            <div class="ops-tab-panel active" id="ops-panel-ai">
+              <div class="ops-2col">
+                <!-- AI 接口状态卡片 -->
+                <div class="ops-card">
+                  <div class="ops-card-header">
+                    <span class="ops-card-icon">🤖</span>
+                    <div>
+                      <div class="ops-card-title">AI 接口状态</div>
+                      <div class="ops-card-sub">自动读取后台 AI 配置 · 展示当前 Provider 状态</div>
+                    </div>
+                    <button class="ops-btn" data-action="ops-check-ai">🔄 刷新状态</button>
+                  </div>
+                  <div id="ops-ai-body">
+                    <div class="ops-loading">点击「刷新状态」查询 AI 接口</div>
+                  </div>
+                </div>
+
+                <!-- AI 密钥管理卡片 -->
+                <div class="ops-card">
+                  <div class="ops-card-header">
+                    <span class="ops-card-icon">🔑</span>
+                    <div>
+                      <div class="ops-card-title">AI 密钥管理</div>
+                      <div class="ops-card-sub">配置 DashScope / DeepSeek API Key · 保存到 LNMP + CloudBase 双端</div>
+                    </div>
+                    <button class="ops-btn" data-action="ops-load-keys">📂 从服务端加载</button>
+                    <button
+                      class="ops-btn"
+                      data-action="ops-check-server-keys"
+                      style="font-size: 11px; padding: 4px 10px"
+                    >
+                      🌐 双端状态
+                    </button>
+                  </div>
+                  <div id="ops-aikey-body">
+                    <div class="ops-loading">
+                      点击「从服务端加载」读取当前服务端配置，或直接填写新 Key 后保存。
+                      <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); line-height: 1.6">
+                        💡 说明：API Key 仅存储在服务端（LNMP .env + CloudBase DB），前端不持有密钥。<br />
+                        保存后立即生效，无需重新构建部署。
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== Tab: 系统监控 ===== -->
+            <div class="ops-tab-panel" id="ops-panel-monitor">
+              <div class="ops-2col">
+                <!-- 到期监控卡片 -->
+                <div class="ops-card">
+                  <div class="ops-card-header">
+                    <span class="ops-card-icon">⏰</span>
+                    <div>
+                      <div class="ops-card-title">到期监控</div>
+                      <div class="ops-card-sub">套餐 / 证书 / 域名 / 服务器 · 点击日期可编辑</div>
+                    </div>
+                    <button class="ops-btn" data-action="ops-save-config">💾 保存配置</button>
+                  </div>
+                  <div class="ops-countdown-grid" id="ops-countdown-grid" style="grid-template-columns: 1fr">
+                    <!-- JS 动态渲染 -->
+                  </div>
+                </div>
+
+                <!-- 系统健康快检卡片 -->
+                <div class="ops-card">
+                  <div class="ops-card-header">
+                    <span class="ops-card-icon">🔍</span>
+                    <div>
+                      <div class="ops-card-title">系统健康快检</div>
+                      <div class="ops-card-sub">一键检查各系统连通性</div>
+                    </div>
+                    <button class="ops-btn ops-btn-primary" data-action="ops-health-check">▶ 开始检测</button>
+                  </div>
+                  <div id="ops-health-body">
+                    <div class="ops-loading">点击「开始检测」运行检查</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== Tab: 运维手册 ===== -->
+            <div class="ops-tab-panel" id="ops-panel-manual">
+              <!-- 部署运维手册卡片 -->
+              <div class="ops-card">
+                <div class="ops-card-header">
+                  <span class="ops-card-icon">📖</span>
+                  <div>
+                    <div class="ops-card-title">部署运维手册</div>
+                    <div class="ops-card-sub">系统架构 · 平台账号 · 域名证书 · 部署流程 · 常见问题</div>
+                  </div>
+                </div>
+                <div class="ops-manual">
+                  <div class="ops-manual-search-wrap">
+                    <span class="ops-manual-search-icon">🔍</span>
+                    <input
+                      class="ops-manual-search"
+                      id="ops-manual-search"
+                      placeholder="搜索手册内容（如：域名、证书、构建、备案）"
+                      oninput="opsManualSearch(this.value)"
+                    />
+                  </div>
+                  <div class="ops-manual-body">
+                    <div class="ops-manual-toc-wrap">
+                      <div class="ops-manual-toc" id="ops-manual-toc"></div>
+                    </div>
+                    <div class="ops-manual-content-wrap">
+                      <div id="ops-manual-content"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+

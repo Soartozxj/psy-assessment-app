@@ -13,7 +13,10 @@
     "pages/notification/notification",
     "pages/report-favorites/report-favorites",
     "pages/about/about",
-    "pages/privacy/privacy"
+    "pages/privacy/privacy",
+    "pages/diary/diary",
+    "pages/diary/list",
+    "pages/diary/stats"
   ],
   "window": {
     "navigationBarBackgroundColor": "#4a90d9",

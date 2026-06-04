@@ -1,0 +1,76 @@
+<!-- 数据看板 section -->
+<div class="preview-card">
+  <span class="icon">📱</span>
+  <div class="info">
+    <h3>前端小程序展示已联动</h3>
+    <p>在后台新建或修改量表后，点击「同步前端」即可在前端展示页面实时看到变化</p>
+  </div>
+  <a href="../frontend/index.html" target="_blank" class="preview-link-btn"> <span>🔗</span> 打开前端展示 </a>
+</div>
+
+<div class="stat-grid" id="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(74, 144, 217, 0.12)">📋</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-total">4</div>
+      <div class="stat-label">量表总数</div>
+      <div class="stat-trend trend-up">↑ 本月新增 1</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(82, 196, 26, 0.12)">✅</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-active">4</div>
+      <div class="stat-label">已上架量表</div>
+      <div class="stat-trend trend-up">↑ 100% 上架率</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(250, 173, 20, 0.12)">👥</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-users">31,690</div>
+      <div class="stat-label">累计测评人次</div>
+      <div class="stat-trend trend-up">↑ 本周 +892</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(255, 77, 79, 0.1)">⭐</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-rating">4.8</div>
+      <div class="stat-label">平均评分</div>
+      <div class="stat-trend trend-up">↑ 综合满意度</div>
+    </div>
+  </div>
+</div>
+
+<div class="chart-grid">
+  <div class="chart-card">
+    <h4>各量表完成人次排行</h4>
+    <!-- Chart.js 柱状图容器 -->
+    <canvas id="bar-chart" height="300"></canvas>
+  </div>
+  <div class="chart-card">
+    <h4>量表分类分布</h4>
+    <div class="pie-wrap">
+      <!-- Chart.js 饼图容器 -->
+      <canvas id="pie-chart" width="200" height="200"></canvas>
+      <div class="pie-legend" id="pie-legend"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dashboard section 加载完成后初始化
+  (function() {
+    // 渲染图表
+    if (typeof ChartUtils !== 'undefined') {
+      ChartUtils.renderPieChart('pie-chart', 'pie-legend');
+      ChartUtils.renderBarChart('bar-chart');
+    }
+    
+    // 更新统计数据
+    if (typeof updateDashboardStats === 'function') {
+      updateDashboardStats();
+    }
+  })();
+</script>

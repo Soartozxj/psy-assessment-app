@@ -1,0 +1,51 @@
+<!--pages/diary/list.wxml-->
+<view class="page-diary-list">
+  <!-- 统计概览 -->
+  <view class="stats-overview">
+    <view class="stat-item">
+      <view class="stat-value">{{totalEntries}}</view>
+      <view class="stat-label">总记录</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{avgMood}}</view>
+      <view class="stat-label">平均心情</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{streakDays}}</view>
+      <view class="stat-label">连续天数</view>
+    </view>
+  </view>
+
+  <!-- 日记列表 -->
+  <view class="diary-list" wx:if="{{diaryList.length > 0}}">
+    <view 
+      class="diary-item"
+      wx:for="{{diaryList}}"
+      wx:key="id"
+      bindtap="onDiaryTap"
+      data-id="{{item.id}}"
+    >
+      <view class="diary-date">{{item.dateStr}}</view>
+      <view class="diary-mood">{{item.moodEmoji}} {{item.moodScore}}星</view>
+      <view class="diary-content">{{item.content || '暂无文字记录'}}</view>
+      <view class="diary-actions">
+        <view class="btn-delete" catchtap="onDeleteTap" data-id="{{item.id}}">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{diaryList.length === 0 && !loading}}">
+    <view class="empty-emoji">📒</view>
+    <view class="empty-text">还没有日记记录</view>
+    <view class="empty-hint">点击下方的"+"开始记录今天的心情吧</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 浮动添加按钮 -->
+  <view class="fab-button" bindtap="onAddTap">+</view>
+</view>

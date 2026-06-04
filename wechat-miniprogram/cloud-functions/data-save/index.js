@@ -35,9 +35,13 @@ exports.main = async (event, context) => {
 
   try {
     const { record } = event || {};
+<<<<<<< Updated upstream
     if (!record || typeof record !== 'object') {
       return { code: -1, message: '参数错误' };
     }
+=======
+    if (!record || typeof record !== 'object') return { code: -1, message: '参数错误' };
+>>>>>>> Stashed changes
 
     // 白名单过滤 + 长度限制
     const filteredRecord = {};

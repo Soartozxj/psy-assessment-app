@@ -2439,6 +2439,7 @@
         } else {
           var tt = titleEl.textContent,
             dd = descEl.textContent;
+<<<<<<< Updated upstream
 
           // ✅ P2安全修复：使用DOM API代替innerHTML，防止XSS攻击
           var titleInput = document.createElement('input');
@@ -2458,6 +2459,13 @@
           item.dataset.editing = 'true';
           btn.textContent = '✓';
           titleInput.focus();
+=======
+          titleEl.innerHTML = '<input class="flow-edit-input" value="' + tt.replace(/"/g, '&quot;') + '" />';
+          descEl.innerHTML = '<input class="flow-edit-input" value="' + dd + '" />';
+          item.dataset.editing = 'true';
+          btn.textContent = '✓';
+          titleEl.querySelector('.flow-edit-input').focus();
+>>>>>>> Stashed changes
         }
       }
 

@@ -1,0 +1,39 @@
+          <div style="max-width: none">
+            <div
+              class="preview-card"
+              style="
+                background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+                box-shadow: 0 4px 16px rgba(45, 52, 54, 0.3);
+              "
+            >
+              <span class="icon">💡</span>
+              <div class="info">
+                <h3>系统提示词管理</h3>
+                <p>记录量表导入、计分提取等场景的系统级提示词模板。支持多版本管理 + 使用流程可视化配置。</p>
+              </div>
+            </div>
+
+            <!-- 页签栏 -->
+            <div class="sp-type-tabs" id="sp-type-tabs"></div>
+
+            <!-- 提示词正文区域 -->
+            <div id="sp-reading-container"></div>
+
+            <!-- 使用流程 -->
+            <div class="sp-flow-section">
+              <div class="sp-flow-header">
+                <h4>📋 使用流程</h4>
+                <div class="sp-flow-toolbar">
+                  <button data-action="add-step">+ 新增步骤</button>
+                  <button class="sp-btn-flow-done" onclick="showToast('✓ 使用流程已保存', 'success')">✓ 完成</button>
+                </div>
+              </div>
+              <div class="sp-flow-scroll" id="sp-flow-scroll">
+                <div class="sp-flow-steps" id="sp-flow-steps"></div>
+              </div>
+              <div class="sp-flow-scroll-hint">← 左右滑动查看更多步骤 →</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 用户评价 ========== -->

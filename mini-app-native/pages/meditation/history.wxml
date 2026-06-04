@@ -1,0 +1,55 @@
+<!--pages/meditation/history.wxml-->
+<view class="page-meditation-history">
+  <!-- 统计概览 -->
+  <view class="stats-overview">
+    <view class="stat-card">
+      <view class="stat-value">{{totalSessions}}</view>
+      <view class="stat-label">总次数</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{totalDurationStr}}</view>
+      <view class="stat-label">总时长</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{completedSessions}}</view>
+      <view class="stat-label">完成次数</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{streakDays}}</view>
+      <view class="stat-label">连续天数</view>
+    </view>
+  </view>
+
+  <!-- 历史记录列表 -->
+  <view class="history-list" wx:if="{{historyList.length > 0}}">
+    <view class="section-title">冥想记录</view>
+    <view 
+      class="history-item"
+      wx:for="{{historyList}}"
+      wx:key="id"
+    >
+      <view class="history-date">{{item.dateStr}}</view>
+      <view class="history-info">
+        <view class="history-title">{{item.audioTitle || '冥想音频'}}</view>
+        <view class="history-meta">
+          <text class="meta-duration">⏱️ {{item.durationStr}}</text>
+          <text class="meta-status {{item.completed ? 'completed' : 'incomplete'}}">
+            {{item.completed ? '已完成' : '未完成'}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{historyList.length === 0 && !loading}}">
+    <view class="empty-emoji">🧘</view>
+    <view class="empty-text">还没有冥想记录</view>
+    <view class="empty-hint">开始你的第一次冥想吧</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+</view>

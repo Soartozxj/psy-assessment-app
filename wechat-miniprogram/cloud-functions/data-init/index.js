@@ -11,7 +11,11 @@ exports.main = async (event, context) => {
     const { category, keyword } = event || {};
 
     // 查询已上架的量表
+<<<<<<< Updated upstream
     const query = db.collection('scales').where({ status: 1 });
+=======
+    let query = db.collection('scales').where({ status: 1 });
+>>>>>>> Stashed changes
     const res = await query.orderBy('sortOrder', 'asc').limit(100).get();
     let scales = res.data || [];
 

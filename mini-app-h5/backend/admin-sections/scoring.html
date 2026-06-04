@@ -1,0 +1,111 @@
+          <div style="display: flex; gap: 20px; min-height: calc(100vh - 200px)">
+            <!-- 左侧：量表列表 -->
+            <div style="width: 280px; flex-shrink: 0">
+              <div class="table-card" style="height: 100%; display: flex; flex-direction: column">
+                <div style="padding: 14px 16px; border-bottom: 1px solid var(--border)">
+                  <!-- 筛选栏 -->
+                  <div style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px">
+                    <select
+                      id="scoring-type-filter"
+                      onchange="renderScoringScaleList()"
+                      style="
+                        height: 32px;
+                        border-radius: 6px;
+                        border: 1px solid var(--border);
+                        background: var(--bg);
+                        color: var(--text);
+                        font-size: 13px;
+                        padding: 0 8px;
+                        cursor: pointer;
+                      "
+                    >
+                      <option value="">全部类型</option>
+                    </select>
+                    <select
+                      id="scoring-status-filter"
+                      onchange="renderScoringScaleList()"
+                      style="
+                        height: 32px;
+                        border-radius: 6px;
+                        border: 1px solid var(--border);
+                        background: var(--bg);
+                        color: var(--text);
+                        font-size: 13px;
+                        padding: 0 8px;
+                        cursor: pointer;
+                      "
+                    >
+                      <option value="">全部状态</option>
+                      <option value="configured">已配置</option>
+                      <option value="unconfigured">未配置</option>
+                    </select>
+                  </div>
+                  <div class="action-bar" style="margin-bottom: 0; gap: 8px">
+                    <input
+                      type="text"
+                      id="scoring-scale-search"
+                      placeholder="搜索量表..."
+                      class="form-control"
+                      style="flex: 1; height: 32px; font-size: 13px"
+                      oninput="renderScoringScaleList()"
+                    />
+                  </div>
+                </div>
+                <div id="scoring-scale-list" style="flex: 1; overflow-y: auto; padding: 8px">
+                  <!-- 动态渲染量表列表 -->
+                </div>
+                <div id="scoring-list-pagination"></div>
+              </div>
+            </div>
+
+            <!-- 右侧：计分规则编辑器 -->
+            <div style="flex: 1" id="scoring-editor-area">
+              <div id="scoring-empty" style="text-align: center; padding: 80px 20px; color: var(--text-muted)">
+                <div style="font-size: 48px; margin-bottom: 16px">🧮</div>
+                <div style="font-size: 16px; color: var(--text-sec); margin-bottom: 8px">计分规则配置</div>
+                <div style="font-size: 13px; margin-bottom: 20px">从左侧选择一个量表，配置其计分规则</div>
+                <div
+                  style="
+                    background: var(--bg);
+                    padding: 16px;
+                    border-radius: 8px;
+                    text-align: left;
+                    font-size: 13px;
+                    color: var(--text-sec);
+                    line-height: 1.8;
+                    max-width: 420px;
+                    margin: 0 auto;
+                  "
+                >
+                  <div style="font-weight: 600; color: var(--text); margin-bottom: 8px">💡 计分规则编写要点</div>
+                  <div>1. 维度配置：定义各维度的名称、描述、计分方式</div>
+                  <div>2. 指标配置：定义总分/子维度的解释区间</div>
+                  <div>3. 解释规则：不同分值段的含义说明</div>
+                  <div>4. 筛查规则：阳性筛查的阈值设定</div>
+                </div>
+              </div>
+
+              <div id="scoring-editor" style="display: none">
+                <div class="table-card" style="margin-bottom: 16px">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px">
+                    <div>
+                      <h3 style="font-size: 16px; margin-bottom: 2px" id="scoring-scale-name"></h3>
+                      <span style="font-size: 12px; color: var(--text-muted)" id="scoring-scale-code"></span>
+                    </div>
+                    <div style="display: flex; gap: 8px">
+                      <button
+                        class="btn btn-primary btn-sm"
+                        data-action="save-config"
+                        data-config-type="scoring"
+                        id="scoring-save-btn"
+                      >
+                        💾 保存配置
+                      </button>
+                    </div>
+                  </div>
+                  <div id="scoring-form-container"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>

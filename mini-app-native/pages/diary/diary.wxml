@@ -1,0 +1,97 @@
+<!--pages/diary/diary.wxml-->
+<view class="page-diary">
+  <!-- 日期显示 -->
+  <view class="diary-date">{{currentDate}}</view>
+  
+  <!-- 情绪评分 -->
+  <view class="mood-rating-section">
+    <view class="section-title">今天的心情如何？</view>
+    <view class="mood-stars">
+      <view 
+        class="mood-star {{moodScore >= 1 ? 'active' : ''}}" 
+        bindtap="onStarTap" 
+        data-score="1"
+      >⭐</view>
+      <view 
+        class="mood-star {{moodScore >= 2 ? 'active' : ''}}" 
+        bindtap="onStarTap" 
+        data-score="2"
+      >⭐</view>
+      <view 
+        class="mood-star {{moodScore >= 3 ? 'active' : ''}}" 
+        bindtap="onStarTap" 
+        data-score="3"
+      >⭐</view>
+      <view 
+        class="mood-star {{moodScore >= 4 ? 'active' : ''}}" 
+        bindtap="onStarTap" 
+        data-score="4"
+      >⭐</view>
+      <view 
+        class="mood-star {{moodScore >= 5 ? 'active' : ''}}" 
+        bindtap="onStarTap" 
+        data-score="5"
+      >⭐</view>
+    </view>
+    <view class="mood-label">{{moodLabel}}</view>
+  </view>
+  
+  <!-- 文字描述 -->
+  <view class="diary-content-section">
+    <view class="section-title">记录一下今天的心情吧</view>
+    <textarea 
+      class="diary-textarea" 
+      placeholder="写下你的感受..." 
+      maxlength="500"
+      bindinput="onContentInput"
+      value="{{content}}"
+    ></textarea>
+    <view class="char-count">{{content.length}}/500</view>
+  </view>
+  
+  <!-- 关联测评记录 -->
+  <view class="related-assessment-section" wx:if="{{recentAssessments.length > 0}}">
+    <view class="section-title">关联今天的测评（可选）</view>
+    <view class="assessment-list">
+      <view 
+        class="assessment-item {{relatedAssessmentId === item.recordId ? 'selected' : ''}}"
+        wx:for="{{recentAssessments}}"
+        wx:key="recordId"
+        bindtap="onAssessmentTap"
+        data-id="{{item.recordId}}"
+      >
+        <view class="assessment-emoji">{{item.emoji || '📋'}}</view>
+        <view class="assessment-info">
+          <view class="assessment-name">{{item.scaleName}}</view>
+          <view class="assessment-score" style="color:{{item.color}}">{{item.score}}分</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 保存按钮 -->
+  <view class="diary-actions">
+    <button class="btn-save" bindtap="onSaveTap" disabled="{{saving}}">
+      {{saving ? '保存中...' : '保存日记'}}
+    </button>
+    <button class="btn-cancel" bindtap="onCancelTap">取消</button>
+  </view>
+  
+  <!-- 历史记录列表 -->
+  <view class="history-section" wx:if="{{diaryList.length > 0}}">
+    <view class="section-title">最近的日记</view>
+    <view class="diary-list">
+      <view 
+        class="diary-item"
+        wx:for="{{diaryList}}"
+        wx:key="id"
+      >
+        <view class="diary-item-header">
+          <view class="diary-item-date">{{item.dateStr}}</view>
+          <view class="diary-item-mood">{{item.moodEmoji}} {{item.moodScore}}星</view>
+        </view>
+        <view class="diary-item-content">{{item.content || '暂无文字记录'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

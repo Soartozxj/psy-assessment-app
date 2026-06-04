@@ -1,0 +1,131 @@
+/* pages/meditation/history.wxss */
+.page-meditation-history {
+  padding: 30rpx;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #4a90d9;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.history-list {
+  padding-bottom: 120rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.history-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.history-date {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 15rpx;
+}
+
+.history-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-title {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.meta-duration {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.meta-status {
+  font-size: 22rpx;
+  padding: 5rpx 15rpx;
+  border-radius: 20rpx;
+}
+
+.meta-status.completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.meta-status.incomplete {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+}
+
+.empty-emoji {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.empty-hint {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 100rpx 0;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}

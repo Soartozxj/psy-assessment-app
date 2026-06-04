@@ -49,7 +49,11 @@ Page({
       self.setData({ typingLines: currentLines }, function () {
         // 触发重排后加 visible
         setTimeout(function () {
+<<<<<<< Updated upstream
           const updatedLines = self.data.typingLines;
+=======
+          var updatedLines = self.data.typingLines;
+>>>>>>> Stashed changes
           updatedLines[updatedLines.length - 1].visible = true;
           self.setData({ typingLines: updatedLines });
         }, 50);

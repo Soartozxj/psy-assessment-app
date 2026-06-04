@@ -1,0 +1,16 @@
+[
+  {
+    "id": 5,
+    "record_id": "1777534821052",
+    "openid": "",
+    "scene": "result",
+    "stars": 3,
+    "tags": "[]",
+    "comment": null,
+    "source": "result",
+    "scale_id": "1775965642069",
+    "scale_name": "父母共同教养关系感知量表",
+    "assessment_data": "{\"totalScore\":3,\"maxScore\":5,\"levelName\":\"中等\",\"color\":\"#26a69a\",\"dims\":[{\"name\":\"支持性\",\"score\":\"23\",\"pct\":66,\"max\":35,\"color\":\"#26a69a\",\"levelLabel\":\"中等\",\"levelText\":\"感知到的支持性共同教养行为处于中等水平\",\"hasInterp\":true},{\"name\":\"非支持性\",\"score\":\"19\",\"pct\":54,\"max\":35,\"color\":\"#26a69a\",\"levelLabel\":\"中等\",\"levelText\":\"感知到的非支持性共同教养行为处于中等水平\",\"hasInterp\":true}]}",
+    "created_at": "2026-05-01T03:08:23.000Z"
+  }
+]

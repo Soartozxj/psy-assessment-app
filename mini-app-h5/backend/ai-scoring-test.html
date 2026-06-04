@@ -406,7 +406,11 @@
               <button
                 class="btn btn-secondary"
                 style="flex-shrink: 0; font-size: 12px; padding: 6px 12px"
+<<<<<<< Updated upstream
                 data-action="ast-upload-file"
+=======
+                onclick="document.getElementById('file-upload').click()"
+>>>>>>> Stashed changes
               >
                 📎 上传文件
               </button>
@@ -434,7 +438,11 @@
                 id="extract-btn"
                 style="background: #6366f1; font-size: 12px; padding: 6px 12px; display: none; white-space: nowrap"
                 disabled
+<<<<<<< Updated upstream
                 data-action="ast-start-extract"
+=======
+                onclick="startExtract()"
+>>>>>>> Stashed changes
               >
                 🤖 生成量表计分说明
               </button>
@@ -445,16 +453,28 @@
             ></textarea>
 
             <div class="input-actions">
+<<<<<<< Updated upstream
               <button class="btn btn-primary" id="parse-btn" data-action="ast-start-parse">✨ 开始解析</button>
               <button class="btn btn-secondary" data-action="ast-clear-all">🗑 清空</button>
+=======
+              <button class="btn btn-primary" id="parse-btn" onclick="startParse()">✨ 开始解析</button>
+              <button class="btn btn-secondary" onclick="clearAll()">🗑 清空</button>
+>>>>>>> Stashed changes
             </div>
 
             <div class="examples">
               <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px">示例文本：</div>
+<<<<<<< Updated upstream
               <span class="example-btn" data-action="ast-load-example" data-example="scl90">SCL-90</span>
               <span class="example-btn" data-action="ast-load-example" data-example="phq9">PHQ-9</span>
               <span class="example-btn" data-action="ast-load-example" data-example="sas">SAS</span>
               <span class="example-btn" data-action="ast-load-example" data-example="bfi">大五人格 BFI</span>
+=======
+              <span class="example-btn" onclick="loadExample('scl90')">SCL-90</span>
+              <span class="example-btn" onclick="loadExample('phq9')">PHQ-9</span>
+              <span class="example-btn" onclick="loadExample('sas')">SAS</span>
+              <span class="example-btn" onclick="loadExample('bfi')">大五人格 BFI</span>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
@@ -473,7 +493,11 @@
 
       <!-- Prompt 模板面板 -->
       <div class="panel" style="margin-top: 20px">
+<<<<<<< Updated upstream
         <div class="panel-header" style="cursor: pointer; user-select: none" data-action="ast-toggle-prompt-panel">
+=======
+        <div class="panel-header" style="cursor: pointer; user-select: none" onclick="togglePromptPanel()">
+>>>>>>> Stashed changes
           📝 Prompt 模板
           <span
             id="prompt-mode-tag"
@@ -507,14 +531,32 @@
               flex-wrap: wrap;
             "
           >
+<<<<<<< Updated upstream
             <button class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px" data-action="ast-copy-prompt">
+=======
+            <button
+              class="btn btn-secondary"
+              style="padding: 6px 14px; font-size: 12px"
+              onclick="
+                event.stopPropagation();
+                copyPromptText();
+              "
+            >
+>>>>>>> Stashed changes
               📋 复制 Prompt
             </button>
             <button
               class="btn btn-secondary"
               style="padding: 6px 14px; font-size: 12px"
               id="prompt-edit-btn"
+<<<<<<< Updated upstream
               data-action="ast-toggle-edit"
+=======
+              onclick="
+                event.stopPropagation();
+                togglePromptEdit();
+              "
+>>>>>>> Stashed changes
             >
               ✏️ 编辑
             </button>
@@ -522,7 +564,14 @@
               class="btn btn-secondary"
               style="padding: 6px 14px; font-size: 12px; display: none"
               id="prompt-save-btn"
+<<<<<<< Updated upstream
               data-action="ast-save-edit"
+=======
+              onclick="
+                event.stopPropagation();
+                savePromptEdit();
+              "
+>>>>>>> Stashed changes
             >
               💾 保存
             </button>
@@ -530,7 +579,14 @@
               class="btn btn-secondary"
               style="padding: 6px 14px; font-size: 12px; display: none"
               id="prompt-cancel-btn"
+<<<<<<< Updated upstream
               data-action="ast-cancel-edit"
+=======
+              onclick="
+                event.stopPropagation();
+                cancelPromptEdit();
+              "
+>>>>>>> Stashed changes
             >
               ✕ 取消
             </button>
@@ -538,7 +594,14 @@
               class="btn btn-secondary"
               style="padding: 6px 14px; font-size: 12px; display: none; color: var(--error)"
               id="prompt-reset-btn"
+<<<<<<< Updated upstream
               data-action="ast-reset-prompt"
+=======
+              onclick="
+                event.stopPropagation();
+                resetPromptToDefault();
+              "
+>>>>>>> Stashed changes
             >
               🔄 恢复默认
             </button>
@@ -581,7 +644,11 @@
 
       <!-- 调试面板 -->
       <div class="debug-panel">
+<<<<<<< Updated upstream
         <div class="debug-toggle" data-action="ast-toggle-debug">🐛 调试信息</div>
+=======
+        <div class="debug-toggle" onclick="toggleDebug()">🐛 调试信息</div>
+>>>>>>> Stashed changes
         <div class="debug-body" id="debug-body">
           <div class="debug-label">完整 Prompt（system + user，JSON 格式）</div>
           <div class="json-block" id="debug-prompt">-</div>
@@ -1707,9 +1774,15 @@
 
         // 操作按钮
         html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">';
+<<<<<<< Updated upstream
         html += '<button class="btn btn-primary" data-action="ast-copy-json">📋 复制原始 JSON</button>';
         html += '<button class="btn btn-secondary" data-action="ast-normalize-verify">🔧 标准化 + 验证</button>';
         html += '<button class="btn btn-secondary" data-action="ast-copy-normalized">📋 复制标准化 JSON</button>';
+=======
+        html += '<button class="btn btn-primary" onclick="copyJson()">📋 复制原始 JSON</button>';
+        html += '<button class="btn btn-secondary" onclick="normalizeAndVerify()">🔧 标准化 + 验证</button>';
+        html += '<button class="btn btn-secondary" onclick="copyNormalizedJson()">📋 复制标准化 JSON</button>';
+>>>>>>> Stashed changes
         html += '</div>';
         html += '<div id="verify-area"></div>';
 
@@ -1811,9 +1884,13 @@
         });
         report += '<div style="margin-top:12px;font-size:12px;color:var(--text-sec);">公式类型：';
         for (const [type, count] of Object.entries(formulaTypes)) {
+<<<<<<< Updated upstream
           // ✅ P2安全修复：对公式类型进行HTML转义
           report +=
             '<span class="tag tag-blue" style="margin-right:4px;">' + escHtml(type) + ' ×' + escHtml(count) + '</span>';
+=======
+          report += '<span class="tag tag-blue" style="margin-right:4px;">' + type + ' ×' + count + '</span>';
+>>>>>>> Stashed changes
         }
         report += '</div>';
 

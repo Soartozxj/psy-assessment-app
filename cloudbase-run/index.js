@@ -100,9 +100,13 @@ const ScoringEngine = (() => {
     const scores = [];
     for (const qid of itemIds) {
       const q = questions.find((q) => q.id == qid);
+<<<<<<< Updated upstream
       if (!q) {
         continue;
       }
+=======
+      if (!q) continue;
+>>>>>>> Stashed changes
       const optIdx = answers[qid] !== undefined ? answers[qid] : answers[String(qid)];
       if (optIdx === undefined || optIdx === null) {
         continue;
@@ -114,9 +118,12 @@ const ScoringEngine = (() => {
         opt = q.options.find((o) => o.id === optIdx);
       } else {
         opt = q.options.find((o) => o.id === optIdx);
+<<<<<<< Updated upstream
       }
       if (opt) {
         scores.push(opt.score || 0);
+=======
+>>>>>>> Stashed changes
       }
     }
     return scores;
@@ -168,9 +175,13 @@ const ScoringEngine = (() => {
         return scores.length === 0 ? 0 : scores.reduce((a, b) => a + b, 0) / scores.length;
       case 'COUNT_IF': {
         const norm = normalizeCondition(condition);
+<<<<<<< Updated upstream
         if (!norm) {
           return scores.length;
         }
+=======
+        if (!norm) return scores.length;
+>>>>>>> Stashed changes
         return scores.filter((s) => compareValue(s, norm.operator, norm.value)).length;
       }
       case 'DERIVED':
@@ -240,18 +251,26 @@ const ScoringEngine = (() => {
     const maxScores = [];
     for (const qid of itemIds) {
       const q = questions.find((q) => q.id == qid);
+<<<<<<< Updated upstream
       if (!q || !q.options || q.options.length === 0) {
         continue;
       }
+=======
+      if (!q || !q.options || q.options.length === 0) continue;
+>>>>>>> Stashed changes
       maxScores.push(Math.max(...q.options.map((o) => o.score || 0)));
     }
     return maxScores;
   }
 
   function inferMaxFromInterpretation(interpretation) {
+<<<<<<< Updated upstream
     if (!interpretation || interpretation.length === 0) {
       return null;
     }
+=======
+    if (!interpretation || interpretation.length === 0) return null;
+>>>>>>> Stashed changes
     const allMax = interpretation.filter((r) => r.max !== undefined && r.max !== null).map((r) => r.max);
     return allMax.length > 0 ? Math.max(...allMax) : null;
   }
@@ -282,7 +301,11 @@ const ScoringEngine = (() => {
       }
     }
     if (scoring.metrics && scoring.metrics.length > 0) {
+<<<<<<< Updated upstream
       const tsMetric = scoring.metrics.find(
+=======
+      let tsMetric = scoring.metrics.find(
+>>>>>>> Stashed changes
         (m) => (m.key || m.name) === 'totalScore' || (m.key || m.name) === 'total_score' || (m.key || m.name) === '总分'
       );
       if (tsMetric) {
@@ -318,9 +341,13 @@ const ScoringEngine = (() => {
     }
     if (totalMax === null) {
       const allMax = questions.map((q) => {
+<<<<<<< Updated upstream
         if (!q.options || q.options.length === 0) {
           return 0;
         }
+=======
+        if (!q.options || q.options.length === 0) return 0;
+>>>>>>> Stashed changes
         return Math.max(...q.options.map((o) => o.score || 0));
       });
       totalMax = allMax.reduce((a, b) => a + b, 0);
@@ -382,11 +409,16 @@ const ScoringEngine = (() => {
           return 0;
         }
         let opt;
+<<<<<<< Updated upstream
         if (typeof optIdx === 'number' && optIdx < q.options.length) {
           opt = q.options[optIdx];
         } else {
           opt = q.options.find((o) => o.id === optIdx);
         }
+=======
+        if (typeof optIdx === 'number' && optIdx < q.options.length) opt = q.options[optIdx];
+        else opt = q.options.find((o) => o.id === optIdx);
+>>>>>>> Stashed changes
         return opt ? opt.score || 0 : 0;
       });
       return {
@@ -485,9 +517,13 @@ const ScoringEngine = (() => {
           }
           if (score === undefined) {
             const dim = result.dimensions.find((d) => d.label === rule.metric);
+<<<<<<< Updated upstream
             if (dim) {
               score = dim.score;
             }
+=======
+            if (dim) score = dim.score;
+>>>>>>> Stashed changes
           }
         } else {
           score = result.metrics.totalScore || result.metrics.total_score;
@@ -520,20 +556,28 @@ const ScoringEngine = (() => {
         let actual = screenValues[metricName];
         if (actual === undefined) {
           const dimResult = (screenValues._dimensions || []).find((d) => d.label === metricName);
+<<<<<<< Updated upstream
           if (dimResult) {
             actual = dimResult.score;
           }
         }
         if (actual === undefined) {
           return false;
+=======
+          if (dimResult) actual = dimResult.score;
+>>>>>>> Stashed changes
         }
         return compareValue(Number(actual), operator, Number(threshold));
       });
       const triggered = [];
       scoring.screening.conditions.forEach((cond, i) => {
+<<<<<<< Updated upstream
         if (results[i]) {
           triggered.push(cond);
         }
+=======
+        if (results[i]) triggered.push(cond);
+>>>>>>> Stashed changes
       });
       const logicFn = screening.logic === 'AND' ? results.every(Boolean) : results.some(Boolean);
       result.screening = {
@@ -900,10 +944,15 @@ async function _loadCloudAiKeys() {
     // 优先读 keys 数组（新格式：[{key, name}, ...]）
     if (ds.keys && Array.isArray(ds.keys)) {
       ds.keys.forEach(function (k) {
+<<<<<<< Updated upstream
         const keyVal = typeof k === 'object' ? k.key || '' : k;
         if (keyVal && keyVal.length > 10) {
           keys.push(keyVal);
         }
+=======
+        var keyVal = typeof k === 'object' ? k.key || '' : k;
+        if (keyVal && keyVal.length > 10) keys.push(keyVal);
+>>>>>>> Stashed changes
       });
     }
 
@@ -912,10 +961,15 @@ async function _loadCloudAiKeys() {
       keys.push(ds.apiKey);
       if (ds.fallbacks && Array.isArray(ds.fallbacks)) {
         ds.fallbacks.forEach(function (fb) {
+<<<<<<< Updated upstream
           const keyVal = typeof fb === 'object' ? fb.key || '' : fb;
           if (keyVal && keyVal.length > 10) {
             keys.push(keyVal);
           }
+=======
+          var keyVal = typeof fb === 'object' ? fb.key || '' : fb;
+          if (keyVal && keyVal.length > 10) keys.push(keyVal);
+>>>>>>> Stashed changes
         });
       }
     }
@@ -988,9 +1042,13 @@ async function _cloudCallDashScope(messages, model, temperature, maxTokens) {
       }
 
       const result = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '';
+<<<<<<< Updated upstream
       if (!result) {
         return { error: true, message: 'AI 返回为空' };
       }
+=======
+      if (!result) return { error: true, message: 'AI 返回为空' };
+>>>>>>> Stashed changes
       return { error: false, data: result };
     } catch (err) {
       console.warn('[AI] 请求异常:', err.message);
@@ -1060,8 +1118,13 @@ app.post('/api/ai-diagnose', async (req, res) => {
 app.get('/api/ai-config', async (req, res) => {
   try {
     // 管理员权限验证
+<<<<<<< Updated upstream
     const openid = req.query.openid || req.query._openid || '';
     const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+=======
+    var openid = req.query.openid || req.query._openid || '';
+    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+>>>>>>> Stashed changes
       .split(',')
       .map(function (s) {
         return s.trim();
@@ -1071,9 +1134,13 @@ app.get('/api/ai-config', async (req, res) => {
       return res.status(403).json({ code: -1, message: '无管理员权限' });
     }
 
+<<<<<<< Updated upstream
     if (!_cloudKeysLoaded) {
       await _loadCloudAiKeys();
     }
+=======
+    if (!_cloudKeysLoaded) await _loadCloudAiKeys();
+>>>>>>> Stashed changes
     const masked = _cloudApiKeys.map(function (k, i) {
       return {
         index: i + 1,
@@ -1099,8 +1166,13 @@ app.put('/api/ai-config', async (req, res) => {
   }
   try {
     // 管理员权限验证
+<<<<<<< Updated upstream
     const bodyOpenid = req.body._openid || req.body.openid || '';
     const ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+=======
+    var bodyOpenid = req.body._openid || req.body.openid || '';
+    var ADMIN_OPENIDS = (process.env.ADMIN_OPENIDS || '')
+>>>>>>> Stashed changes
       .split(',')
       .map(function (s) {
         return s.trim();
@@ -1116,7 +1188,11 @@ app.put('/api/ai-config', async (req, res) => {
       return res.status(400).json({ code: -1, message: '需要 keys 参数' });
     }
 
+<<<<<<< Updated upstream
     const keyArr =
+=======
+    var keyArr =
+>>>>>>> Stashed changes
       typeof keys === 'string'
         ? keys
             .split(/[,，]/)
@@ -1156,9 +1232,13 @@ app.put('/api/ai-config', async (req, res) => {
         if (Array.isArray(raw) && raw.length > 0 && raw[0].data !== undefined) {
           raw = raw[0].data;
         }
+<<<<<<< Updated upstream
         if (raw && typeof raw === 'object') {
           existingConfig = raw;
         }
+=======
+        if (raw && typeof raw === 'object') existingConfig = raw;
+>>>>>>> Stashed changes
       } catch (e) {
         /* 文档不存在，用空配置 */
       }
@@ -1250,9 +1330,13 @@ app.get('/api/tts/voices', async (req, res) => {
           encoding: 'utf-8'
         },
         (err, stdout) => {
+<<<<<<< Updated upstream
           if (err) {
             return reject(err);
           }
+=======
+          if (err) return reject(err);
+>>>>>>> Stashed changes
           try {
             const lines = stdout.trim().split('\n').slice(2); // 跳过表头
             const voices = lines

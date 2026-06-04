@@ -212,7 +212,12 @@ Page({
 
   /** 情绪日记入口 */
   onDiaryTap: function () {
-    wx.showToast({ title: '情绪日记即将上线', icon: 'none' });
+    wx.navigateTo({ url: '/pages/diary/diary' });
+  },
+
+  /** 冥想入口 */
+  onMeditationTap: function () {
+    wx.navigateTo({ url: '/pages/meditation/meditation' });
   },
 
   /** 测评记录入口 */

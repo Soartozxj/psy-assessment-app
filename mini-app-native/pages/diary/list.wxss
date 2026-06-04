@@ -1,0 +1,133 @@
+/* pages/diary/list.wxss */
+.page-diary-list {
+  padding: 30rpx;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.stats-overview {
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #4a90d9;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.diary-list {
+  padding-bottom: 120rpx;
+}
+
+.diary-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.diary-date {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 15rpx;
+}
+
+.diary-mood {
+  font-size: 28rpx;
+  color: #4a90d9;
+  font-weight: 500;
+  margin-bottom: 15rpx;
+}
+
+.diary-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.diary-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 20rpx;
+}
+
+.btn-delete {
+  font-size: 24rpx;
+  color: #d0021b;
+  padding: 10rpx 20rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+}
+
+.empty-emoji {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.empty-hint {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 100rpx 0;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.fab-button {
+  position: fixed;
+  right: 40rpx;
+  bottom: 120rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 60rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 20rpx rgba(74,144,217,0.3);
+  z-index: 100;
+}

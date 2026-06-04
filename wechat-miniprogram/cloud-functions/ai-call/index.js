@@ -26,9 +26,13 @@ exports.main = async (event, context) => {
     const MAX_MSG_LEN = 8000;
     for (let i = 0; i < messages.length; i++) {
       const m = messages[i];
+<<<<<<< Updated upstream
       if (!m.role || !m.content) {
         return { code: -1, message: 'messages[' + i + '] 缺少 role 或 content' };
       }
+=======
+      if (!m.role || !m.content) return { code: -1, message: 'messages[' + i + '] 缺少 role 或 content' };
+>>>>>>> Stashed changes
       if (typeof m.content !== 'string' || m.content.length > MAX_MSG_LEN) {
         return { code: -1, message: 'messages[' + i + '] content 超长（最大' + MAX_MSG_LEN + '字符）' };
       }
@@ -58,9 +62,13 @@ exports.main = async (event, context) => {
     if (effectiveProvider === 'dashscope') {
       // 阿里云 DashScope（通义千问）
       const apiKey = aiConfig.dashscope ? aiConfig.dashscope.apiKey : '';
+<<<<<<< Updated upstream
       if (!apiKey) {
         return { code: -2, message: 'DashScope API Key 未配置' };
       }
+=======
+      if (!apiKey) return { code: -2, message: 'DashScope API Key 未配置' };
+>>>>>>> Stashed changes
 
       const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
         method: 'POST',

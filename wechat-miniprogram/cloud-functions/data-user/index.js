@@ -46,9 +46,13 @@ exports.main = async (event, context) => {
       }
 
       case 'save': {
+<<<<<<< Updated upstream
         if (!profile || typeof profile !== 'object') {
           return { code: -1, message: '参数错误' };
         }
+=======
+        if (!profile || typeof profile !== 'object') return { code: -1, message: '参数错误' };
+>>>>>>> Stashed changes
 
         // 白名单过滤 + 长度限制
         const filteredProfile = {};

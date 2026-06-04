@@ -1,0 +1,66 @@
+<!--pages/meditation/meditation.wxml-->
+<view class="page-meditation">
+  <!-- 分类标签 -->
+  <view class="category-tabs">
+    <view 
+      class="tab-item {{currentCategory === 'all' ? 'active' : ''}}"
+      bindtap="onCategoryTap"
+      data-category="all"
+    >全部</view>
+    <view 
+      class="tab-item {{currentCategory === 'sleep' ? 'active' : ''}}"
+      bindtap="onCategoryTap"
+      data-category="睡眠"
+    >睡眠</view>
+    <view 
+      class="tab-item {{currentCategory === 'focus' ? 'active' : ''}}"
+      bindtap="onCategoryTap"
+      data-category="专注"
+    >专注</view>
+    <view 
+      class="tab-item {{currentCategory === 'relax' ? 'active' : ''}}"
+      bindtap="onCategoryTap"
+      data-category="放松"
+    >放松</view>
+  </view>
+
+  <!-- 音频列表 -->
+  <view class="audio-list" wx:if="{{audioList.length > 0}}">
+    <view 
+      class="audio-card"
+      wx:for="{{audioList}}"
+      wx:key="id"
+      bindtap="onAudioTap"
+      data-id="{{item.id}}"
+    >
+      <view class="audio-cover">
+        <image 
+          class="cover-image" 
+          src="{{item.cover_url || '/assets/images/default-cover.png'}}" 
+          mode="aspectFill"
+        ></image>
+        <view class="play-button">▶</view>
+      </view>
+      <view class="audio-info">
+        <view class="audio-title">{{item.title}}</view>
+        <view class="audio-desc">{{item.description || '暂无描述'}}</view>
+        <view class="audio-meta">
+          <view class="meta-item">⏱️ {{item.durationStr}}</view>
+          <view class="meta-item">🎧 {{item.play_count || 0}}次播放</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{audioList.length === 0 && !loading}}">
+    <view class="empty-emoji">🧘</view>
+    <view class="empty-text">暂无冥想音频</view>
+    <view class="empty-hint">请稍后再来查看</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+</view>

@@ -47,12 +47,17 @@ async function doSync(scales) {
   let count = 0;
   for (const s of scales) {
     const data = { ...s };
+<<<<<<< Updated upstream
     if (data._openid) {
       delete data._openid;
     }
     if (data._id) {
       delete data._id;
     }
+=======
+    if (data._openid) delete data._openid;
+    if (data._id) delete data._id;
+>>>>>>> Stashed changes
     data.updatedAt = new Date().toISOString();
     await db.collection('scales').add({ data });
     count++;

@@ -25,12 +25,17 @@ exports.main = async (event, context) => {
     switch (action) {
       case 'syncAll': {
         // 全量覆盖同步（后台编辑保存时调用）
+<<<<<<< Updated upstream
         if (!Array.isArray(scales)) {
           return { code: -1, message: '参数错误：scales 必须是数组' };
         }
         if (scales.length > 200) {
           return { code: -1, message: 'scales 数量超限（最大200）' };
         }
+=======
+        if (!Array.isArray(scales)) return { code: -1, message: '参数错误：scales 必须是数组' };
+        if (scales.length > 200) return { code: -1, message: 'scales 数量超限（最大200）' };
+>>>>>>> Stashed changes
 
         // 事务保护：先删后写，失败自动回滚
         const transaction = await db.startTransaction();

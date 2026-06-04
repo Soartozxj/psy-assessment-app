@@ -1983,6 +1983,14 @@
     }
   };
 
+  // 200. 通用：新窗口打开
+  registerHandler('open-blank', function (target) {
+    const url = target.getAttribute('data-url');
+    if (url) {
+      window.open(url, '_blank');
+    }
+  });
+
   // ====================================================
   // 导出
   // ====================================================

@@ -1,0 +1,66 @@
+<!--pages/diary/stats.wxml-->
+<view class="page-diary-stats">
+  <!-- 周期选择 -->
+  <view class="period-selector">
+    <view 
+      class="period-option {{currentPeriod === 'week' ? 'active' : ''}}"
+      bindtap="onPeriodTap"
+      data-period="week"
+    >本周</view>
+    <view 
+      class="period-option {{currentPeriod === 'month' ? 'active' : ''}}"
+      bindtap="onPeriodTap"
+      data-period="本月"
+    >本月</view>
+    <view 
+      class="period-option {{currentPeriod === 'year' ? 'active' : ''}}"
+      bindtap="onPeriodTap"
+      data-period="year"
+    >本年</view>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="stats-overview">
+    <view class="stat-card">
+      <view class="stat-value">{{avgMood}}</view>
+      <view class="stat-label">平均心情</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{totalEntries}}</view>
+      <view class="stat-label">记录次数</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{bestMood}}</view>
+      <view class="stat-label">最佳心情</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{worstMood}}</view>
+      <view class="stat-label">最低心情</view>
+    </view>
+  </view>
+
+  <!-- 情绪趋势图（简化版） -->
+  <view class="chart-section">
+    <view class="section-title">情绪趋势</view>
+    <view class="mood-chart">
+      <view class="chart-bar" wx:for="{{chartData}}" wx:key="date">
+        <view class="bar-fill" style="height: {{item.height}}rpx; background: {{item.color}}"></view>
+        <view class="bar-label">{{item.label}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 情绪分布 -->
+  <view class="distribution-section">
+    <view class="section-title">情绪分布</view>
+    <view class="distribution-list">
+      <view class="distribution-item" wx:for="{{distribution}}" wx:key="mood">
+        <view class="dist-emoji">{{item.emoji}}</view>
+        <view class="dist-bar-bg">
+          <view class="dist-bar-fill" style="width: {{item.percentage}}%; background: {{item.color}}"></view>
+        </view>
+        <view class="dist-percentage">{{item.percentage}}%</view>
+      </view>
+    </view>
+  </view>
+</view>

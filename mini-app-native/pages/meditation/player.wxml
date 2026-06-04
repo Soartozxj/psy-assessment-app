@@ -1,0 +1,98 @@
+<!--pages/meditation/player.wxml-->
+<view class="page-player">
+  <!-- 背景封面 -->
+  <image 
+    class="background-cover" 
+    src="{{coverUrl || '/assets/images/default-cover.png'}}" 
+    mode="aspectFill"
+  ></image>
+  <view class="background-overlay"></view>
+
+  <!-- 播放器内容 -->
+  <view class="player-content">
+    <!-- 顶部信息 -->
+    <view class="player-header">
+      <view class="btn-back" bindtap="onBackTap">←</view>
+      <view class="audio-title">{{title || '冥想音频'}}</view>
+      <view class="placeholder"></view>
+    </view>
+
+    <!-- 封面图 -->
+    <view class="cover-container">
+      <image 
+        class="cover-image {{isPlaying ? 'rotating' : ''}}" 
+        src="{{coverUrl || '/assets/images/default-cover.png'}}" 
+        mode="aspectFill"
+      ></image>
+    </view>
+
+    <!-- 进度条 -->
+    <view class="progress-section">
+      <view class="time-current">{{currentTimeStr}}</view>
+      <slider 
+        class="progress-slider"
+        min="0"
+        max="{{duration}}"
+        value="{{currentTime}}"
+        activeColor="#4a90d9"
+        backgroundColor="#ffffff50"
+        block-size="20"
+        bindchange="onSliderChange"
+        bindchanging="onSliderChanging"
+      ></slider>
+      <view class="time-total">{{durationStr}}</view>
+    </view>
+
+    <!-- 控制按钮 -->
+    <view class="controls-section">
+      <!-- 定时按钮 -->
+      <view class="btn-timer" bindtap="onTimerTap">
+        <text class="timer-icon">⏱️</text>
+        <text class="timer-text">{{timerText || '定时'}}</text>
+      </view>
+
+      <!-- 播放/暂停按钮 -->
+      <view class="btn-play" bindtap="onPlayTap">
+        <text class="play-icon">{{isPlaying ? '⏸️' : '▶️'}}</text>
+      </view>
+
+      <!-- 关闭按钮 -->
+      <view class="btn-close" bindtap="onCloseTap">
+        <text class="close-icon">✕</text>
+      </view>
+    </view>
+
+    <!-- 定时选项弹窗 -->
+    <view class="timer-modal" wx:if="{{showTimerModal}}">
+      <view class="timer-mask" bindtap="onTimerMaskTap"></view>
+      <view class="timer-options">
+        <view class="timer-title">选择定时</view>
+        <view 
+          class="timer-option {{timerMinutes === 5 ? 'active' : ''}}"
+          bindtap="onTimerOptionTap"
+          data-minutes="5"
+        >5分钟</view>
+        <view 
+          class="timer-option {{timerMinutes === 10 ? 'active' : ''}}"
+          bindtap="onTimerOptionTap"
+          data-minutes="10"
+        >10分钟</view>
+        <view 
+          class="timer-option {{timerMinutes === 15 ? 'active' : ''}}"
+          bindtap="onTimerOptionTap"
+          data-minutes="15"
+        >15分钟</view>
+        <view 
+          class="timer-option {{timerMinutes === 20 ? 'active' : ''}}"
+          bindtap="onTimerOptionTap"
+          data-minutes="20"
+        >20分钟</view>
+        <view 
+          class="timer-option {{timerMinutes === 0 ? 'active' : ''}}"
+          bindtap="onTimerOptionTap"
+          data-minutes="0"
+        >不定时</view>
+      </view>
+    </view>
+  </view>
+</view>

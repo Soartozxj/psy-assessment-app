@@ -37,7 +37,11 @@ Page({
     if (openid || this._retryCount >= 10) {
       // 拿到 openid 或已重试 10 次（约 2 秒），不再等待
       const timestamp = Date.now();
+<<<<<<< Updated upstream
       let url = baseUrl + '/' + htmlFile + '?env=cloud&envId=' + envId + '&v=34&t=' + timestamp;
+=======
+      var url = baseUrl + '/' + htmlFile + '?env=cloud&envId=' + envId + '&v=34&t=' + timestamp;
+>>>>>>> Stashed changes
       if (openid) {
         url += '&openid=' + openid;
       }

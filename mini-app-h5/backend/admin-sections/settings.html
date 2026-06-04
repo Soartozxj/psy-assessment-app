@@ -1,0 +1,32 @@
+          <div style="max-width: 600px">
+            <div class="table-card" style="padding: 24px; margin-bottom: 16px">
+              <h3 style="font-size: 16px; margin-bottom: 20px">前端同步设置</h3>
+              <div class="form-group" style="margin-bottom: 14px">
+                <label>同步方式</label>
+                <select class="form-control">
+                  <option selected>localStorage（本地同步，无需服务器）</option>
+                  <option>API接口（需要后端服务运行）</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px">
+                <label>前端预览地址</label>
+                <input class="form-control" type="text" value="http://localhost:3600/index.html" readonly />
+              </div>
+              <button class="btn btn-primary" data-action="sync-frontend">立即同步至前端</button>
+              <button class="btn btn-default" data-action="pull-from-cloud" style="margin-left: 8px">
+                ☁️ 从云端拉取
+              </button>
+            </div>
+            <div class="table-card" style="padding: 24px">
+              <h3 style="font-size: 16px; margin-bottom: 16px">数据管理</h3>
+              <div style="display: flex; gap: 10px">
+                <button class="btn btn-default" data-action="export-all">📤 导出所有量表数据</button>
+                <button class="btn btn-default" data-action="import-data">📥 导入量表数据</button>
+                <button class="btn btn-danger" data-action="confirm-action" data-confirm-type="reset-data">
+                  🗑️ 重置为默认数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+

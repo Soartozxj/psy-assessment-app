@@ -140,8 +140,69 @@ CREATE TABLE `tts_cache` (
   KEY `idx_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='TTS音频文件缓存';
 
+-- ============================================================
+-- 5. 情绪日记表 (diary_entries)
+-- 用于记录用户每日情绪状态
+-- ============================================================
+DROP TABLE IF EXISTS `diary_entries`;
+CREATE TABLE `diary_entries` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `openid` VARCHAR(64) NOT NULL COMMENT '用户openid',
+  `mood_score` TINYINT UNSIGNED NOT NULL COMMENT '情绪评分1-5',
+  `mood_emoji` VARCHAR(16) DEFAULT '' COMMENT '情绪emoji',
+  `content` TEXT DEFAULT NULL COMMENT '文字描述',
+  `related_assessment_id` VARCHAR(64) DEFAULT NULL COMMENT '关联的测评记录ID',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_openid` (`openid`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='情绪日记记录表';
+
+-- ============================================================
+-- 6. 冥想音频表 (meditation_audios)
+-- 用于存储冥想音频资源
+-- ============================================================
+DROP TABLE IF EXISTS `meditation_audios`;
+CREATE TABLE `meditation_audios` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `title` VARCHAR(128) NOT NULL COMMENT '音频标题',
+  `description` TEXT DEFAULT NULL COMMENT '音频描述',
+  `category` VARCHAR(64) NOT NULL DEFAULT 'sleep' COMMENT '分类：sleep/focus/relax',
+  `audio_url` VARCHAR(255) NOT NULL COMMENT '音频URL',
+  `duration` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '时长（秒）',
+  `cover_url` VARCHAR(255) DEFAULT NULL COMMENT '封面图URL',
+  `play_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '播放次数',
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+  `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序权重',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_category` (`category`),
+  KEY `idx_active_sort` (`is_active`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='冥想音频表';
+
+-- ============================================================
+-- 7. 冥想记录表 (meditation_records)
+-- 用于记录用户冥想历史
+-- ============================================================
+DROP TABLE IF EXISTS `meditation_records`;
+CREATE TABLE `meditation_records` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `openid` VARCHAR(64) NOT NULL COMMENT '用户openid',
+  `audio_id` BIGINT UNSIGNED NOT NULL COMMENT '音频ID',
+  `duration` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '实际冥想时长（秒）',
+  `completed` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否完成',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_openid` (`openid`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='冥想记录表';
+
 -- 验证
 SELECT '✅ 数据库初始化完成' AS status;
 SELECT CONCAT('assessments 表: ', COUNT(*), ' 条记录') AS info FROM `assessments`;
 SELECT CONCAT('admins 表: ', COUNT(*), ' 条记录') AS info FROM `admins`;
 SELECT CONCAT('tts_cache 表: ', COUNT(*), ' 条记录') AS info FROM `tts_cache`;
+SELECT CONCAT('diary_entries 表: 新增') AS info;
+SELECT CONCAT('meditation_audios 表: 新增') AS info;
+SELECT CONCAT('meditation_records 表: 新增') AS info;

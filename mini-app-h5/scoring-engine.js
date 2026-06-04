@@ -34,6 +34,7 @@
  *   DERIVED  — 派生指标（需配合 expression: "(总分 - 阴性项目数) / 阳性项目数"）
  */
 
+<<<<<<< Updated upstream
 const ScoringEngine = (() => {
   // 兼容数组和对象格式的 groups
   function _toGroupArray(groups) {
@@ -47,6 +48,9 @@ const ScoringEngine = (() => {
       return { id: k, options: groups[k] };
     });
   }
+=======
+var ScoringEngine = (() => {
+>>>>>>> Stashed changes
   /**
    * 安全数学表达式求值（替代 new Function）
    * 仅支持 +, -, *, /, (, ), 数字, Math.abs()
@@ -54,9 +58,15 @@ const ScoringEngine = (() => {
    * @returns {number}
    */
   function safeEval(expr) {
+<<<<<<< Updated upstream
     // 第一步：预处理 Math.abs(x) / ABS(x) → 递归求值 |x|
     const absRegex = /(?:Math\.)?ABS\(([^()]*(?:\([^()]*\)[^()]*)*)\)/gi;
     expr = expr.replace(absRegex, function (_, inner) {
+=======
+    // 第一步：预处理 Math.abs(x) → 递归求值 |x|
+    const absRegex = /Math\.abs\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g;
+    expr = expr.replace(absRegex, (_, inner) => {
+>>>>>>> Stashed changes
       const val = safeEval(inner.trim());
       return String(Math.abs(val));
     });
@@ -121,9 +131,13 @@ const ScoringEngine = (() => {
       const op = tokens.shift().type;
       const rhs = parseFactor(tokens);
       if (op === '/') {
+<<<<<<< Updated upstream
         if (rhs === 0) {
           throw new Error('除以零');
         }
+=======
+        if (rhs === 0) throw new Error('除以零');
+>>>>>>> Stashed changes
         result = result / rhs;
       } else {
         result = result * rhs;
@@ -134,6 +148,7 @@ const ScoringEngine = (() => {
 
   /** 解析因子: number | '(' expression ')' | unary +/- */
   function parseFactor(tokens) {
+<<<<<<< Updated upstream
     if (tokens.length === 0) {
       throw new Error('意外的表达式结尾');
     }
@@ -142,6 +157,12 @@ const ScoringEngine = (() => {
       if (tokens.shift().type === '-') {
         sign = -sign;
       }
+=======
+    if (tokens.length === 0) throw new Error('意外的表达式结尾');
+    let sign = 1;
+    while (tokens[0].type === '+' || tokens[0].type === '-') {
+      if (tokens.shift().type === '-') sign = -sign;
+>>>>>>> Stashed changes
     }
     const tok = tokens.shift();
     if (tok.type === 'num') {
@@ -164,6 +185,7 @@ const ScoringEngine = (() => {
 
   /** 提取 grouped 题型的得分计算逻辑 */
   function calcGroupedScore(q, scores, mode) {
+<<<<<<< Updated upstream
     if (!q.groups || q.type !== 'grouped') {
       return null;
     }
@@ -174,6 +196,13 @@ const ScoringEngine = (() => {
       if (!group.options || group.options.length === 0) {
         continue;
       }
+=======
+    if (!q.groups || q.type !== 'grouped') return null;
+    const isMultiply = q.formula === 'multiply';
+    let total = isMultiply ? 1 : 0;
+    for (const group of q.groups) {
+      if (!group.options || group.options.length === 0) continue;
+>>>>>>> Stashed changes
       const values = group.options.map((o) => o.score || 0);
       let groupVal;
       if (mode === 'max') {
@@ -251,6 +280,7 @@ const ScoringEngine = (() => {
       }
       return total;
     }
+<<<<<<< Updated upstream
     // 分组下拉题
     if (q.type === 'grouped') {
       const _isMultiply = q.formula === 'multiply';
@@ -273,6 +303,20 @@ const ScoringEngine = (() => {
               var opt = (grp.options || []).find(function (o) {
                 return o.id === oid;
               });
+=======
+    // 分组下拉题：每个 group 选一个选项，所有选项分数求和（或乘法）
+    if (q.type === 'grouped') {
+      const _isMultiply = q.formula === 'multiply';
+      // allowRepeat: 每个补充事件独立乘法计分，事件之间求和
+      if (Array.isArray(ans)) {
+        let total = 0; // allowRepeat: 各补充事件之间始终求和
+        for (const item of ans) {
+          let itemScore = _isMultiply ? 1 : 0;
+          for (const group of q.groups || []) {
+            const optId = item[group.id];
+            if (optId !== undefined && optId !== null) {
+              const opt = (group.options || []).find((o) => o.id === optId);
+>>>>>>> Stashed changes
               if (opt) {
                 if (_isMultiply) {
                   itemScore *= opt.score || 0;
@@ -282,11 +326,16 @@ const ScoringEngine = (() => {
               }
             }
           }
+<<<<<<< Updated upstream
           total += itemScore;
+=======
+          total += itemScore; // 补充事件之间始终求和
+>>>>>>> Stashed changes
         }
         return total;
       }
       // 普通 grouped
+<<<<<<< Updated upstream
       var total = _isMultiply ? 1 : 0;
       // 按维度 key 前缀匹配分组：father_/f_ → 父亲，mother_/m_ → 母亲
       let targetGroup = null;
@@ -312,6 +361,13 @@ const ScoringEngine = (() => {
           if (!opt && typeof oid === 'number' && oid >= 0 && oid < (grp.options || []).length) {
             opt = grp.options[oid];
           }
+=======
+      let total = _isMultiply ? 1 : 0;
+      for (const group of q.groups || []) {
+        const optId = ans[group.id];
+        if (optId !== undefined && optId !== null) {
+          const opt = (group.options || []).find((o) => o.id === optId);
+>>>>>>> Stashed changes
           if (opt) {
             if (_isMultiply) {
               total *= opt.score || 0;
@@ -341,7 +397,11 @@ const ScoringEngine = (() => {
    * @param {object|null} condition - 可选条件过滤: { group: "g_nature", eq: "A" } 过滤 grouped 答案
    * @returns {number[]} 得分数组
    */
+<<<<<<< Updated upstream
   function collectScores(questions, itemIds, answers, condition, dimKey) {
+=======
+  function collectScores(questions, itemIds, answers, condition) {
+>>>>>>> Stashed changes
     const _grpFilter = condition && condition.group && condition.eq;
     const scores = [];
     for (const qid of itemIds) {
@@ -369,7 +429,11 @@ const ScoringEngine = (() => {
 
       // 新题型：答案为对象（matrix/parent-child）
       if (typeof ans === 'object' && ans !== null) {
+<<<<<<< Updated upstream
         const score = _collectSpecialScore(q, ans, dimKey);
+=======
+        const score = _collectSpecialScore(q, ans);
+>>>>>>> Stashed changes
         if (score !== null) {
           scores.push(score);
         }
@@ -645,8 +709,12 @@ const ScoringEngine = (() => {
       if (q.type === 'grouped' && q.groups) {
         const _isMultiply = q.formula === 'multiply';
         let total = _isMultiply ? 1 : 0;
+<<<<<<< Updated upstream
         for (let _gi = 0, _grps = _toGroupArray(q.groups); _gi < _grps.length; _gi++) {
           const group = _grps[_gi];
+=======
+        for (const group of q.groups) {
+>>>>>>> Stashed changes
           if (group.options && group.options.length > 0) {
             const _groupMax = Math.max(...group.options.map((o) => o.score || 0));
             if (_isMultiply) {
@@ -706,8 +774,12 @@ const ScoringEngine = (() => {
       if (q.type === 'grouped' && q.groups) {
         const _isMultiply = q.formula === 'multiply';
         let total = _isMultiply ? 1 : 0;
+<<<<<<< Updated upstream
         for (let _gi = 0, _grps = _toGroupArray(q.groups); _gi < _grps.length; _gi++) {
           const group = _grps[_gi];
+=======
+        for (const group of q.groups) {
+>>>>>>> Stashed changes
           if (group.options && group.options.length > 0) {
             const _groupMin = Math.min(...group.options.map((o) => o.score || 0));
             if (_isMultiply) {
@@ -905,8 +977,12 @@ const ScoringEngine = (() => {
         if (q.type === 'grouped' && q.groups) {
           const _isMultiply = q.formula === 'multiply';
           let total = _isMultiply ? 1 : 0;
+<<<<<<< Updated upstream
           for (let _gi = 0, _grps = _toGroupArray(q.groups); _gi < _grps.length; _gi++) {
             const group = _grps[_gi];
+=======
+          for (const group of q.groups) {
+>>>>>>> Stashed changes
             if (group.options && group.options.length > 0) {
               const _groupMax = Math.max(...group.options.map((o) => o.score || 0));
               if (_isMultiply) {
@@ -1058,7 +1134,11 @@ const ScoringEngine = (() => {
         const val = safeEval(expr);
         results[dm.key] = isNaN(val) ? 0 : round2(val);
       } catch (_) {
+<<<<<<< Updated upstream
         console.warn('[ScoringEngine] 派生指标计算失败:', dm.key, dm.expression, _);
+=======
+        console.warn('[ScoringEngine] 派生指标计算失败:', dm.key, dm.expression, e);
+>>>>>>> Stashed changes
         results[dm.key] = 0;
       }
     }
@@ -1132,7 +1212,11 @@ const ScoringEngine = (() => {
     if (scoring.dimensions && scoring.dimensions.length > 0) {
       for (const dim of scoring.dimensions) {
         const itemIds = parseItems(dim.items, questions.length);
+<<<<<<< Updated upstream
         const scores = collectScores(questions, itemIds, answers, dim.condition, dim.key);
+=======
+        const scores = collectScores(questions, itemIds, answers, dim.condition);
+>>>>>>> Stashed changes
         let dimScore = applyFormula(dim.formula || 'SUM', scores, dim.condition);
 
         // 应用维度 transform（兼容字符串和对象格式）
@@ -1176,7 +1260,11 @@ const ScoringEngine = (() => {
     // 2a. 第一轮：直接指标
     for (const metric of directMetrics) {
       const itemIds = parseItems(metric.items, questions.length);
+<<<<<<< Updated upstream
       const scores = collectScores(questions, itemIds, answers, metric.condition, null); // metrics 不计分组
+=======
+      const scores = collectScores(questions, itemIds, answers, metric.condition);
+>>>>>>> Stashed changes
       let metricValue = applyFormula(metric.formula || 'SUM', scores, metric.condition);
 
       // 应用 transform（兼容字符串 "1.25*x" 和对象 { type: "linear", expression: "1.25*x" }）

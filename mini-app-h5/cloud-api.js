@@ -53,7 +53,12 @@
   // 可通过 URL 参数 ?apiBase=http://localhost:3100 切换到本地 API
   // CloudBase 静态托管（rich.soarto.com.cn）也没有后端，需指向 LNMP 服务器
   const isCloudBaseHosting =
+<<<<<<< Updated upstream
     window.location.hostname.endsWith('.tcloudbaseapp.com') || window.location.hostname === 'rich.soarto.com.cn';
+=======
+    window.location.hostname.endsWith('.tcloudbaseapp.com') ||
+    window.location.hostname === 'rich.soarto.com.cn';
+>>>>>>> Stashed changes
   const localFallback =
     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || isCloudBaseHosting
       ? 'https://www.soarto.com.cn'
@@ -146,7 +151,11 @@
      * 注：改用 /api/scales 而非 /，因为 / 被 CDN 缓存后返回的响应不含 CORS 头
      */
     ping: function () {
+<<<<<<< Updated upstream
       return apiRequest('GET', '/api/scales')
+=======
+      return apiRequest('GET', '/')
+>>>>>>> Stashed changes
         .then(function (data) {
           _cloudAvailable = true;
           _lastCloudCheck = Date.now();

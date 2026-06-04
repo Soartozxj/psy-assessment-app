@@ -1,0 +1,211 @@
+/* pages/meditation/player.wxss */
+.page-player {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.background-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  filter: blur(20px);
+  transform: scale(1.2);
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1;
+}
+
+.player-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 60rpx 40rpx;
+  box-sizing: border-box;
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 60rpx;
+}
+
+.btn-back {
+  color: #fff;
+  font-size: 40rpx;
+  padding: 20rpx;
+}
+
+.audio-title {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+  text-align: center;
+  flex: 1;
+}
+
+.placeholder {
+  width: 80rpx;
+}
+
+.cover-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 80rpx;
+}
+
+.cover-image {
+  width: 400rpx;
+  height: 400rpx;
+  border-radius: 50%;
+  border: 8rpx solid rgba(255,255,255,0.3);
+  box-shadow: 0 10rpx 40rpx rgba(0,0,0,0.3);
+}
+
+.cover-image.rotating {
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.progress-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 60rpx;
+  padding: 0 20rpx;
+}
+
+.time-current, .time-total {
+  color: #fff;
+  font-size: 24rpx;
+  width: 100rpx;
+}
+
+.time-current {
+  text-align: left;
+}
+
+.time-total {
+  text-align: right;
+}
+
+.progress-slider {
+  flex: 1;
+  margin: 0 20rpx;
+}
+
+.controls-section {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 60rpx;
+}
+
+.btn-timer, .btn-close {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  padding: 20rpx;
+}
+
+.timer-icon, .close-icon {
+  font-size: 40rpx;
+  margin-bottom: 10rpx;
+}
+
+.timer-text {
+  font-size: 20rpx;
+  opacity: 0.8;
+}
+
+.btn-play {
+  width: 120rpx;
+  height: 120rpx;
+  background: rgba(74,144,217,0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 30rpx rgba(74,144,217,0.4);
+}
+
+.play-icon {
+  font-size: 60rpx;
+  color: #fff;
+}
+
+/* 定时弹窗 */
+.timer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+.timer-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.timer-options {
+  position: relative;
+  z-index: 101;
+  width: 100%;
+  background: #fff;
+  border-radius: 30rpx 30rpx 0 0;
+  padding: 40rpx;
+}
+
+.timer-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.timer-option {
+  padding: 30rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #333;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.timer-option.active {
+  color: #4a90d9;
+  font-weight: 500;
+  background: #f0f7ff;
+}
+
+.timer-option:last-child {
+  border-bottom: none;
+}

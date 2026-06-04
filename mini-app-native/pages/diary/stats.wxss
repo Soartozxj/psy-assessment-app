@@ -1,0 +1,144 @@
+/* pages/diary/stats.wxss */
+.page-diary-stats {
+  padding: 30rpx;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.period-selector {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 10rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.period-option {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.period-option.active {
+  background: #4a90d9;
+  color: #fff;
+  font-weight: 500;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #4a90d9;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.chart-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+
+.mood-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 300rpx;
+  padding-top: 20rpx;
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60rpx;
+}
+
+.bar-fill {
+  width: 40rpx;
+  border-radius: 8rpx 8rpx 0 0;
+  transition: height 0.5s ease;
+}
+
+.bar-label {
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
+
+.distribution-section {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.distribution-list {
+  margin-top: 20rpx;
+}
+
+.distribution-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.dist-emoji {
+  font-size: 40rpx;
+  margin-right: 20rpx;
+}
+
+.dist-bar-bg {
+  flex: 1;
+  height: 30rpx;
+  background: #f0f0f0;
+  border-radius: 15rpx;
+  overflow: hidden;
+  margin-right: 20rpx;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: 15rpx;
+  transition: width 0.5s ease;
+}
+
+.dist-percentage {
+  font-size: 24rpx;
+  color: #666;
+  width: 80rpx;
+  text-align: right;
+}

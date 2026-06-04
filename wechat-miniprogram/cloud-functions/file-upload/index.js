@@ -16,9 +16,13 @@ exports.main = async (event, context) => {
         // 返回上传的 fileID，前端使用 wx.cloud.uploadFile
         const { fileId, name, type } = event;
         // 验证 fileId 格式
+<<<<<<< Updated upstream
         if (!fileId || typeof fileId !== 'string') {
           return { code: -1, message: '缺少有效 fileId' };
         }
+=======
+        if (!fileId || typeof fileId !== 'string') return { code: -1, message: '缺少有效 fileId' };
+>>>>>>> Stashed changes
         // 验证文件类型（仅允许图片）
         const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
         if (type && !ALLOWED_TYPES.includes(type)) {
@@ -54,6 +58,7 @@ exports.main = async (event, context) => {
 
       case 'delete': {
         // 删除文件（只能删除自己上传的）
+<<<<<<< Updated upstream
         if (!fileID) {
           return { code: -1, message: '缺少 fileID' };
         }
@@ -64,6 +69,16 @@ exports.main = async (event, context) => {
           return { code: -2, message: '文件不存在或无权删除' };
         }
 
+=======
+        if (!fileID) return { code: -1, message: '缺少 fileID' };
+
+        // 验证文件所有权
+        const res = await db.collection('files').where({ _openid: openid, fileId: fileID }).limit(1).get();
+        if (res.data.length === 0) {
+          return { code: -2, message: '文件不存在或无权删除' };
+        }
+
+>>>>>>> Stashed changes
         // 删除云存储文件
         try {
           await cloud.deleteFile({ fileList: [fileID] });

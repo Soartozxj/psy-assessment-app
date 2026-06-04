@@ -1,11 +1,15 @@
 {
+<<<<<<< Updated upstream
   "type": "module",
+=======
+>>>>>>> Stashed changes
   "scripts": {
     "lint": "eslint '*.js' 'server/**/*.js' 'mini-app-h5/**/*.js' 'mini-app-h5-redesign/**/*.js' 'tests/**/*.js' --ignore-pattern '*.bak*' --ignore-pattern 'deploy/' --ignore-pattern 'node_modules/'",
     "lint:fix": "eslint --fix '*.js' 'server/**/*.js' 'mini-app-h5/**/*.js' 'mini-app-h5-redesign/**/*.js' 'tests/**/*.js' --ignore-pattern '*.bak*' --ignore-pattern 'deploy/' --ignore-pattern 'node_modules/'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
+<<<<<<< Updated upstream
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest tests/unit/",
@@ -13,6 +17,9 @@
     "test:boundary": "jest tests/boundary/",
     "test:e2e": "npx playwright test",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:boundary",
+=======
+    "test:e2e": "npx playwright test",
+>>>>>>> Stashed changes
     "review:precommit": "npm run format:check && npm run lint && npm test",
     "prepare": "husky"
   },
@@ -28,6 +35,7 @@
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "jest": "^30.3.0",
+<<<<<<< Updated upstream
     "jest-environment-jsdom": "^30.4.1",
     "lint-staged": "^15.5.2",
     "miniprogram-automator": "^0.12.1",
@@ -37,5 +45,11 @@
   },
   "dependencies": {
     "jszip": "^3.10.1"
+=======
+    "lint-staged": "^15.5.2",
+    "miniprogram-automator": "^0.12.1",
+    "playwright": "^1.59.1",
+    "prettier": "^3.8.3"
+>>>>>>> Stashed changes
   }
 }
