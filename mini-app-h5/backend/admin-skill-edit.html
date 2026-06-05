@@ -204,6 +204,7 @@
   </div>
 
   <script>
+    <script src="mock-server.js?v=2026060501"></script>
     let currentSkillId = null;
 
     // 显示 Toast
@@ -229,7 +230,7 @@
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:3100/api/skills/${currentSkillId}`);
+        const res = await fetch(`/api/skills/${currentSkillId}`);
         if (!res.ok) throw new Error('加载失败 (HTTP ' + res.status + ')');
         const result = await res.json();
         // API 返回格式: {code: 0, data: {...}}
@@ -268,8 +269,8 @@
       try {
         const method = currentSkillId ? 'PUT' : 'POST';
         const url = currentSkillId
-          ? `http://127.0.0.1:3100/api/skills/${currentSkillId}`
-          : 'http://127.0.0.1:3100/api/skills';
+          ? `/api/skills/${currentSkillId}`
+          : '/api/skills';
 
         const res = await fetch(url, {
           method,

@@ -22,15 +22,19 @@ const PluginLoaderClass = class {
     // 存放所有已加载的插件（货架）
     this.plugins = {};
 
-    // 记录哪些插件是核心插件（需要预加载）
+    // 记录哪些插件是核心插件（在 core/ 目录，需要预加载的关键插件）
     // 优化：只预加载 auth 插件，其他改为按需加载，加快首屏速度
     this.corePlugins = ['auth'];
 
-    // 记录哪些插件是可选插件（按需加载）
-    this.optionalPlugins = ['ai', 'scale', 'scoring', 'npc', 'meditation', 'analytics', 'diary'];
+    // 记录核心目录下的其他插件（按需加载，但路径在 core/ 下）
+    // 注意：这些插件仍在 plugins/core/ 目录，只是不预加载
+    this.corePluginsOnDemand = ['ai', 'scale', 'scoring', 'npc'];
+
+    // 记录哪些插件是可选插件（按需加载，路径在 optional/ 下）
+    this.optionalPlugins = ['meditation', 'analytics', 'diary'];
 
     // 插件存放的目录（仓库地址 - 使用绝对路径，末尾必须有斜杠）
-    this.pluginBaseUrl = '/mini-app-h5/backend/plugins/';
+    this.pluginBaseUrl = '/plugins/';
 
     // 加载状态记录（防止重复加载）
     this.loadingPromises = {};
@@ -209,7 +213,7 @@ const PluginLoaderClass = class {
     const isMiniProgram = typeof wx !== 'undefined' && wx.getSystemInfo;
 
     // 判断是核心插件还是可选插件
-    const isCore = this.corePlugins.includes(pluginName);
+    const isCore = this.corePlugins.includes(pluginName) || this.corePluginsOnDemand.includes(pluginName);
     const subDir = isCore ? 'core' : 'optional';
 
     if (isMiniProgram) {

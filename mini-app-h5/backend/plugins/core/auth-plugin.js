@@ -460,6 +460,11 @@ class AuthPlugin extends PluginBase {
     if (overlay) {
       overlay.classList.add('hidden');
     }
+    // 确保主内容区可见（覆盖 HTML 中的内联 display:none）
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.style.display = 'block';
+    }
     document.body.classList.add('authenticated');
 
     this.isAuthed = true;

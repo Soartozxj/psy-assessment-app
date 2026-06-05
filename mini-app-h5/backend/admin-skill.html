@@ -224,7 +224,7 @@
       <span class="back" onclick="location.href = 'admin-legacy.html'">← 返回</span>
       <span class="title">📚 Skill 管理</span>
       <span class="spacer"></span>
-      <button class="btn btn-pri" data-action="skill-add">+ 新增 Skill</button>
+      <button class="btn btn-pri" onclick="addSkill()">+ 新增 Skill</button>
       <button class="btn" onclick="loadSkills()">🔄 刷新</button>
     </div>
 
@@ -257,6 +257,7 @@
       </div>
     </div>
 
+    <script src="mock-server.js?v=2026060501"></script>
     <script>
       let allSkills = [];
 
@@ -267,17 +268,36 @@
           '<div class="loading"><div class="spinner"></div><div style="margin-top:15px">加载中...</div></div>';
 
         try {
-          const res = await fetch('http://127.0.0.1:3100/api/skills');
-          if (!res.ok) throw new Error('服务器响应失败 (' + res.status + ')');
+          // 诊断: 检查 Mock 是否就绪
+          if (window.MockServer) {
+            console.log('[Skill] MockServer 已就绪');
+          } else {
+            console.warn('[Skill] MockServer 未就绪，fetch 将直连服务器');
+          }
+
+          const res = await fetch('/api/skills');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
           const result = await res.json();
-          // API 返回格式: {code: 0, data: [...], total: N}
           allSkills = Array.isArray(result.data) ? result.data : [];
           renderSkills(allSkills);
         } catch (err) {
+          console.error('[Skill] fetch 失败:', err.message);
+          // 兜底：直接读 localStorage（MockDB 写入的数据）
+          try {
+            var raw = localStorage.getItem('mock_db_skills');
+            if (raw) {
+              var skills = JSON.parse(raw);
+              allSkills = Object.values(skills);
+              if (allSkills.length > 0) {
+                console.log('[Skill] 从 localStorage 兜底加载:', allSkills.length, '个');
+                renderSkills(allSkills);
+                return;
+              }
+            }
+          } catch (e2) {}
           listEl.innerHTML =
             '<div class="empty-state"><div class="icon">⚠️</div><div class="title">加载失败</div><div class="desc">' +
-            err.message +
-            '，请确认后端服务是否已启动 (port 3100)</div></div>';
+            err.message + '</div></div>';
         }
       }
 
@@ -293,21 +313,21 @@
         listEl.innerHTML = skills
           .map(
             (skill) => `
-        <div class="skill-card" onclick="viewSkill('${skill.id}')">
+        <div class="skill-card" onclick="viewSkill('${skill.name}')">
           <div class="skill-header">
-            <span class="skill-icon">${skill.metadata?.icon || '📝'}</span>
-            <span class="skill-name">${skill.name}</span>
+            <span class="skill-icon">${skill.icon || '📝'}</span>
+            <span class="skill-name">${skill.displayName || skill.name}</span>
             <span class="skill-version">v${skill.version || '1.0'}</span>
           </div>
           <div class="skill-description">${skill.description || '暂无描述'}</div>
           <div class="skill-meta">
-            <span>📋 ${skill.metadata?.type || 'system-prompt'}</span>
+            <span>📋 ${skill.type || 'system-prompt'}</span>
             <span>📏 ${(skill.content || '').length} 字</span>
           </div>
           <div class="skill-actions">
-            <button class="btn" data-action="skill-edit" data-id="${skill.id}" onclick="event.stopPropagation()">✏️ 编辑</button>
-            <button class="btn" data-action="skill-test" data-id="${skill.id}" onclick="event.stopPropagation()">🧪 测试</button>
-            <button class="btn btn-danger" data-action="skill-delete" data-id="${skill.id}" onclick="event.stopPropagation()">🗑 删除</button>
+            <button class="btn" onclick="event.stopPropagation();editSkill('${skill.name}')">✏️ 编辑</button>
+            <button class="btn" onclick="event.stopPropagation();testSkill('${skill.name}')">🧪 测试</button>
+            <button class="btn btn-danger" onclick="event.stopPropagation();deleteSkill('${skill.name}')">🗑 删除</button>
           </div>
         </div>
       `
@@ -325,7 +345,7 @@
 
       // 按类型筛选
       function filterByType(type) {
-        const filtered = type ? allSkills.filter((skill) => skill.metadata?.type === type) : allSkills;
+        const filtered = type ? allSkills.filter((skill) => skill.type === type) : allSkills;
         renderSkills(filtered);
       }
 
@@ -338,8 +358,40 @@
       }
 
       // 查看 Skill 详情
-      function viewSkill(id) {
-        location.href = 'admin-skill-view.html?id=' + id;
+      function viewSkill(name) {
+        location.href = 'admin-skill-view.html?name=' + encodeURIComponent(name);
+      }
+
+      // 编辑 Skill
+      function editSkill(name) {
+        location.href = 'admin-skill-edit.html?name=' + encodeURIComponent(name);
+      }
+
+      // 测试 Skill
+      function testSkill(name) {
+        location.href = 'admin-skill-test.html?name=' + encodeURIComponent(name);
+      }
+
+      // 新增 Skill
+      function addSkill() {
+        location.href = 'admin-skill-edit.html';
+      }
+
+      // 删除 Skill
+      function deleteSkill(name) {
+        if (!confirm('确定要删除 ' + name + ' 吗？')) return;
+        fetch('/api/skills/' + encodeURIComponent(name), { method: 'DELETE' })
+          .then(function(r) { return r.json(); })
+          .then(function(result) {
+            if (result.code === 0) {
+              loadSkills();
+            } else {
+              alert('删除失败: ' + (result.message || '未知错误'));
+            }
+          })
+          .catch(function(err) {
+            alert('删除失败: ' + err.message);
+          });
       }
 
       // 页面加载时执行

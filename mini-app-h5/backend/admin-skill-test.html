@@ -252,7 +252,7 @@
         }
 
         try {
-          const res = await fetch(`http://127.0.0.1:3100/api/skills/${skillId}`);
+          const res = await fetch(`/api/skills/${skillId}`);
           if (!res.ok) throw new Error('Skill 不存在');
           currentSkill = await res.json();
 

@@ -45,11 +45,13 @@ class SkillRegistry {
       if (directories.includes('/api/skills')) {
         const response = await fetch('/api/skills');
         if (response.ok) {
-          const skills = await response.json();
+          const raw = await response.json();
+          // 兼容包装格式: { code: 0, data: [...] } 或直接 []
+          const skills = Array.isArray(raw.data) ? raw.data : (Array.isArray(raw) ? raw : []);
           skills.forEach((skill) => {
             this.skills.set(skill.name, {
-              metadata: skill.metadata,
-              body: skill.body
+              metadata: skill.metadata || { type: skill.type, category: skill.category, icon: skill.icon, note: skill.note },
+              body: skill.body || ''
             });
           });
 

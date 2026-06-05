@@ -296,7 +296,7 @@ class AIConfigPlugin extends PluginBase {
         return;
       }
 
-      const res = await fetch('http://127.0.0.1:3100/api/ai-config', {
+      const res = await fetch('/api/ai-config', {
         headers: {
           'X-Admin-Secret': adminSecret
         }
@@ -349,7 +349,7 @@ class AIConfigPlugin extends PluginBase {
         return;
       }
 
-      const res = await fetch('http://127.0.0.1:3100/api/ai-config', {
+      const res = await fetch('/api/ai-config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -392,7 +392,7 @@ class AIConfigPlugin extends PluginBase {
    */
   async checkServerStatus() {
     try {
-      const res = await fetch('http://127.0.0.1:3100/api/ai-config/status');
+      const res = await fetch('/api/ai-config/status');
 
       if (!res.ok) {
         this.serverStatus = 'disconnected';

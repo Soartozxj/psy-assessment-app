@@ -208,7 +208,7 @@ const SecurityUtils = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self'",
-      "connect-src 'self'",
+      "connect-src 'self' https://identity.soarto.com.cn https://*.soarto.com.cn",
       "media-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",

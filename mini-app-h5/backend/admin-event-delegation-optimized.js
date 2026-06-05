@@ -1828,7 +1828,7 @@
   registerHandler('skill-delete', function (target) {
     const skillId = target.dataset.id;
     if (skillId && confirm('确定要删除这个 Skill 吗？')) {
-      fetch('http://127.0.0.1:3100/api/skills/' + skillId, {
+      fetch('/api/skills/' + skillId, {
         method: 'DELETE'
       })
         .then(function (res) {

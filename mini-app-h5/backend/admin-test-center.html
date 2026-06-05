@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>星蓝心镜 · 模拟测试中心</title>
+  <style>
+    /* ====================================================
+       基础样式（与 admin-legacy.html 保持一致）
+       ==================================================== */
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-bg: #eef2ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --text: #1f2937;
+      --text-sec: #6b7280;
+      --text-muted: #9ca3af;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --bg-card: #ffffff;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ====================================================
+       登录页面
+       ==================================================== */
+    .auth-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .auth-box h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .auth-box .subtitle {
+      color: var(--text-sec);
+      margin-bottom: 32px;
+    }
+
+    .auth-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .auth-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .auth-box button {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .auth-box button:hover { background: var(--primary-light); }
+    .auth-box .error { color: var(--danger); font-size: 13px; margin-top: 8px; }
+
+    /* ====================================================
+       主容器
+       ==================================================== */
+    .main-container { display: none; }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-actions { display: flex; gap: 12px; }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover { background: var(--bg); }
+    .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); }
+    .btn-success { background: var(--success); color: white; border-color: var(--success); }
+    .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+
+    /* ====================================================
+       布局
+       ==================================================== */
+    .content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .layout-2col {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .layout-2col { grid-template-columns: 1fr; }
+    }
+
+    /* ====================================================
+       左侧面板
+       ==================================================== */
+    .panel {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-body { padding: 16px; }
+
+    /* 量表选择器 */
+    .scale-selector {
+      margin-bottom: 16px;
+    }
+
+    .scale-selector select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .scale-selector select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* 快捷预设 */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .preset-btn {
+      padding: 12px 8px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .preset-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .preset-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .preset-btn .name { font-size: 12px; font-weight: 500; }
+    .preset-btn .desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* 用例库 */
+    .case-list { max-height: 400px; overflow-y: auto; }
+
+    .case-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .case-item:hover {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .case-item.active {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .case-item .name { font-weight: 500; font-size: 13px; }
+    .case-item .meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .case-item .status {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      margin-left: 6px;
+    }
+
+    .case-item .status.passed { background: var(--success-bg); color: var(--success); }
+    .case-item .status.failed { background: var(--danger-bg); color: var(--danger); }
+
+    /* ====================================================
+       步骤进度条
+       ==================================================== */
+    .step-progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 20px 16px;
+      background: white;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      flex: 1;
+      max-width: 140px;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 24px);
+      width: calc(100% - 48px);
+      height: 3px;
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .step-item.completed:not(:last-child)::after {
+      background: var(--success);
+    }
+
+    .step-item.active:not(:last-child)::after {
+      background: linear-gradient(to right, var(--primary) 0%, var(--primary) 50%, var(--border) 50%);
+    }
+
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: var(--bg);
+      border: 3px solid var(--border);
+      color: var(--text-muted);
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-item.completed .step-icon {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .step-item.active .step-icon {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+    }
+
+    .step-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .step-item.completed .step-label,
+    .step-item.active .step-label {
+      color: var(--text);
+    }
+
+    .step-item.active .step-label {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* 当前步骤提示 */
+    .step-hint {
+      text-align: center;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--primary-bg), #f0f4ff);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .step-hint .hint-title {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .step-hint .hint-text {
+      font-size: 12px;
+      color: var(--text-sec);
+    }
+
+    /* 步骤导航按钮 */
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .step-nav .btn {
+      min-width: 100px;
+    }
+
+    .step-nav .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .step-nav .step-indicator {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-sec);
+    }
+
+    .step-nav .step-indicator strong {
+      color: var(--primary);
+    }
+
+    /* ====================================================
+       Tab 切换
+       ==================================================== */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 500;
+      color: var(--text-sec);
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: var(--primary); }
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ====================================================
+       答案矩阵
+       ==================================================== */
+    .answer-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .answer-matrix th {
+      background: var(--bg);
+      padding: 8px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+
+    .answer-matrix td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .answer-matrix tr:hover { background: var(--bg); }
+
+    .answer-matrix .col-q { width: 50px; text-align: center; font-weight: 600; }
+    .answer-matrix .col-content { max-width: 120px; }
+    .answer-matrix .col-type { width: 50px; text-align: center; }
+    .answer-matrix .col-options { min-width: 200px; max-width: 400px; }
+    .answer-matrix .col-score { width: 50px; text-align: center; }
+    .answer-matrix td.col-options { overflow: visible; }
+
+    #matrixContainer {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .answer-matrix tbody tr {
+      vertical-align: top;
+    }
+
+    .answer-select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      background: white;
+    }
+
+    .answer-select:focus { outline: none; border-color: var(--primary); }
+
+    /* 类型标签 */
+    .q-type-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .q-type-badge.type-single { background: #e0e7ff; color: #4338ca; }
+    .q-type-badge.type-grouped { background: #fef3c7; color: #92400e; }
+    .q-type-badge.type-matrix { background: #d1fae5; color: #065f46; }
+    .q-type-badge.type-parent-child { background: #fce7f3; color: #9d174d; }
+    .q-type-badge.type-text { background: #f3f4f6; color: #374151; }
+
+    /* 单选题样式 */
+    .q-answer-single {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .q-option-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .q-score {
+      font-size: 11px;
+      color: var(--text-sec);
+    }
+
+    /* 分组题样式 */
+    .q-answer-grouped {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .q-group-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 6px;
+      background: #f9fafb;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    /* 测前问卷样式 */
+    .preq-questionnaire {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 8px;
+      border: 1px solid #f59e0b;
+    }
+    .preq-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 12px;
+    }
+    .preq-field {
+      margin-bottom: 12px;
+    }
+    .preq-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #78350f;
+      margin-bottom: 6px;
+    }
+    .preq-label .req {
+      color: #dc2626;
+      margin-left: 2px;
+    }
+    .preq-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .preq-chip {
+      padding: 4px 10px;
+      background: #fff;
+      border: 1px solid #d97706;
+      border-radius: 16px;
+      font-size: 11px;
+      color: #92400e;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preq-chip:hover {
+      background: #fef3c7;
+    }
+    .preq-chip.selected {
+      background: #f59e0b;
+      color: #fff;
+      border-color: #f59e0b;
+    }
+    .preq-input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #d97706;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .preq-select {
+      width: 100%;
+      max-width: 300px;
+      padding: 6px 10px;
+      border: 1px solid #d97706;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #fff;
+    }
+    .q-group-label {
+      font-weight: 500;
+      color: #6b7280;
+      font-size: 10px;
+      min-width: 50px;
+    }
+    .q-group-item .answer-select {
+      width: auto;
+      min-width: 80px;
+      font-size: 11px;
+      padding: 2px 4px;
+    }
+
+    /* 矩阵题样式 */
+    .q-answer-matrix {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .q-matrix-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      background: var(--bg);
+      border-radius: 4px;
+    }
+    .q-row-label {
+      min-width: 60px;
+      font-size: 11px;
+      color: var(--text-sec);
+    }
+    .q-matrix-chips {
+      display: flex;
+      gap: 4px;
+    }
+    .matrix-chip {
+      padding: 2px 6px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .matrix-chip.selected {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .q-matrix-row .answer-select {
+      width: 80px;
+    }
+
+    /* 父子题样式 */
+    .q-answer-parent-child {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .q-parent-section, .q-child-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .q-parent-label, .q-child-label {
+      font-size: 11px;
+      color: var(--text-sec);
+      font-weight: 500;
+    }
+    .q-sub-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+    }
+    .sub-option-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .answer-checkbox {
+      cursor: pointer;
+    }
+
+    /* 文本题样式 */
+    .q-answer-text {
+      width: 100%;
+    }
+    .answer-text-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .answer-text-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* 选项标签 */
+    .option-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-chip:hover { border-color: var(--primary-light); }
+    .option-chip.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* 矩阵统计 */
+    .matrix-stats {
+      display: flex;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .stat-item {
+      color: var(--text-sec);
+    }
+    .stat-item::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+    .stat-item:nth-child(1)::before { background: #4338ca; }
+    .stat-item:nth-child(2)::before { background: #d97706; }
+    .stat-item:nth-child(3)::before { background: #059669; }
+    .stat-item:nth-child(4)::before { background: #db2777; }
+    .stat-item:nth-child(5)::before { background: #6b7280; }
+
+    /* 错误提示 */
+    .q-error {
+      color: var(--danger);
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    /* ====================================================
+       结果展示
+       ==================================================== */
+    .result-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .result-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 指标卡片 */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric-card {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+
+    .metric-card .label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .metric-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+
+    /* 维度进度条 */
+    .dim-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .dim-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dim-label { min-width: 80px; font-size: 13px; font-weight: 500; }
+    .dim-bar-wrap { flex: 1; height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; }
+    .dim-bar { height: 100%; border-radius: 6px; transition: width 0.3s; }
+    .dim-score { min-width: 50px; text-align: right; font-weight: 600; }
+    .dim-tag { 
+      min-width: 50px; 
+      font-size: 11px; 
+      padding: 2px 8px; 
+      border-radius: 10px; 
+      text-align: center; 
+      background: var(--bg);
+    }
+
+    /* 解释等级 */
+    .interpretation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-weight: 600;
+    }
+
+    /* Prompt 预览 */
+    .prompt-preview {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: var(--radius);
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .prompt-preview .var-highlight {
+      background: rgba(79, 70, 229, 0.3);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* ====================================================
+       操作区
+       ==================================================== */
+    .actions-bar {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ====================================================
+       工具类
+       ==================================================== */
+    .mt-16 { margin-top: 16px; }
+    .mb-12 { margin-bottom: 12px; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--text-muted); }
+    .text-success { color: var(--success); }
+    .text-danger { color: var(--danger); }
+    .text-warning { color: var(--warning); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: #1f2937;
+      color: white;
+      border-radius: var(--radius);
+      font-size: 14px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+
+    /* 批量测试报告 */
+    .batch-report {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .batch-summary {
+      padding: 16px;
+      background: var(--bg);
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .batch-summary .stat {
+      text-align: center;
+    }
+
+    .batch-summary .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .batch-summary .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .batch-results { max-height: 300px; overflow-y: auto; }
+
+    .batch-result-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .batch-result-item:last-child { border-bottom: none; }
+
+    .batch-result-item .icon {
+      font-size: 18px;
+    }
+
+    .batch-result-item .name { flex: 1; font-weight: 500; }
+    .batch-result-item .status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .batch-result-item .status.passed { background: var(--success-bg); color: var(--success); }
+    .batch-result-item .status.failed { background: var(--danger-bg); color: var(--danger); }
+    .batch-result-item .status.error { background: var(--warning-bg); color: var(--warning); }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state .text { font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================
+       登录页面
+       ==================================================== -->
+  <div id="authPage" class="auth-container">
+    <div class="auth-box">
+      <h1>🔬 模拟测试中心</h1>
+      <p class="subtitle">计分规则与 System Prompt 验证工具</p>
+      <input type="password" id="authPassword" placeholder="请输入管理密码" />
+      <button onclick="login()">进入</button>
+      <div id="authError" class="error"></div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       主容器
+       ==================================================== -->
+  <div id="mainContainer" class="main-container">
+    <div class="header">
+      <h1>🔬 模拟测试中心</h1>
+      <div class="header-actions">
+        <button class="btn" onclick="showBatchReport()">📊 批量测试</button>
+        <button class="btn" onclick="exportSuite()">📤 导出用例</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">📥 导入用例</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSuite(this)" />
+        <button class="btn" onclick="location.href='admin-legacy.html'">⚙️ 计分配置</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- 步骤进度条 -->
+      <div class="step-progress" id="stepProgress">
+        <div class="step-item active" data-step="1">
+          <div class="step-icon">📋</div>
+          <div class="step-label">选择量表</div>
+        </div>
+        <div class="step-item" data-step="2">
+          <div class="step-icon">✏️</div>
+          <div class="step-label">设计答案</div>
+        </div>
+        <div class="step-item" data-step="3">
+          <div class="step-icon">▶</div>
+          <div class="step-label">运行测试</div>
+        </div>
+        <div class="step-item" data-step="4">
+          <div class="step-icon">💬</div>
+          <div class="step-label">预览 Prompt</div>
+        </div>
+        <div class="step-item" data-step="5">
+          <div class="step-icon">🤖</div>
+          <div class="step-label">生成报告</div>
+        </div>
+      </div>
+
+      <!-- 当前步骤提示 -->
+      <div class="step-hint" id="stepHint">
+        <div class="hint-title">📋 步骤 1/5：选择量表</div>
+        <div class="hint-text">请从左侧列表选择要测试的量表</div>
+      </div>
+
+      <!-- 步骤导航按钮 -->
+      <div class="step-nav" id="stepNav">
+        <button class="btn" id="btn-prev" onclick="goToPrevStep()" disabled>
+          ← 上一步
+        </button>
+        <div class="step-indicator" id="stepIndicator">
+          当前：<strong>步骤 1</strong> / 共 5 步
+        </div>
+        <button class="btn btn-primary" id="btn-next" onclick="goToNextStep()" disabled>
+          下一步 →
+        </button>
+      </div>
+
+      <div class="layout-2col">
+        <!-- 左侧：量表选择 + 预设 -->
+        <div class="sidebar">
+          <!-- 量表选择 -->
+          <div class="panel mb-12">
+            <div class="panel-header">
+              <span class="panel-title">📋 选择量表</span>
+            </div>
+            <div class="panel-body">
+              <div class="scale-selector">
+                <select id="scaleSelect" onchange="onScaleChange()">
+                  <option value="">-- 请选择量表 --</option>
+                </select>
+              </div>
+              <div id="scaleInfo" class="text-muted" style="font-size:12px;"></div>
+            </div>
+          </div>
+
+          <!-- 快捷预设 -->
+          <div class="panel mb-12">
+            <div class="panel-header">
+              <span class="panel-title">⚡ 快捷预设</span>
+            </div>
+            <div class="panel-body">
+              <div class="presets-grid" id="presetsGrid"></div>
+            </div>
+          </div>
+
+          <!-- 用例库 -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">📁 测试用例库</span>
+              <button class="btn" style="padding:4px 10px;font-size:12px;" onclick="showSaveCaseDialog()">+ 新建</button>
+            </div>
+            <div class="panel-body">
+              <div class="case-list" id="caseList">
+                <div class="empty-state">
+                  <div class="icon">📂</div>
+                  <div class="text">暂无测试用例</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：主内容 -->
+        <div class="main">
+          <div class="tabs">
+            <div class="tab active" data-tab="answers" onclick="switchTab('answers')">📝 答案矩阵</div>
+            <div class="tab" data-tab="results" onclick="switchTab('results')">📊 测试结果</div>
+            <div class="tab" data-tab="prompt" onclick="switchTab('prompt')">💬 Prompt 预览</div>
+          </div>
+
+          <!-- Tab: 答案矩阵 -->
+          <div id="tab-answers" class="tab-content active">
+            <div class="actions-bar">
+              <button class="btn btn-primary" onclick="runTest()">▶ 运行测试</button>
+              <button class="btn" onclick="clearAnswers()">🗑️ 清空答案</button>
+              <button class="btn" onclick="saveCurrentAsCase()">💾 保存为用例</button>
+            </div>
+            <div class="result-card">
+              <h3>📝 答案矩阵</h3>
+              <div id="matrixContainer">
+                <div class="empty-state">
+                  <div class="icon">⬆️</div>
+                  <div class="text">请先选择量表</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: 测试结果 -->
+          <div id="tab-results" class="tab-content">
+            <div id="resultsContainer">
+              <div class="empty-state">
+                <div class="icon">📊</div>
+                <div class="text">点击「运行测试」查看结果</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Prompt 预览 -->
+          <div id="tab-prompt" class="tab-content">
+            <div class="actions-bar">
+              <button class="btn btn-primary" onclick="runAiPreview()" id="btn-ai-preview">
+                🚀 预览 AI 报告
+              </button>
+              <button class="btn btn-success" onclick="copyPrompt()">📋 复制 Prompt</button>
+              <button class="btn" onclick="savePromptToScale()">💾 保存到量表</button>
+            </div>
+            <div id="promptContainer">
+              <div class="empty-state">
+                <div class="icon">💬</div>
+                <div class="text">运行测试后，点击「🚀 预览 AI 报告」查看生成效果</div>
+              </div>
+            </div>
+            <div id="aiReportContainer" style="display:none;">
+              <div class="result-card">
+                <h3>🤖 AI 生成的测评报告</h3>
+                <div id="aiReportContent" class="prompt-preview" style="background:#f8fafc;color:#1f2937;"></div>
+                <div style="margin-top:12px;display:flex;gap:8px;">
+                  <button class="btn" onclick="copyAiReport()">📋 复制报告</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- 批量测试弹窗 -->
+  <div id="batchModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;width:90%;max-width:600px;max-height:80vh;overflow:hidden;">
+      <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="font-size:16px;">📊 批量测试报告</h3>
+        <button onclick="document.getElementById('batchModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      <div id="batchContent" style="padding:16px;max-height:60vh;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- 保存用例弹窗 -->
+  <div id="saveCaseModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;width:90%;max-width:400px;padding:24px;">
+      <h3 style="font-size:16px;margin-bottom:16px;">💾 保存测试用例</h3>
+      <input type="text" id="caseNameInput" placeholder="用例名称" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:12px;" />
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button class="btn" onclick="document.getElementById('saveCaseModal').style.display='none'">取消</button>
+        <button class="btn btn-primary" onclick="confirmSaveCase()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       脚本依赖
+       ==================================================== -->
+  <script src="../shared-data.js?v=20260518"></script>
+  <script src="../scoring-engine.js?v=20260518"></script>
+  <script src="../cloud-api.js?v=20260518"></script>
+  <script src="admin-api.js?v=20260518"></script>
+  <script src="test-engine.js?v=20260518"></script>
+
+  <script>
+    // ====================================================
+    // 全局状态
+    // ====================================================
+    let currentScale = null;
+    let currentScoring = null;
+    let currentAnswers = {};
+    let currentPreqAnswers = {}; // 测前问卷答案
+    let currentResult = null;
+    let currentPreset = null;
+    let currentCaseId = null;
+
+    // 步骤状态快照（用于回退）
+    let stepSnapshots = {
+      1: null, // 选择量表
+      2: null, // 设计答案
+      3: null, // 运行测试
+      4: null, // 预览 Prompt
+      5: null  // 生成报告
+    };
+
+    // 每一步骤的完成状态
+    let stepCompleted = {
+      1: false, // 选择量表
+      2: false, // 设计答案
+      3: false, // 运行测试
+      4: false, // 预览 Prompt
+      5: false  // 生成报告
+    };
+
+    // ====================================================
+    // 认证
+    // ====================================================
+    function initAuth() {
+      const isAuthed = sessionStorage.getItem('psy_admin_authed') === '1';
+      if (isAuthed) {
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        initApp();
+      } else {
+        document.getElementById('authPassword').focus();
+        document.getElementById('authPassword').addEventListener('keydown', e => {
+          if (e.key === 'Enter') login();
+        });
+      }
+    }
+
+    function login() {
+      const pwd = document.getElementById('authPassword').value.trim();
+      const correct = localStorage.getItem('psy_admin_password') || 'admin2026';
+      if (pwd === correct) {
+        sessionStorage.setItem('psy_admin_authed', '1');
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        initApp();
+      } else {
+        document.getElementById('authError').textContent = '密码错误';
+      }
+    }
+
+    // ====================================================
+    // 步骤进度管理
+    // ====================================================
+    const STEPS = [
+      { step: 1, title: '📋 步骤 1/5：选择量表', text: '请从左侧列表选择要测试的量表' },
+      { step: 2, title: '✏️ 步骤 2/5：设计答案', text: '使用快捷预设或手动编辑答案矩阵' },
+      { step: 3, title: '▶ 步骤 3/5：运行测试', text: '点击「运行测试」验证计分规则' },
+      { step: 4, title: '💬 步骤 4/5：预览 Prompt', text: '查看替换变量后的 System Prompt' },
+      { step: 5, title: '🤖 步骤 5/5：生成报告', text: '预览 AI 生成的测评报告' }
+    ];
+
+    let currentStep = 1;
+
+    function updateStepProgress(step) {
+      currentStep = step;
+      const items = document.querySelectorAll('.step-item');
+      const hint = document.getElementById('stepHint');
+
+      items.forEach((item, idx) => {
+        const itemStep = idx + 1;
+        item.classList.remove('completed', 'active');
+
+        if (itemStep < step) {
+          item.classList.add('completed');
+          item.querySelector('.step-icon').innerHTML = '✓';
+        } else if (itemStep === step) {
+          item.classList.add('active');
+          item.querySelector('.step-icon').innerHTML = STEPS[idx].step;
+        } else {
+          // 恢复数字
+          const icons = ['📋', '✏️', '▶', '💬', '🤖'];
+          item.querySelector('.step-icon').innerHTML = icons[idx];
+        }
+      });
+
+      // 更新提示
+      if (hint && STEPS[step - 1]) {
+        hint.innerHTML = `
+          <div class="hint-title">${STEPS[step - 1].title}</div>
+          <div class="hint-text">${STEPS[step - 1].text}</div>
+        `;
+      }
+
+      // 更新导航按钮状态
+      updateNavButtons();
+    }
+
+    function updateNavButtons() {
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const indicator = document.getElementById('stepIndicator');
+
+      // 上一步按钮：步骤1时禁用
+      btnPrev.disabled = currentStep <= 1;
+
+      // 下一步按钮：根据当前步骤完成状态
+      const canGoNext = stepCompleted[currentStep];
+      btnNext.disabled = !canGoNext;
+
+      // 更新步骤指示器
+      indicator.innerHTML = `当前：<strong>步骤 ${currentStep}</strong> / 共 5 步`;
+    }
+
+    function markStepCompleted(step) {
+      stepCompleted[step] = true;
+      updateNavButtons();
+    }
+
+    function goToPrevStep() {
+      if (currentStep <= 1) return;
+
+      // 保存当前步骤的快照（如果已完成）
+      if (stepCompleted[currentStep]) {
+        saveStepSnapshot(currentStep);
+      }
+
+      // 回退到上一步
+      const prevStep = currentStep - 1;
+      updateStepProgress(prevStep);
+
+      // 恢复上一步的状态
+      restoreStepState(prevStep);
+    }
+
+    function goToNextStep() {
+      if (currentStep >= 5) return;
+      if (!stepCompleted[currentStep]) {
+        showToast('请先完成当前步骤', 'warning');
+        return;
+      }
+
+      // 保存当前步骤的快照
+      saveStepSnapshot(currentStep);
+
+      // 推进到下一步
+      updateStepProgress(currentStep + 1);
+
+      // 跳转到对应的 Tab
+      jumpToStepTab(currentStep + 1);
+    }
+
+    function saveStepSnapshot(step) {
+      stepSnapshots[step] = {
+        currentScale: currentScale ? { ...currentScale } : null,
+        currentScoring: currentScoring ? { ...currentScoring } : null,
+        currentAnswers: { ...currentAnswers },
+        currentResult: currentResult ? JSON.parse(JSON.stringify(currentResult)) : null,
+        currentPreset: currentPreset,
+        currentCaseId: currentCaseId
+      };
+    }
+
+    function restoreStepState(step) {
+      const snapshot = stepSnapshots[step];
+      if (!snapshot) return;
+
+      // 恢复状态
+      if (snapshot.currentScale) {
+        currentScale = snapshot.currentScale;
+        currentScoring = snapshot.currentScoring;
+
+        // 恢复量表选择器
+        document.getElementById('scaleSelect').value = currentScale.id;
+
+        // 显示量表信息
+        const info = document.getElementById('scaleInfo');
+        if (info) {
+          info.innerHTML = `
+            <strong>${currentScale.name}</strong><br>
+            题目数：${currentScale.questions?.length || 0} 题<br>
+            ${currentScale.aiDiag?.prompt ? '✅ 已配置 System Prompt' : '❌ 未配置 System Prompt'}
+          `;
+        }
+      }
+
+      if (snapshot.currentAnswers) {
+        currentAnswers = snapshot.currentAnswers;
+        currentPreset = snapshot.currentPreset;
+        currentResult = snapshot.currentResult;
+        currentCaseId = snapshot.currentCaseId;
+      }
+
+      // 恢复 UI 状态
+      restoreStepUI(step);
+    }
+
+    function restoreStepUI(step) {
+      switch (step) {
+        case 1:
+          // 步骤1：只显示量表选择，无矩阵
+          document.getElementById('matrixContainer').innerHTML = '<div class="empty-state"><div class="icon">⬆️</div><div class="text">请先选择量表</div></div>';
+          document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">📊</div><div class="text">点击「运行测试」查看结果</div></div>';
+          document.getElementById('promptContainer').innerHTML = '<div class="empty-state"><div class="icon">💬</div><div class="text">运行测试后预览 Prompt</div></div>';
+          document.getElementById('aiReportContainer').style.display = 'none';
+          switchTab('answers');
+          break;
+
+        case 2:
+          // 步骤2：恢复答案矩阵
+          if (currentScale) {
+            renderMatrix();
+            updateMatrixSelection();
+          }
+          document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">📊</div><div class="text">点击「运行测试」查看结果</div></div>';
+          document.getElementById('promptContainer').innerHTML = '<div class="empty-state"><div class="icon">💬</div><div class="text">运行测试后预览 Prompt</div></div>';
+          document.getElementById('aiReportContainer').style.display = 'none';
+          switchTab('answers');
+          break;
+
+        case 3:
+          // 步骤3：恢复测试结果
+          if (currentResult) {
+            renderResults(currentResult);
+            renderPromptTab();
+          }
+          document.getElementById('aiReportContainer').style.display = 'none';
+          switchTab('results');
+          break;
+
+        case 4:
+          // 步骤4：恢复 Prompt 预览
+          if (currentResult) {
+            renderPromptTab();
+          }
+          document.getElementById('aiReportContainer').style.display = 'none';
+          switchTab('prompt');
+          break;
+
+        case 5:
+          // 步骤5：恢复 AI 报告
+          if (currentResult) {
+            renderPromptTab();
+          }
+          switchTab('prompt');
+          break;
+      }
+    }
+
+    function jumpToStepTab(step) {
+      switch (step) {
+        case 1:
+          switchTab('answers');
+          break;
+        case 2:
+          switchTab('answers');
+          break;
+        case 3:
+          switchTab('results');
+          break;
+        case 4:
+        case 5:
+          switchTab('prompt');
+          break;
+      }
+    }
+
+    function advanceStep() {
+      if (currentStep < 5) {
+        updateStepProgress(currentStep + 1);
+      }
+    }
+
+    // ====================================================
+    // 初始化
+    // ====================================================
+    async function initApp() {
+      // 等待 SharedData 初始化（确保 init() 已执行）
+      await new Promise(resolve => {
+        const check = () => {
+          if (window.SharedData && window.SharedData.getAllScales) {
+            // 额外等待确保 init() 已执行（脚本按顺序加载）
+            setTimeout(resolve, 50);
+          } else if (document.readyState === 'complete') {
+            resolve();
+          } else {
+            window.addEventListener('load', resolve);
+          }
+        };
+        check();
+      });
+
+      // 加载量表列表
+      await loadScaleList();
+      
+      // 渲染预设按钮
+      renderPresets();
+      
+      // 加载用例库
+      loadCaseList();
+    }
+
+    async function loadScaleList() {
+      const scales = AdminAPI.getScalesSync();
+      console.log('[TestCenter] loadScaleList - 量表数量:', scales?.length || 0);
+      const select = document.getElementById('scaleSelect');
+      
+      // 按分类分组
+      const categories = {};
+      scales.forEach(s => {
+        const cat = s.categoryName || '其他';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(s);
+      });
+
+      let html = '<option value="">-- 请选择量表 --</option>';
+      Object.entries(categories).forEach(([cat, list]) => {
+        html += `<optgroup label="${cat}">`;
+        list.forEach(s => {
+          const hasPrompt = s.aiDiag?.prompt ? '✅' : '❌';
+          html += `<option value="${s.id}">${s.name} (${hasPrompt})</option>`;
+        });
+        html += '</optgroup>';
+      });
+      
+      select.innerHTML = html;
+    }
+
+    function renderPresets() {
+      const presets = TestEngine.getPresets();
+      const grid = document.getElementById('presetsGrid');
+      
+      grid.innerHTML = presets.map(p => `
+        <button class="preset-btn" data-preset="${p.id}" onclick="applyPreset('${p.id}')">
+          <span class="icon">${p.icon}</span>
+          <span class="name">${p.name}</span>
+          <span class="desc">${p.description}</span>
+        </button>
+      `).join('');
+    }
+
+    // ====================================================
+    // 量表选择
+    // ====================================================
+    async function onScaleChange() {
+      const scaleId = document.getElementById('scaleSelect').value;
+      if (!scaleId) {
+        currentScale = null;
+        currentScoring = null;
+        document.getElementById('scaleInfo').innerHTML = '';
+        document.getElementById('matrixContainer').innerHTML = '<div class="empty-state"><div class="icon">⬆️</div><div class="text">请先选择量表</div></div>';
+        return;
+      }
+
+      currentScale = await AdminAPI.getScale(scaleId);
+      currentScoring = currentScale?.scoring || null;
+
+      // 展开共享分组（_sharedGroups → 每题 groups），确保 grouped 题在模拟器中正常渲染
+      if (currentScale?._sharedGroups?.length) {
+        var groups = currentScale._sharedGroups.map(function (grp) {
+          return {
+            id: grp.id,
+            label: grp.label || grp.id,
+            options: (grp.options || []).map(function (o, i) {
+              return Array.isArray(o)
+                ? { id: (grp.id + '_' + i), label: String(o[0] || ''), score: typeof o[1] === 'number' ? o[1] : 0 }
+                : { id: o.id || (grp.id + '_' + i), label: o.label || '', score: typeof o.score === 'number' ? o.score : 0 };
+            })
+          };
+        });
+        (currentScale.questions || []).forEach(function (q) {
+          if (!q.groups || !q.groups.length) q.groups = groups;
+          if (!q.type || q.type === 'single') q.type = 'grouped';
+        });
+      }
+
+      // 从计分说明解析反向题号，标注到每题（计分说明中"二、反向计分"段落）
+      var scoringDesc = currentScale.scoringDescription || '';
+      var reverseMatch = scoringDesc.match(/反向计分[：:][^。\n]*([\d,\s、\-]+)/);
+      if (reverseMatch) {
+        var nums = reverseMatch[1].match(/\d+/g);
+        if (nums) {
+          var reverseIds = nums.map(Number);
+          (currentScale.questions || []).forEach(function (q) {
+            if (reverseIds.indexOf(q.id) >= 0) q.reverse = true;
+          });
+          console.log('[TestCenter] 从计分说明解析到 ' + reverseIds.length + ' 道反向计分题:', reverseIds.slice(0, 10));
+        }
+      }
+
+      // 自动识别内联 groups 的题型（如 EMBU 每题自带 groups: {父亲: [...], 母亲: [...]}）
+      (currentScale.questions || []).forEach(function (q) {
+        if (q.groups && !q.type) q.type = 'grouped';
+      });
+
+      currentCaseId = null;
+
+      // 显示量表信息
+      const preqCount = currentScale.preQuestions?.length || 0;
+      const info = document.getElementById('scaleInfo');
+      info.innerHTML = `
+        <strong>${currentScale.name}</strong><br>
+        ${preqCount > 0 ? `测前问卷：${preqCount} 题<br>` : ''}
+        题目数：${currentScale.questions?.length || 0} 题<br>
+        ${currentScale.aiDiag?.prompt ? '✅ 已配置 System Prompt' : '❌ 未配置 System Prompt'}
+      `;
+
+      // 清空答案
+      currentAnswers = {};
+      // 测前问卷答案单独存储
+      currentPreqAnswers = {};
+
+      // 渲染矩阵
+      renderMatrix();
+
+      // 更新用例列表
+      loadCaseList();
+
+      // 保存步骤1的快照
+      saveStepSnapshot(1);
+
+      // 更新步骤为 2：设计答案
+      updateStepProgress(2);
+
+      // 激活步骤2的"下一步"按钮
+      markStepCompleted(2);
+
+      // 清空结果
+      document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">📊</div><div class="text">点击「运行测试」查看结果</div></div>';
+      document.getElementById('promptContainer').innerHTML = '<div class="empty-state"><div class="icon">💬</div><div class="text">运行测试后预览 Prompt</div></div>';
+    }
+
+    // ====================================================
+    // 预设应用
+    // ====================================================
+    function applyPreset(presetId) {
+      if (!currentScale) {
+        showToast('请先选择量表', 'error');
+        return;
+      }
+
+      // 更新 UI
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === presetId);
+      });
+
+      // 生成预设答案
+      currentAnswers = TestEngine.generatePresetAnswers(currentScale.questions, presetId);
+      if (currentAnswers === null) {
+        showToast('预设生成失败：' + presetId, 'error');
+        return;
+      }
+      currentPreset = presetId;
+
+      // 更新矩阵显示
+      updateMatrixSelection();
+
+      showToast('已应用预设：' + presetId, 'success');
+    }
+
+    // ====================================================
+    // 答案矩阵
+    // ====================================================
+    function renderMatrix() {
+      const container = document.getElementById('matrixContainer');
+      let html = '';
+
+      // 渲染测前问卷（如果有）
+      if (currentScale?.preQuestions?.length) {
+        html += TestEngine.renderPreQuestionnaire(currentScale.preQuestions, currentPreqAnswers);
+      }
+
+      if (!currentScale || !currentScale.questions?.length) {
+        container.innerHTML = html + '<div class="empty-state"><div class="icon">❌</div><div class="text">该量表没有题目数据</div></div>';
+        return;
+      }
+
+      // 渲染量表题目矩阵
+      html += TestEngine.renderAnswerMatrix(currentScale.questions, currentAnswers, {
+        onChange: (qId, val) => {
+          currentAnswers[qId] = val;
+          // 清除预设选中
+          document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+          currentPreset = null;
+        }
+      });
+
+      container.innerHTML = html;
+
+      // 绑定测前问卷事件
+      if (currentScale?.preQuestions?.length) {
+        // 芯片点击事件
+        container.querySelectorAll('.preq-chip').forEach(chip => {
+          chip.addEventListener('click', e => {
+            const qId = chip.dataset.preqId;
+            const value = chip.dataset.value;
+            // 更新选中状态
+            chip.closest('.preq-chip-group')?.querySelectorAll('.preq-chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            // 同步下拉框
+            const select = container.querySelector(`.preq-select[data-preq-id="${qId}"]`);
+            if (select) select.value = value;
+            // 保存答案
+            currentPreqAnswers[qId] = value;
+          });
+        });
+
+        // 下拉框事件
+        container.querySelectorAll('.preq-select').forEach(select => {
+          select.addEventListener('change', e => {
+            const qId = select.dataset.preqId;
+            const value = select.value;
+            // 同步芯片选中状态
+            const chipGroup = container.querySelector(`.preq-chip-group`);
+            chipGroup?.querySelectorAll('.preq-chip').forEach(c => {
+              c.classList.toggle('selected', c.dataset.value === value);
+            });
+            // 保存答案
+            currentPreqAnswers[qId] = value === '' ? undefined : value;
+          });
+        });
+
+        // 文本输入事件
+        container.querySelectorAll('.preq-input').forEach(input => {
+          input.addEventListener('input', e => {
+            const qId = input.dataset.preqId;
+            currentPreqAnswers[qId] = input.value;
+          });
+        });
+      }
+
+      // 绑定单选题 select 事件
+      container.querySelectorAll('.answer-select[data-q-type="single"]').forEach(select => {
+        select.addEventListener('change', e => {
+          const qId = select.dataset.qId;
+          const val = select.value;
+          currentAnswers[qId] = val === '' ? undefined : parseInt(val, 10);
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定分组题 select 事件
+      container.querySelectorAll('.answer-select[data-q-type="grouped"]').forEach(select => {
+        select.addEventListener('change', e => {
+          const qId = select.dataset.qId;
+          const groupId = select.dataset.groupId;
+          const val = select.value;
+          if (!currentAnswers[qId]) currentAnswers[qId] = {};
+          currentAnswers[qId][groupId] = val === '' ? undefined : val;
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定矩阵题 select 事件
+      container.querySelectorAll('.answer-select[data-q-type="matrix"]').forEach(select => {
+        select.addEventListener('change', e => {
+          const qId = select.dataset.qId;
+          const rowId = select.dataset.rowId;
+          const val = select.value;
+          if (!currentAnswers[qId]) currentAnswers[qId] = {};
+          currentAnswers[qId][rowId] = val === '' ? undefined : parseInt(val, 10);
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定父子题 main select 事件
+      container.querySelectorAll('.answer-select[data-q-type="parent-child"]').forEach(select => {
+        select.addEventListener('change', e => {
+          const qId = select.dataset.qId;
+          const val = select.value;
+          if (!currentAnswers[qId]) currentAnswers[qId] = { main: undefined, subs: [] };
+          currentAnswers[qId].main = val === '' ? undefined : parseInt(val, 10);
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定父子题子选项 checkbox 事件
+      container.querySelectorAll('.answer-checkbox[data-q-type="parent-child"]').forEach(checkbox => {
+        checkbox.addEventListener('change', e => {
+          const qId = checkbox.dataset.qId;
+          const subId = checkbox.dataset.subId;
+          if (!currentAnswers[qId]) currentAnswers[qId] = { main: undefined, subs: [] };
+          if (!currentAnswers[qId].subs) currentAnswers[qId].subs = [];
+          if (checkbox.checked) {
+            if (!currentAnswers[qId].subs.includes(subId)) {
+              currentAnswers[qId].subs.push(subId);
+            }
+          } else {
+            currentAnswers[qId].subs = currentAnswers[qId].subs.filter(id => id !== subId);
+          }
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定文本题 input 事件
+      container.querySelectorAll('.answer-text-input[data-q-type="text"]').forEach(input => {
+        input.addEventListener('input', e => {
+          const qId = input.dataset.qId;
+          const val = input.value.trim();
+          currentAnswers[qId] = val === '' ? undefined : val;
+          clearPresetAndUpdateScore(qId);
+        });
+      });
+
+      // 绑定选项芯片点击事件
+      container.querySelectorAll('.option-chip').forEach(chip => {
+        chip.addEventListener('click', e => {
+          const tr = chip.closest('tr');
+          const qId = tr?.dataset.qId;
+          const qType = tr?.dataset.qType || 'single';
+
+          if (qType === 'single') {
+            // 单选题：找到同一行的 select
+            const select = tr.querySelector('.answer-select[data-q-type="single"]');
+            if (select) {
+              const optIdx = chip.dataset.optIdx;
+              if (optIdx !== undefined) {
+                select.value = optIdx;
+                select.dispatchEvent(new Event('change'));
+              }
+            }
+          } else if (qType === 'grouped') {
+            // 分组题：先试 select，无 select 则直接更新答案（EMBU 风格）
+            const select = tr.querySelector('.answer-select[data-q-type="grouped"]');
+            if (select && chip.dataset.optId) {
+              select.value = chip.dataset.optId;
+              select.dispatchEvent(new Event('change'));
+            } else if (chip.dataset.gkey !== undefined && chip.dataset.optIdx !== undefined) {
+              // EMBU 等无 select 的分组题：直接更新答案对象
+              if (!currentAnswers[qId] || typeof currentAnswers[qId] !== 'object') {
+                currentAnswers[qId] = {};
+              }
+              currentAnswers[qId][chip.dataset.gkey] = parseInt(chip.dataset.optIdx, 10);
+              // 更新同组芯片的选中状态
+              var gkey = chip.dataset.gkey;
+              tr.querySelectorAll('.option-chip[data-gkey="' + gkey + '"]').forEach(function(c) {
+                c.classList.toggle('selected', c.dataset.optIdx === chip.dataset.optIdx);
+              });
+              // 更新分值
+              clearPresetAndUpdateScore(qId);
+            }
+          }
+        });
+      });
+    }
+
+    function clearPresetAndUpdateScore(qId) {
+      // 清除预设选中
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      currentPreset = null;
+
+      // 更新分值显示
+      const tr = document.querySelector(`tr[data-q-id="${qId}"]`);
+      if (tr) {
+        const q = currentScale?.questions?.find(q => q.id == qId);
+        if (q) {
+          const score = TestEngine.calcAnswerScore(q, currentAnswers[qId]);
+          const scoreCell = tr.querySelector('.col-score');
+          if (scoreCell) scoreCell.textContent = score;
+
+          // 更新选项芯片选中状态
+          updateOptionChips(tr, q, currentAnswers[qId]);
+        }
+      }
+    }
+
+    /**
+     * 更新选项芯片选中状态
+     */
+    function updateOptionChips(tr, q, answer) {
+      const qType = q.type || 'single';
+
+      if (qType === 'single' || qType === 'select' || qType === 'radio') {
+        // 单选题：根据选项索引更新
+        tr.querySelectorAll('.option-chip[data-opt-idx]').forEach(chip => {
+          const idx = parseInt(chip.dataset.optIdx, 10);
+          chip.classList.toggle('selected', answer === idx);
+        });
+      } else if (qType === 'grouped') {
+        // 分组题：根据 groupId 和 option id 更新
+        tr.querySelectorAll('.q-group-item').forEach(groupItem => {
+          const groupId = groupItem.dataset.groupId;
+          const groupAnswer = answer?.[groupId];
+          groupItem.querySelectorAll('.option-chip[data-opt-id]').forEach(chip => {
+            chip.classList.toggle('selected', chip.dataset.optId === groupAnswer);
+          });
+        });
+      } else if (qType === 'matrix') {
+        // 矩阵题：根据 rowId 和 colIdx 更新
+        tr.querySelectorAll('.q-matrix-row').forEach(row => {
+          const rowId = row.dataset.rowId;
+          const rowAnswer = answer?.[rowId];
+          row.querySelectorAll('.matrix-chip[data-col-idx]').forEach(chip => {
+            const colIdx = parseInt(chip.dataset.colIdx, 10);
+            chip.classList.toggle('selected', rowAnswer === colIdx);
+          });
+        });
+      } else if (qType === 'parent-child') {
+        // 父子题：更新父选项
+        const mainAnswer = answer?.main;
+        tr.querySelectorAll('.option-chip[data-main-idx]').forEach(chip => {
+          const idx = parseInt(chip.dataset.mainIdx, 10);
+          chip.classList.toggle('selected', mainAnswer === idx);
+        });
+      }
+    }
+
+    function updateMatrixSelection() {
+      const container = document.getElementById('matrixContainer');
+
+      // 更新单选题
+      container.querySelectorAll('.answer-select[data-q-type="single"]').forEach(select => {
+        const qId = select.dataset.qId;
+        const val = currentAnswers[qId];
+        if (val !== undefined && val !== null) {
+          select.value = val;
+        }
+      });
+
+      // 更新分组题
+      container.querySelectorAll('.answer-select[data-q-type="grouped"]').forEach(select => {
+        const qId = select.dataset.qId;
+        const groupId = select.dataset.groupId;
+        const answer = currentAnswers[qId];
+        if (answer && typeof answer === 'object') {
+          select.value = answer[groupId] ?? '';
+        }
+      });
+
+      // 更新 EMBU 风格无 select 的分组题芯片高亮
+      container.querySelectorAll('tr[data-q-type="grouped"] .option-chip[data-gkey]').forEach(chip => {
+        const qId = chip.closest('tr')?.dataset.qId;
+        const answer = currentAnswers[qId];
+        if (!answer || typeof answer !== 'object') return;
+        var ansVal = answer[chip.dataset.gkey];
+        // 支持数字索引和字符串 ID 两种比较
+        var selected = (typeof ansVal === 'number' && parseInt(chip.dataset.optIdx, 10) === ansVal) ||
+                       (typeof ansVal === 'string' && chip.dataset.optId === ansVal);
+        chip.classList.toggle('selected', selected);
+      });
+
+      // 更新矩阵题
+      container.querySelectorAll('.answer-select[data-q-type="matrix"]').forEach(select => {
+        const qId = select.dataset.qId;
+        const rowId = select.dataset.rowId;
+        const answer = currentAnswers[qId];
+        if (answer && typeof answer === 'object') {
+          select.value = answer[rowId] ?? '';
+        }
+      });
+
+      // 更新父子题
+      container.querySelectorAll('.answer-select[data-q-type="parent-child"]').forEach(select => {
+        const qId = select.dataset.qId;
+        const answer = currentAnswers[qId];
+        if (answer && typeof answer === 'object') {
+          select.value = answer.main ?? '';
+        }
+      });
+
+      container.querySelectorAll('.answer-checkbox[data-q-type="parent-child"]').forEach(checkbox => {
+        const qId = checkbox.dataset.qId;
+        const subId = checkbox.dataset.subId;
+        const answer = currentAnswers[qId];
+        checkbox.checked = answer?.subs?.includes(subId) ?? false;
+      });
+
+      // 更新文本题
+      container.querySelectorAll('.answer-text-input[data-q-type="text"]').forEach(input => {
+        const qId = input.dataset.qId;
+        const val = currentAnswers[qId];
+        input.value = val ?? '';
+      });
+
+      // 更新分值列
+      container.querySelectorAll('tr[data-q-id]').forEach(tr => {
+        const qId = tr.dataset.qId;
+        const q = (currentScale?.questions || []).find(function(x) { return String(x.id) === String(qId); });
+        if (!q) return;
+        var currentAns = currentAnswers[qId];
+        var scoreText = TestEngine.calcAnswerScore(q, currentAns);
+        // 反向计分标注
+        if (q.reverse) {
+          scoreText = '<span style="color:#e67e22;font-weight:600;">' + scoreText + '</span> <span style="font-size:10px;color:#e67e22;">反</span>';
+        }
+        var scoreCell = tr.querySelector('.col-score');
+        if (scoreCell) scoreCell.innerHTML = scoreText;
+      });
+    }
+
+    function clearAnswers() {
+      currentAnswers = {};
+      currentPreset = null;
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.answer-select').forEach(select => {
+        select.value = '';
+      });
+      document.querySelectorAll('.answer-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+      document.querySelectorAll('.answer-text-input').forEach(input => {
+        input.value = '';
+      });
+      showToast('已清空答案', 'info');
+    }
+
+    // ====================================================
+    // 运行测试
+    // ====================================================
+    function runTest() {
+      if (!currentScale) {
+        showToast('请先选择量表', 'error');
+        return;
+      }
+
+      if (!currentScoring) {
+        showToast('该量表未配置计分规则', 'error');
+        return;
+      }
+
+      const scaleWithScoring = AdminAPI.getScaleWithScoring(currentScale, currentScoring);
+      const result = TestEngine.run(scaleWithScoring, currentAnswers);
+
+      if (!result.success) {
+        showToast('测试失败：' + result.error, 'error');
+        return;
+      }
+
+      currentResult = result.data;
+
+      // 渲染结果
+      renderResults(result.data);
+
+      // 保存步骤3的快照
+      saveStepSnapshot(3);
+
+      // 更新步骤为 3：运行测试完成
+      updateStepProgress(3);
+
+      // 激活步骤3的"下一步"按钮
+      markStepCompleted(3);
+
+      // 切换到结果 Tab
+      switchTab('results');
+      
+      showToast('测试完成！可点击「💬 Prompt 预览」查看变量替换效果', 'success');
+    }
+
+    function renderResults(result) {
+      const container = document.getElementById('resultsContainer');
+      
+      // 提取指标
+      const metrics = result.metrics || {};
+      const totalScore = result.totalScore || Object.values(metrics)[0] || 0;
+      
+      // 渲染
+      let html = '';
+
+      // 指标卡片
+      html += `
+        <div class="result-card">
+          <h3>📊 指标得分</h3>
+          <div class="metrics-grid">
+            ${Object.entries(metrics).map(([k, v]) => `
+              <div class="metric-card">
+                <div class="label">${k}</div>
+                <div class="value">${typeof v === 'number' ? v.toFixed(2) : v}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // 解释等级
+      if (result.interpretation) {
+        const interp = result.interpretation;
+        html += `
+          <div class="result-card">
+            <h3>🏷️ 解释等级</h3>
+            <div class="interpretation-badge" style="background:${interp.color}20;color:${interp.color};border:1px solid ${interp.color}40;">
+              ${interp.label || interp.level} ${interp.text ? '- ' + interp.text : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // 维度分析
+      if (result.dimensions?.length) {
+        const maxScore = Math.max(...result.dimensions.map(d => {
+          // 尝试从 interpretation 获取最大值
+          const interp = d.interpretation;
+          return interp?.max || 5;
+        }));
+
+        html += `
+          <div class="result-card">
+            <h3>📈 维度分析</h3>
+            <div class="dim-list">
+              ${result.dimensions.map(d => {
+                const pct = maxScore > 0 ? Math.min(100, (d.score / maxScore) * 100) : 0;
+                const color = d.interpretation?.color || '#4f46e5';
+                return `
+                  <div class="dim-item">
+                    <span class="dim-label">${d.label}</span>
+                    <div class="dim-bar-wrap">
+                      <div class="dim-bar" style="width:${pct}%;background:${color};"></div>
+                    </div>
+                    <span class="dim-score">${typeof d.score === 'number' ? d.score.toFixed(1) : d.score}</span>
+                    ${d.interpretation ? `<span class="dim-tag" style="background:${color}20;color:${color};">${d.interpretation.label || ''}</span>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // 筛查结果
+      if (result.screening && result.screening.result !== 'none') {
+        const scr = result.screening;
+        html += `
+          <div class="result-card">
+            <h3>🔍 筛查结果</h3>
+            <div style="padding:12px;background:${scr.result === 'positive' ? 'var(--danger-bg)' : 'var(--success-bg)'};border-radius:8px;">
+              <strong>${scr.result}</strong>
+              ${scr.triggeredRules?.length ? `<br><small>触发条件：${scr.triggeredRules.map(r => r.metric + r.op + r.value).join(', ')}</small>` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // Prompt 预览
+      const promptPreview = TestEngine.previewPrompt(currentScale, result, true, currentPreqAnswers);
+      const formatConstraint = TestEngine.getFormatConstraint();
+      const fullPrompt = promptPreview + '\n\n' + formatConstraint;
+
+      html += `
+        <div class="result-card">
+          <h3>💬 System Prompt 预览</h3>
+          <div class="prompt-preview" id="promptPreviewText">${TestEngine.escHtml(fullPrompt)}</div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    // ====================================================
+    // AI 报告预览
+    // ====================================================
+    
+    /**
+     * 获取 AI 配置
+     */
+    function getAiConfig() {
+      try {
+        return JSON.parse(localStorage.getItem('psy_ai_config')) || {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    // ====================================================
+    // Prompt 操作
+    // ====================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
+
+      // 如果切换到 prompt tab 且已有结果，自动渲染
+      if (tabId === 'prompt' && currentResult) {
+        renderPromptTab();
+
+        // 保存步骤4的快照
+        saveStepSnapshot(4);
+
+        // 更新步骤为 4：预览 Prompt
+        updateStepProgress(4);
+
+        // 激活步骤4的"下一步"按钮
+        markStepCompleted(4);
+      }
+    }
+
+    /**
+     * 获取 API 地址
+     */
+    function getApiBase() {
+      return localStorage.getItem('psy_cloud_api_base') || '';
+    }
+
+    /**
+     * 运行 AI 报告预览
+     */
+    async function runAiPreview() {
+      if (!currentResult) {
+        showToast('请先运行测试', 'error');
+        return;
+      }
+
+      const apiBase = getApiBase();
+      if (!apiBase) {
+        showToast('未配置 AI API 地址，请先去「计分配置 → 运维工具 → AI 密钥管理」配置', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-ai-preview');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ AI 生成中...';
+
+      const reportContainer = document.getElementById('aiReportContainer');
+      const reportContent = document.getElementById('aiReportContent');
+      reportContainer.style.display = 'block';
+      reportContent.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">⏳ 正在调用 AI 生成报告，请稍候...</div>';
+
+      try {
+        // 构建消息
+        const cfg = getAiConfig();
+        const provider = cfg.provider || 'dashscope';
+        const model = cfg[provider]?.model || (provider === 'deepseek' ? 'deepseek-v4-flash' : 'qwen-plus');
+        
+        const promptPreview = TestEngine.previewPrompt(currentScale, currentResult);
+        const formatConstraint = TestEngine.getFormatConstraint();
+        const systemPrompt = promptPreview + '\n\n' + formatConstraint;
+        
+        // 获取 welcome 消息
+        const welcome = currentScale.aiDiag?.welcome || '请根据以上测评结果生成分析报告。';
+
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: welcome }
+        ];
+
+        // 调用 AI：本地环境直接走 localhost，云端优先用 CloudAPI
+        var result;
+        var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (!isLocal && window.CloudAPI && typeof window.CloudAPI.aiDiagnose === 'function') {
+          result = await window.CloudAPI.aiDiagnose(messages, {
+            provider,
+            model,
+            temperature: currentScale.aiDiag?.temperature || 0.7,
+            maxTokens: currentScale.aiDiag?.maxTokens || 2000
+          });
+        } else {
+          // 直接调用 API
+          const res = await fetch(apiBase + '/api/ai-diagnose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider,
+              model,
+              messages,
+              temperature: currentScale.aiDiag?.temperature || 0.7,
+              maxTokens: currentScale.aiDiag?.maxTokens || 2000
+            })
+          });
+          const data = await res.json();
+          if (data.code !== 0) throw new Error(data.message || 'AI 调用失败');
+          result = data.data;
+        }
+
+        // 渲染报告
+        reportContent.innerHTML = formatAiReport(result);
+
+        // 保存步骤5的快照
+        saveStepSnapshot(5);
+
+        // 更新步骤为 5：生成报告完成
+        updateStepProgress(5);
+
+        // 激活步骤5的"下一步"按钮（最后一步，不需要）
+        markStepCompleted(5);
+
+        showToast('AI 报告生成成功！完整的测试流程已完成', 'success');
+
+      } catch (err) {
+        console.error('[AI Preview]', err);
+        reportContent.innerHTML = `<div style="padding:20px;color:var(--danger);">
+          <strong>❌ AI 调用失败</strong><br>
+          <small>${err.message}</small><br><br>
+          <small>可能的原因：<br>
+          1. AI API 地址未正确配置<br>
+          2. API Key 已过期或余额不足<br>
+          3. 网络连接问题<br>
+          请检查「运维工具 → AI 密钥管理」配置</small>
+        </div>`;
+        showToast('AI 调用失败', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🚀 预览 AI 报告';
+      }
+    }
+
+    /**
+     * 格式化 AI 报告（简单转换 Markdown）
+     */
+    function formatAiReport(text) {
+      if (!text) return '<em>（空响应）</em>';
+      // 简单的 Markdown 转 HTML
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/```([\s\S]*?)```/g, '<pre style="background:#f1f5f9;padding:12px;border-radius:6px;overflow-x:auto;margin:8px 0;">$1</pre>')
+        .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:12px;">$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    /**
+     * 复制 AI 报告
+     */
+    function copyAiReport() {
+      const content = document.getElementById('aiReportContent').innerText;
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('报告已复制', 'success');
+      });
+    }
+
+    function renderPromptTab() {
+      const container = document.getElementById('promptContainer');
+      
+      if (!currentResult) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">💬</div>
+            <div class="text">请先在「答案矩阵」中设置答案，然后点击「运行测试」</div>
+          </div>
+        `;
+        return;
+      }
+
+      const promptPreview = TestEngine.previewPrompt(currentScale, currentResult);
+      const formatConstraint = TestEngine.getFormatConstraint();
+      const fullPrompt = promptPreview + '\n\n' + formatConstraint;
+
+      container.innerHTML = `
+        <div class="result-card">
+          <h3>📋 变量替换预览</h3>
+          <div style="font-size:12px;color:var(--text-sec);margin-bottom:12px;">
+            以下变量已在 Prompt 中被替换为实际测试值：
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;max-height:300px;overflow-y:auto;">
+            ${Object.entries(TestEngine.extractPromptVars(currentResult, currentScale)).map(([k, v]) => {
+              const strVal = String(v);
+              const isLong = strVal.length > 150;
+              const displayVal = isLong ? strVal.slice(0, 150) + '...' : strVal;
+              return `
+              <div style="background:var(--bg);padding:8px 12px;border-radius:6px;">
+                <div style="font-size:10px;color:var(--text-muted);">{${k}}</div>
+                <div style="font-size:12px;font-weight:500;margin-top:2px;word-break:break-all;white-space:pre-wrap;max-height:80px;overflow:hidden;">${TestEngine.escHtml(displayVal)}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div class="result-card">
+          <h3>💬 System Prompt（已替换变量）</h3>
+          <div class="prompt-preview">${TestEngine.escHtml(fullPrompt)}</div>
+        </div>
+      `;
+    }
+
+    function copyPrompt() {
+      if (!currentResult) {
+        showToast('请先运行测试', 'error');
+        return;
+      }
+
+      const promptPreview = TestEngine.previewPrompt(currentScale, currentResult);
+      const formatConstraint = TestEngine.getFormatConstraint();
+      const fullPrompt = promptPreview + '\n\n' + formatConstraint;
+
+      navigator.clipboard.writeText(fullPrompt).then(() => {
+        showToast('Prompt 已复制到剪贴板', 'success');
+      }).catch(() => {
+        showToast('复制失败', 'error');
+      });
+    }
+
+    async function savePromptToScale() {
+      if (!currentScale || !currentResult) {
+        showToast('请先运行测试', 'error');
+        return;
+      }
+
+      const prompt = TestEngine.previewPrompt(currentScale, currentResult);
+      const aiDiag = {
+        ...currentScale.aiDiag,
+        prompt,
+        updatedAt: new Date().toISOString()
+      };
+
+      const ok = await AdminAPI.saveSystemPrompt(currentScale.id, aiDiag);
+      if (ok) {
+        showToast('System Prompt 已保存到量表', 'success');
+        // 更新本地缓存
+        currentScale.aiDiag = aiDiag;
+        // 刷新量表信息
+        onScaleChange();
+      } else {
+        showToast('保存失败', 'error');
+      }
+    }
+
+    // ====================================================
+    // 用例库
+    // ====================================================
+    function loadCaseList() {
+      const container = document.getElementById('caseList');
+      
+      if (!currentScale) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📂</div><div class="text">请先选择量表</div></div>';
+        return;
+      }
+
+      const cases = AdminAPI.getTestCases(currentScale.id);
+      
+      if (!cases.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📂</div><div class="text">暂无测试用例</div></div>';
+        return;
+      }
+
+      container.innerHTML = cases.map(tc => `
+        <div class="case-item ${tc.id === currentCaseId ? 'active' : ''}" onclick="loadCase('${tc.id}')">
+          <div class="name">
+            ${TestEngine.escHtml(tc.name)}
+            ${tc.lastRunResult === 'passed' ? '<span class="status passed">✅</span>' : ''}
+            ${tc.lastRunResult === 'failed' ? '<span class="status failed">❌</span>' : ''}
+          </div>
+          <div class="meta">
+            ${AdminAPI.formatDate(tc.createdAt, 'MM-DD HH:mm')}
+            ${tc.answerCount ? ` · ${tc.answerCount} 题` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadCase(caseId) {
+      const suite = AdminAPI.getTestSuite();
+      const tc = suite.cases.find(c => c.id === caseId);
+      if (!tc) return;
+
+      currentCaseId = caseId;
+      currentAnswers = tc.answers || {};
+      
+      // 更新矩阵
+      updateMatrixSelection();
+      
+      // 更新选中状态
+      document.querySelectorAll('.case-item').forEach(item => {
+        item.classList.toggle('active', item.onclick.toString().includes(caseId));
+      });
+      
+      // 如果有运行结果，显示结果
+      if (tc.scoringResult) {
+        currentResult = tc.scoringResult;
+        renderResults(tc.scoringResult);
+        switchTab('results');
+      }
+
+      showToast('已加载用例：' + tc.name, 'info');
+    }
+
+    function showSaveCaseDialog() {
+      if (!currentScale) {
+        showToast('请先选择量表', 'error');
+        return;
+      }
+      document.getElementById('caseNameInput').value = '';
+      document.getElementById('saveCaseModal').style.display = 'flex';
+      document.getElementById('caseNameInput').focus();
+    }
+
+    function confirmSaveCase() {
+      const name = document.getElementById('caseNameInput').value.trim();
+      if (!name) {
+        showToast('请输入用例名称', 'error');
+        return;
+      }
+
+      // 先运行测试获取结果
+      if (!currentResult && currentScoring) {
+        const scaleWithScoring = AdminAPI.getScaleWithScoring(currentScale, currentScoring);
+        const result = TestEngine.run(scaleWithScoring, currentAnswers);
+        currentResult = result.success ? result.data : null;
+      }
+
+      const tc = AdminAPI.addTestCase({
+        scaleId: currentScale.id,
+        scaleName: currentScale.name,
+        name,
+        answers: currentAnswers,
+        answerCount: Object.keys(currentAnswers).length,
+        scoringResult: currentResult,
+        lastRunResult: null // 尚未验证
+      });
+
+      // 保存用例后也保存步骤快照
+      saveStepSnapshot(2);
+
+      document.getElementById('saveCaseModal').style.display = 'none';
+      loadCaseList();
+      showToast('用例已保存', 'success');
+    }
+
+    function saveCurrentAsCase() {
+      showSaveCaseDialog();
+    }
+
+    // ====================================================
+    // 批量测试
+    // ====================================================
+    function showBatchReport() {
+      if (!currentScale) {
+        showToast('请先选择量表', 'error');
+        return;
+      }
+
+      const cases = AdminAPI.getTestCases(currentScale.id);
+      if (!cases.length) {
+        showToast('该量表暂无测试用例', 'error');
+        return;
+      }
+
+      if (!currentScoring) {
+        showToast('该量表未配置计分规则', 'error');
+        return;
+      }
+
+      const scaleWithScoring = AdminAPI.getScaleWithScoring(currentScale, currentScoring);
+      const report = TestEngine.batchRun(scaleWithScoring, cases);
+
+      // 更新用例的最后运行结果
+      report.results.forEach(r => {
+        AdminAPI.updateTestCase(r.caseId, { lastRunResult: r.status });
+      });
+
+      // 渲染报告
+      const content = document.getElementById('batchContent');
+      content.innerHTML = `
+        <div class="batch-summary">
+          <div class="stat">
+            <div class="stat-value">${report.summary.total}</div>
+            <div class="stat-label">总用例</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value text-success">${report.summary.passed}</div>
+            <div class="stat-label">通过</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value text-danger">${report.summary.failed}</div>
+            <div class="stat-label">失败</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value text-warning">${report.summary.errors}</div>
+            <div class="stat-label">错误</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">${report.summary.passRate}</div>
+            <div class="stat-label">通过率</div>
+          </div>
+        </div>
+        <div class="batch-results">
+          ${report.results.map(r => `
+            <div class="batch-result-item">
+              <span class="icon">${r.status === 'passed' ? '✅' : r.status === 'failed' ? '❌' : '⚠️'}</span>
+              <span class="name">${TestEngine.escHtml(r.caseName)}</span>
+              <span class="status ${r.status}">${r.status === 'passed' ? '通过' : r.status === 'failed' ? '失败' : '错误'}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      document.getElementById('batchModal').style.display = 'flex';
+      
+      // 刷新用例列表
+      loadCaseList();
+    }
+
+    // ====================================================
+    // 导入导出
+    // ====================================================
+    function exportSuite() {
+      AdminAPI.exportTestSuite();
+      showToast('用例库已导出', 'success');
+    }
+
+    async function importSuite(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      try {
+        const result = await AdminAPI.importTestSuite(file);
+        showToast(`导入完成：${result.imported} 个新增，${result.skipped} 个跳过`, 'success');
+        loadCaseList();
+      } catch (err) {
+        showToast('导入失败：' + err.message, 'error');
+      }
+      input.value = '';
+    }
+
+    // ====================================================
+    // 工具函数
+    // ====================================================
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ====================================================
+    // 启动
+    // ====================================================
+    document.addEventListener('DOMContentLoaded', initAuth);
+  </script>
+</body>
+</html>

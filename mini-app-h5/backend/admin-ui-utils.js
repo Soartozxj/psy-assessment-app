@@ -182,6 +182,7 @@
 
   // 兼容旧 API
   UIUtils.closeConfirm = closeConfirmModal;
+  UIUtils.showToast = UIUtils.toast;  // 别名（error-handler.js 调用 showToast 而非 toast）
 
   // ====================================================
   // Toast 通知 API

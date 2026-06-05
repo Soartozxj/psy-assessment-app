@@ -126,7 +126,22 @@
   });
 
   // 6. 导航切换（切换主面板）
-  registerHandler('switch-section', function (target) {
+  var _lastSwitchTime = 0;
+  registerHandler('switch-section', function (target, e) {
+    // 防连点：500ms 内只允许一次导航切换
+    var now = Date.now();
+    if (_lastSwitchTime && (now - _lastSwitchTime < 500)) {
+      console.warn('[EventDelegate] 导航切换过于频繁，已跳过:', target.getAttribute('data-section'));
+      return;
+    }
+    _lastSwitchTime = now;
+
+    // 诊断：追踪非用户触发的点击
+    if (e && !e.isTrusted) {
+      console.warn('[EventDelegate] ⚠️ 非用户点击！来源追踪:', target.getAttribute('data-section'));
+      console.trace('[EventDelegate] 调用栈');
+    }
+
     const section = target.getAttribute('data-section');
     const afterSwitch = target.getAttribute('data-after');
 
@@ -1828,7 +1843,7 @@
   registerHandler('skill-delete', function (target) {
     const skillId = target.dataset.id;
     if (skillId && confirm('确定要删除这个 Skill 吗？')) {
-      fetch('http://127.0.0.1:3100/api/skills/' + skillId, {
+      fetch('/api/skills/' + skillId, {
         method: 'DELETE'
       })
         .then(function (res) {

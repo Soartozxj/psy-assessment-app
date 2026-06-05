@@ -207,6 +207,7 @@
     </div>
 
     <script>
+    <script src="mock-server.js?v=2026060501"></script>
       let currentSkill = null;
 
       // 加载 Skill 详情
@@ -220,7 +221,7 @@
         }
 
         try {
-          const res = await fetch(`http://127.0.0.1:3100/api/skills/${skillId}`);
+          const res = await fetch(`/api/skills/${skillId}`);
           if (!res.ok) throw new Error('Skill 不存在 (HTTP ' + res.status + ')');
           const result = await res.json();
           // API 返回格式: {code: 0, data: {...}}
